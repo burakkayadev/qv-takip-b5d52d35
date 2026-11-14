@@ -1559,7 +1559,10 @@ dialog.dlg::backdrop { background: rgba(27, 32, 48, 0.55); }
   // Bugünün paneli: kaç iş var, kaçı Quietvox'ta tamamlanmış
   function renderDayPanel() {
     Object.keys(TAB_INFO).forEach(function (tab) {
-      var orders = ordersOn(tab, state.today);
+      // İptal ve kayıp siparişler yapılacak iş sayılmaz
+      var orders = ordersOn(tab, state.today).filter(function (o) {
+        return o.status !== 'cancelled' && o.status !== 'lost';
+      });
       var done = orders.filter(function (o) { return isDone(o, tab); }).length;
       $('#tile-n-' + tab).textContent = orders.length;
       $('#tile-s-' + tab).textContent = orders.length ? done + ' tamam · ' + (orders.length - done) + ' bekliyor' : 'iş yok';
