@@ -191,7 +191,11 @@ async def fill_return_counts(page: Any) -> list[str]:
 
 async def save_and_check(page: Any, dialogs: list[str]) -> str:
     """Kaydeder; pencere kapanırsa boş string, sorun varsa açıklamasını döner."""
-    await page.click("#dialog_large .modal-footer .btn-primary")
+    # Pencerenin kendi alt çubuğundaki Save; içerideki "save-if-changed" onay düğmeleri hariç tutulur
+    save = page.locator('#dialog_large > .modal-footer .btn-primary:not([id^="save-if-changed"])')
+    if await save.count() != 1:
+        return f"Save düğmesi tek değil ({await save.count()} adet); kaydedilmedi"
+    await save.click()
     waited = 0
     while waited < SAVE_TIMEOUT_MS:
         await page.wait_for_timeout(500)
