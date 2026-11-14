@@ -42,7 +42,7 @@ DR_HTML = """
   </table>
   <table class="delivery-return-form-table client-tour-extend">
     <tr><th>Service Start Date</th><td>14.11.2026</td>
-        <th>Delivery Location</th><td>Demo Otel Sultanahmet<br>Örnek Cad. No:1<br>34122 Fatih<br>+90 212 000 00 01</td>
+        <th>Delivery Location</th><td>Turkey (TR)<br>Demo Otel Sultanahmet<br>Örnek Cad. No:1<br>34122 Fatih<br>+90 212 000 00 01</td>
         <td><svg></svg></td></tr>
     <tr><th>Delivery Station</th><td>Istanbul</td></tr>
   </table>
@@ -104,6 +104,7 @@ def test_direct_documents_fill_waybill_and_dr_form():
     assert waybill["qv_id"] == "2000000001"
     assert waybill["client"] == "Örnek Travel GmbH"
     assert waybill["delivery_location"].split("\n")[0] == "Demo Otel Sultanahmet"
+    assert waybill["delivery_location"].split("\n")[-1] == "Turkey (TR)"
     assert waybill["delivery_phone"] == "+90 212 000 00 01"
     assert waybill["return_location"].split("\n")[0] == "Demo Bosphorus Hotel"
     assert (waybill["tour_start"], waybill["tour_end"]) == ("2026-11-14", "2026-11-18")

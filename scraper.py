@@ -355,6 +355,7 @@ _TIME_PREFIX_RE = re.compile(rf"^\s*{_CLOCK}(?:\s*[-–]\s*{_CLOCK})?\s*", re.I)
 _PHONE_LABEL = r"(?:tel(?:efon|ephone)?|phone|mobile|mobil|gsm|cell|handy|fon)\b\.?\s*(?:no\.?|number)?\s*[:.]?\s*"
 _PHONE_NUMBER = r"(?:\+|00)?\(?\d[\d ()./\-]{5,}\d"
 _PHONE_RE = re.compile(rf"({_PHONE_LABEL})?({_PHONE_NUMBER})", re.I)
+_COUNTRY_LINE_RE = re.compile(r"^[^\d()]{2,40}\([A-Z]{2}\)$")
 _TOTAL_RE = re.compile(r"^(?:grand\s+)?(?:total|sum|gesamt|summe|toplam)\b", re.I)
 # Etiket satırı: iki noktadan sonra boşluk ya da satır sonu gelmeli ("No:7" etiket değildir)
 _LINE_RE = re.compile(r"^([^\d:\n]{2,45}?)\s*:(?:\s+(.*))?$")
@@ -931,10 +932,21 @@ def parse_dr_form_tables(html: str) -> dict[str, Any]:
     return details
 
 
+def country_line_last(location: str) -> str:
+    """Site adresi "Turkey (TR)" gibi ülke satırıyla başlatır; otel adı öne gelsin diye sona alınır."""
+    lines = location.split("\n")
+    if len(lines) > 1 and _COUNTRY_LINE_RE.match(lines[0]):
+        lines = lines[1:] + lines[:1]
+    return "\n".join(lines)
+
+
 def parse_direct_documents(dr_html: str, waybill_html: str) -> dict[str, Any]:
     """Gerçek D&R ve WayBill HTML'lerini şemaya çevirir (D&R önceliklidir: adresler oradadır)."""
-    return finalize_details(merge_details(
+    details = finalize_details(merge_details(
         [parse_dr_form_tables(dr_html), parse_waybill_tables(waybill_html)]))
+    for name in ("delivery_location", "return_location"):
+        details["waybill"][name] = country_line_last(details["waybill"][name])
+    return details
 
 
 def has_direct_content(details: dict[str, Any] | None) -> bool:
