@@ -849,6 +849,14 @@ def parse_feed_items(payload: Any, today: date, days: int) -> list[dict[str, str
     return items
 
 
+def _browser_soup(html: str) -> BeautifulSoup:
+    """Belgeyi tarayıcının yaptığı gibi ayrıştırır (kapanmamış hücreler vb. için html5lib)."""
+    try:
+        return BeautifulSoup(html, "html5lib")
+    except Exception:  # html5lib kurulu değilse yerleşik ayrıştırıcıya düş
+        return BeautifulSoup(html, "html.parser")
+
+
 def _cell_text(cell: Any) -> str:
     return _html_lines(cell.decode_contents())
 
@@ -870,7 +878,7 @@ def _store_direct(details: dict[str, Any], label: str, value: str) -> None:
 def parse_waybill_tables(html: str) -> dict[str, Any]:
     """WayBill: her tabloda başlık satırı (th) ve hemen altında değer satırı (td) bulunur."""
     details = empty_details()
-    for table in BeautifulSoup(html, "html.parser").find_all("table"):
+    for table in _browser_soup(html).find_all("table"):
         rows = table.find_all("tr")
         for head, body in zip(rows, rows[1:]):
             labels = head.find_all("th", recursive=False)
@@ -905,7 +913,7 @@ def _dr_equipment(table: Any) -> tuple[list[dict[str, str]], str, str]:
 def parse_dr_form_tables(html: str) -> dict[str, Any]:
     """D&R Formu: etiket (th) ve yanındaki değer (td) çiftleri + ekipman tablosu."""
     details = empty_details()
-    soup = BeautifulSoup(html, "html.parser")
+    soup = _browser_soup(html)
     equipment_table = soup.find("table", id=DR_EQUIPMENT_TABLE_ID)
     for label in soup.find_all("th"):
         if equipment_table is not None and label.find_parent("table") is equipment_table:

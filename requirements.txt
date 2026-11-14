@@ -1,5 +1,7 @@
 # Quietvox kazıyıcısının çalışma zamanı bağımlılıkları
 playwright>=1.49,<2
 beautifulsoup4>=4.12,<5
+# Quietvox belgelerini tarayıcıyla aynı biçimde ayrıştırmak için
+html5lib>=1.1,<2
 # zoneinfo için saat dilimi verisi (Windows'ta şart, Linux'ta zararsız)
 tzdata>=2024.1
