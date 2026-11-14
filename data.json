@@ -3,306 +3,10 @@
   "demo": false,
   "status": "ok",
   "status_message": "",
-  "generated_at": "2026-11-14T19:58:17Z",
+  "generated_at": "2026-11-14T22:16:35Z",
   "timezone": "Europe/Istanbul",
   "window_days": 32,
   "deliveries": [
-    {
-      "id": "2000195875",
-      "type": "delivery",
-      "date": "2026-10-14",
-      "time": "",
-      "cruise": false,
-      "source_calendar": "Calendar Delivery",
-      "title": "Viking River Cruises · Conrad Istanbul Bosphorus",
-      "location_name": "Conrad Istanbul Bosphorus",
-      "waybill": {
-        "tour_manager_name": "Inci Kalafat",
-        "tour_manager_phone": "+905372995396",
-        "tour_reference": "VRA261019T-Pre IST",
-        "qv_id": "2000195875",
-        "client": "Viking River Cruises",
-        "delivery_location": "Conrad Istanbul Bosphorus\nCihannüma, Saray Cd No:5\nBeşiktaş/İstanbul, 34353\nTurkey (TR)",
-        "delivery_phone": "+902123102525",
-        "return_location": "Conrad Istanbul Bosphorus\nCihannüma, Saray Cd No:5\nBeşiktaş/İstanbul, 34353\nTurkey (TR)",
-        "tour_start": "2026-10-14",
-        "tour_end": "2026-10-15"
-      },
-      "dr_form": {
-        "customer": "Viking River Cruises",
-        "reference": "VRA261019T-Pre IST",
-        "qv_booking_id": "2000195875",
-        "clients": "12",
-        "groups": "1",
-        "instruction_language": "English",
-        "service_start_date": "2026-10-14",
-        "delivery_station": "Istanbul",
-        "qr_content": "2000195875",
-        "equipment": [
-          {
-            "item": "Lanyards",
-            "quantity": "VIKING Lanyards",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "QV9 TX EU(QV9.2)",
-            "quantity": "1",
-            "weight": "",
-            "return_quantity": "1"
-          },
-          {
-            "item": "QV9 RX EU(QV9.1)",
-            "quantity": "13",
-            "weight": "",
-            "return_quantity": "13"
-          },
-          {
-            "item": "Battery AA disposable(QV1.38)",
-            "quantity": "6",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Earphone 3.5mm New Style 2017RP(QV1.2S)",
-            "quantity": "22",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Microphone 3.5mm jack headset style(QV8.6.1)",
-            "quantity": "2",
-            "weight": "",
-            "return_quantity": "2"
-          },
-          {
-            "item": "Carrying case small(QV1.14)",
-            "quantity": "1",
-            "weight": "",
-            "return_quantity": "1"
-          },
-          {
-            "item": "Earphone over the Ear/hearing aid 3.5mm Jack(QV1.300)",
-            "quantity": "2",
-            "weight": "",
-            "return_quantity": "2"
-          }
-        ],
-        "total_weight": "3.43 Kg / 7.56 Pounds"
-      },
-      "raw": {
-        "Return Station": "Istanbul",
-        "Return weight": "2.96 Kg / 6.53 Pounds",
-        "Customer service": "Email: support@quietvox.com",
-        "return_phone": "+902123102525"
-      },
-      "status": "returned"
-    },
-    {
-      "id": "2000221732",
-      "type": "delivery",
-      "date": "2026-10-14",
-      "time": "",
-      "cruise": false,
-      "source_calendar": "Calendar Delivery",
-      "title": "Viking River Cruises · Conrad Istanbul Bosphorus",
-      "location_name": "Conrad Istanbul Bosphorus",
-      "waybill": {
-        "tour_manager_name": "Inci Kalafat",
-        "tour_manager_phone": "+905372995396",
-        "tour_reference": "RND260927T-Post IST",
-        "qv_id": "2000221732",
-        "client": "Viking River Cruises",
-        "delivery_location": "Conrad Istanbul Bosphorus\nCihannüma, Saray Cd No:5\nBeşiktaş/İstanbul, 34353\nTurkey (TR)",
-        "delivery_phone": "+902123102525",
-        "return_location": "Conrad Istanbul Bosphorus\nCihannüma, Saray Cd No:5\nBeşiktaş/İstanbul, 34353\nTurkey (TR)",
-        "tour_start": "2026-10-14",
-        "tour_end": "2026-10-15"
-      },
-      "dr_form": {
-        "customer": "Viking River Cruises",
-        "reference": "RND260927T-Post IST",
-        "qv_booking_id": "2000221732",
-        "clients": "9",
-        "groups": "1",
-        "instruction_language": "English",
-        "service_start_date": "2026-10-14",
-        "delivery_station": "Istanbul",
-        "qr_content": "2000221732",
-        "equipment": [
-          {
-            "item": "Lanyards",
-            "quantity": "VIKING Lanyards",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "QV9 TX EU(QV9.2)",
-            "quantity": "1",
-            "weight": "",
-            "return_quantity": "1"
-          },
-          {
-            "item": "QV9 RX EU(QV9.1)",
-            "quantity": "10",
-            "weight": "",
-            "return_quantity": "10"
-          },
-          {
-            "item": "Battery AA disposable(QV1.38)",
-            "quantity": "6",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Earphone 3.5mm New Style 2017RP(QV1.2S)",
-            "quantity": "18",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Microphone 3.5mm jack headset style(QV8.6.1)",
-            "quantity": "2",
-            "weight": "",
-            "return_quantity": "2"
-          },
-          {
-            "item": "Carrying case small(QV1.14)",
-            "quantity": "1",
-            "weight": "",
-            "return_quantity": "1"
-          },
-          {
-            "item": "Earphone over the Ear/hearing aid 3.5mm Jack(QV1.300)",
-            "quantity": "2",
-            "weight": "",
-            "return_quantity": "2"
-          }
-        ],
-        "total_weight": "3.00 Kg / 6.61 Pounds"
-      },
-      "raw": {
-        "Return Station": "Istanbul",
-        "Return weight": "2.59 Kg / 5.71 Pounds",
-        "Customer service": "Email: support@quietvox.com",
-        "return_phone": "+902123102525"
-      },
-      "status": "returned"
-    },
-    {
-      "id": "2000243740",
-      "type": "delivery",
-      "date": "2026-10-14",
-      "time": "",
-      "cruise": false,
-      "source_calendar": "Calendar Delivery",
-      "title": "Scenic Tours Europe Ag · Intercontinental Istanbul",
-      "location_name": "Intercontinental Istanbul",
-      "waybill": {
-        "tour_manager_name": "Selcuk Ersan",
-        "tour_manager_phone": "+905333257755",
-        "tour_reference": "IST131026.2",
-        "qv_id": "2000243740",
-        "client": "Scenic Tours Europe Ag",
-        "delivery_location": "Intercontinental Istanbul\nAsker Ocagi Caddesi No. 1\nIstanbul, 34435\nTurkey (TR)",
-        "delivery_phone": "",
-        "return_location": "Intercontinental Istanbul\nAsker Ocagi Caddesi No. 1\nIstanbul, 34435\nTurkey (TR)",
-        "tour_start": "2026-10-14",
-        "tour_end": "2026-10-18"
-      },
-      "dr_form": {
-        "customer": "Scenic Tours Europe Ag",
-        "reference": "IST131026.2",
-        "qv_booking_id": "2000243740",
-        "clients": "14",
-        "groups": "1",
-        "instruction_language": "English",
-        "service_start_date": "2026-10-14",
-        "delivery_station": "Istanbul",
-        "qr_content": "2000243740",
-        "equipment": [
-          {
-            "item": "Lanyards",
-            "quantity": "Scenic Lanyard",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "QV9 TX EU(QV9.2)",
-            "quantity": "1",
-            "weight": "",
-            "return_quantity": "1"
-          },
-          {
-            "item": "QV9 RX EU(QV9.1)",
-            "quantity": "16",
-            "weight": "",
-            "return_quantity": "16"
-          },
-          {
-            "item": "Battery AA disposable(QV1.38)",
-            "quantity": "20",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Earphone 3.5mm New Style 2017RP(QV1.2S)",
-            "quantity": "24",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Microphone 3.5mm jack headset style(QV8.6.1)",
-            "quantity": "1",
-            "weight": "",
-            "return_quantity": "1"
-          },
-          {
-            "item": "Microphone 3,5mm jack short(QV1.5)",
-            "quantity": "1",
-            "weight": "",
-            "return_quantity": "1"
-          },
-          {
-            "item": "Battery bag green logo(QV1.20.1)",
-            "quantity": "1",
-            "weight": "",
-            "return_quantity": "1"
-          },
-          {
-            "item": "Battery bag red logo(QV1.20.2)",
-            "quantity": "1",
-            "weight": "",
-            "return_quantity": "1"
-          },
-          {
-            "item": "Carrying case small(QV1.14)",
-            "quantity": "1",
-            "weight": "",
-            "return_quantity": "1"
-          },
-          {
-            "item": "Induction loop 3,5mm jack(QV1.9)",
-            "quantity": "1",
-            "weight": "",
-            "return_quantity": "1"
-          },
-          {
-            "item": "Earphone over the Ear/hearing aid 3.5mm Jack(QV1.300)",
-            "quantity": "1",
-            "weight": "",
-            "return_quantity": "1"
-          }
-        ],
-        "total_weight": "4.31 Kg / 9.50 Pounds"
-      },
-      "raw": {
-        "Return Station": "Istanbul",
-        "Return weight": "3.43 Kg / 7.56 Pounds",
-        "Customer service": "Email: support@quietvox.com"
-      },
-      "status": "returned"
-    },
     {
       "id": "2000221888",
       "type": "delivery",
@@ -20637,40 +20341,38 @@
         "return_phone": "+902124023000"
       },
       "status": "reserved"
-    }
-  ],
-  "returns": [
+    },
     {
-      "id": "2000221646",
-      "type": "return",
-      "date": "2026-10-14",
+      "id": "2000195857",
+      "type": "delivery",
+      "date": "2026-12-16",
       "time": "",
       "cruise": false,
-      "source_calendar": "Calendar Return",
-      "title": "Viking River Cruises · Conrad Istanbul Bosphorus",
-      "location_name": "Conrad Istanbul Bosphorus",
+      "source_calendar": "Calendar Delivery",
+      "title": "Viking River Cruises · N/A",
+      "location_name": "Viking River Cruises · N/A",
       "waybill": {
         "tour_manager_name": "Inci Kalafat",
         "tour_manager_phone": "+905372995396",
-        "tour_reference": "THO261018T-Pre IST",
-        "qv_id": "2000221646",
+        "tour_reference": "VRA261221T-Pre IST",
+        "qv_id": "2000195857",
         "client": "Viking River Cruises",
-        "delivery_location": "Conrad Istanbul Bosphorus\nCihannüma, Saray Cd No:5\nBeşiktaş/İstanbul, 34353\nTurkey (TR)",
-        "delivery_phone": "+902123102525",
-        "return_location": "Conrad Istanbul Bosphorus\nCihannüma, Saray Cd No:5\nBeşiktaş/İstanbul, 34353\nTurkey (TR)",
-        "tour_start": "2026-10-13",
-        "tour_end": "2026-10-14"
+        "delivery_location": "",
+        "delivery_phone": "",
+        "return_location": "",
+        "tour_start": "2026-12-16",
+        "tour_end": "2026-12-17"
       },
       "dr_form": {
         "customer": "Viking River Cruises",
-        "reference": "THO261018T-Pre IST",
-        "qv_booking_id": "2000221646",
-        "clients": "20",
-        "groups": "2",
+        "reference": "VRA261221T-Pre IST",
+        "qv_booking_id": "2000195857",
+        "clients": "0",
+        "groups": "0",
         "instruction_language": "English",
-        "service_start_date": "2026-10-13",
+        "service_start_date": "2026-12-16",
         "delivery_station": "Istanbul",
-        "qr_content": "2000221646",
+        "qr_content": "2000195857",
         "equipment": [
           {
             "item": "Lanyards",
@@ -20682,13 +20384,13 @@
             "item": "QV9 TX EU(QV9.2)",
             "quantity": "2",
             "weight": "",
-            "return_quantity": "2"
+            "return_quantity": ""
           },
           {
             "item": "QV9 RX EU(QV9.1)",
-            "quantity": "22",
+            "quantity": "47",
             "weight": "",
-            "return_quantity": "22"
+            "return_quantity": ""
           },
           {
             "item": "Battery AA disposable(QV1.38)",
@@ -20698,7 +20400,7 @@
           },
           {
             "item": "Earphone 3.5mm New Style 2017RP(QV1.2S)",
-            "quantity": "32",
+            "quantity": "65",
             "weight": "",
             "return_quantity": ""
           },
@@ -20706,71 +20408,32 @@
             "item": "Microphone 3.5mm jack headset style(QV8.6.1)",
             "quantity": "4",
             "weight": "",
-            "return_quantity": "4"
+            "return_quantity": ""
           },
           {
             "item": "Carrying case large(QV1.12)",
-            "quantity": "1",
+            "quantity": "2",
             "weight": "",
-            "return_quantity": "1"
+            "return_quantity": ""
           },
           {
             "item": "Earphone over the Ear/hearing aid 3.5mm Jack(QV1.300)",
             "quantity": "2",
             "weight": "",
-            "return_quantity": "2"
+            "return_quantity": ""
           }
         ],
-        "total_weight": "5.27 Kg / 11.62 Pounds"
+        "total_weight": "10.24 Kg / 22.58 Pounds"
       },
       "raw": {
         "Return Station": "Istanbul",
-        "Return weight": "4.61 Kg / 10.16 Pounds",
-        "Customer service": "Email: support@quietvox.com",
-        "return_phone": "+902123102525"
-      },
-      "status": "returned"
-    },
-    {
-      "id": "2000221757",
-      "type": "return",
-      "date": "2026-10-14",
-      "time": "",
-      "cruise": false,
-      "source_calendar": "Calendar Return",
-      "title": "Viking River Cruises · N/A",
-      "location_name": "Viking River Cruises · N/A",
-      "waybill": {
-        "tour_manager_name": "Inci Kalafat",
-        "tour_manager_phone": "+905372995396",
-        "tour_reference": "PTA261018T-Pre IST",
-        "qv_id": "2000221757",
-        "client": "Viking River Cruises",
-        "delivery_location": "",
-        "delivery_phone": "",
-        "return_location": "",
-        "tour_start": "2026-10-13",
-        "tour_end": "2026-10-14"
-      },
-      "dr_form": {
-        "customer": "Viking River Cruises",
-        "reference": "PTA261018T-Pre IST",
-        "qv_booking_id": "2000221757",
-        "clients": "2",
-        "groups": "1",
-        "instruction_language": "English",
-        "service_start_date": "2026-10-13",
-        "delivery_station": "Istanbul",
-        "qr_content": "2000221757",
-        "equipment": [],
-        "total_weight": ""
-      },
-      "raw": {
-        "Return Station": "Istanbul",
+        "Return weight": "0.00 Kg / 0.00 Pounds",
         "Customer service": "Email: support@quietvox.com"
       },
-      "status": "cancelled"
-    },
+      "status": "reserved"
+    }
+  ],
+  "returns": [
     {
       "id": "2000195875",
       "type": "return",
@@ -42525,6 +42188,128 @@
       "raw": {
         "Return Station": "Istanbul",
         "Customer service": "Email: support@quietvox.com"
+      },
+      "status": "reserved"
+    },
+    {
+      "id": "2000221637",
+      "type": "return",
+      "date": "2026-12-16",
+      "time": "",
+      "cruise": false,
+      "source_calendar": "Calendar Return",
+      "title": "Viking River Cruises · N/A",
+      "location_name": "Viking River Cruises · N/A",
+      "waybill": {
+        "tour_manager_name": "Inci Kalafat",
+        "tour_manager_phone": "+905372995396",
+        "tour_reference": "THO261220T-Pre IST",
+        "qv_id": "2000221637",
+        "client": "Viking River Cruises",
+        "delivery_location": "",
+        "delivery_phone": "",
+        "return_location": "",
+        "tour_start": "2026-12-15",
+        "tour_end": "2026-12-16"
+      },
+      "dr_form": {
+        "customer": "Viking River Cruises",
+        "reference": "THO261220T-Pre IST",
+        "qv_booking_id": "2000221637",
+        "clients": "0",
+        "groups": "0",
+        "instruction_language": "English",
+        "service_start_date": "2026-12-15",
+        "delivery_station": "Istanbul",
+        "qr_content": "2000221637",
+        "equipment": [],
+        "total_weight": ""
+      },
+      "raw": {
+        "Return Station": "Istanbul",
+        "Customer service": "Email: support@quietvox.com"
+      },
+      "status": "reserved"
+    },
+    {
+      "id": "2000221748",
+      "type": "return",
+      "date": "2026-12-16",
+      "time": "",
+      "cruise": false,
+      "source_calendar": "Calendar Return",
+      "title": "Viking River Cruises · N/A",
+      "location_name": "Viking River Cruises · N/A",
+      "waybill": {
+        "tour_manager_name": "Inci Kalafat",
+        "tour_manager_phone": "+905372995396",
+        "tour_reference": "PTA261220T-Pre IST",
+        "qv_id": "2000221748",
+        "client": "Viking River Cruises",
+        "delivery_location": "",
+        "delivery_phone": "",
+        "return_location": "",
+        "tour_start": "2026-12-15",
+        "tour_end": "2026-12-16"
+      },
+      "dr_form": {
+        "customer": "Viking River Cruises",
+        "reference": "PTA261220T-Pre IST",
+        "qv_booking_id": "2000221748",
+        "clients": "0",
+        "groups": "0",
+        "instruction_language": "English",
+        "service_start_date": "2026-12-15",
+        "delivery_station": "Istanbul",
+        "qr_content": "2000221748",
+        "equipment": [],
+        "total_weight": ""
+      },
+      "raw": {
+        "Return Station": "Istanbul",
+        "Customer service": "Email: support@quietvox.com"
+      },
+      "status": "reserved"
+    },
+    {
+      "id": "2000245408",
+      "type": "return",
+      "date": "2026-12-16",
+      "time": "",
+      "cruise": false,
+      "source_calendar": "Calendar Return",
+      "title": "AmaBella GmbH · Four Seasons Hotel Istanbul At Sultanahmet",
+      "location_name": "Four Seasons Hotel Istanbul At Sultanahmet",
+      "waybill": {
+        "tour_manager_name": "",
+        "tour_manager_phone": "",
+        "tour_reference": "Amabella-AA261207AJX-Post IST",
+        "qv_id": "2000245408",
+        "client": "AmaBella GmbH",
+        "delivery_location": "Four Seasons Hotel Istanbul At Sultanahmet\nSultanahmet, Tevkifhane Sk. No:1\nIstanbul, 34122\nTurkey (TR)",
+        "delivery_phone": "+902124023000",
+        "return_location": "Four Seasons Hotel Istanbul At Sultanahmet\nSultanahmet, Tevkifhane Sk. No:1\nIstanbul, 34122\nTurkey (TR)",
+        "tour_start": "2026-12-15",
+        "tour_end": "2026-12-16"
+      },
+      "dr_form": {
+        "customer": "AmaBella GmbH",
+        "reference": "Amabella-AA261207AJX-Post IST",
+        "qv_booking_id": "2000245408",
+        "clients": "0",
+        "groups": "0",
+        "instruction_language": "English",
+        "service_start_date": "2026-12-15",
+        "delivery_station": "Istanbul",
+        "qr_content": "2000245408",
+        "equipment": [],
+        "total_weight": ""
+      },
+      "raw": {
+        "Return Station": "Istanbul",
+        "Consolidator": "Ama Waterways",
+        "Customer service": "Email: support@quietvox.com",
+        "return_phone": "+902124023000"
       },
       "status": "reserved"
     }
