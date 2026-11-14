@@ -3,7 +3,7 @@
   "demo": false,
   "status": "ok",
   "status_message": "",
-  "generated_at": "2026-11-14T22:16:35Z",
+  "generated_at": "2026-11-14T23:45:11Z",
   "timezone": "Europe/Istanbul",
   "window_days": 32,
   "deliveries": [
@@ -9602,7 +9602,7 @@
         "Consolidator": "Baltac Tourism",
         "Customer service": "Email: support@quietvox.com"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000221581",
@@ -10047,7 +10047,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000196118",
@@ -10177,7 +10177,7 @@
         "Return weight": "0.00 Kg / 0.00 Pounds",
         "Customer service": "Email: support@quietvox.com"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000221884",
@@ -10268,7 +10268,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123156000"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264250",
@@ -10371,7 +10371,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902125186000"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264462",
@@ -10474,7 +10474,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+00904445266"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264463",
@@ -10577,7 +10577,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+00904445266"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264464",
@@ -10680,7 +10680,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+00904445266"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264469",
@@ -10783,7 +10783,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123814000"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264470",
@@ -10886,7 +10886,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123814000"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264471",
@@ -10989,7 +10989,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123814000"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264472",
@@ -11092,7 +11092,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902124023000"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264473",
@@ -11195,7 +11195,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902124023000"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264474",
@@ -11298,7 +11298,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902124023000"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264475",
@@ -11401,7 +11401,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123814000"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264476",
@@ -11504,7 +11504,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123814000"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264477",
@@ -11607,7 +11607,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123814000"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000221582",
@@ -11698,7 +11698,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000221583",
@@ -11789,7 +11789,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000221686",
@@ -11880,7 +11880,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000221944",
@@ -12024,7 +12024,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264482",
@@ -12127,7 +12127,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264483",
@@ -12230,7 +12230,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264484",
@@ -12333,7 +12333,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264485",
@@ -12436,7 +12436,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264486",
@@ -12539,7 +12539,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264487",
@@ -12642,7 +12642,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264488",
@@ -12745,7 +12745,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264489",
@@ -12848,7 +12848,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000221986",
@@ -12939,7 +12939,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000222028",
@@ -13029,7 +13029,7 @@
         "Return weight": "0.00 Kg / 0.00 Pounds",
         "Customer service": "Email: support@quietvox.com"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000245479",
@@ -13127,7 +13127,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902124023000"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264323",
@@ -13236,7 +13236,7 @@
         "Consolidator": "Baltac Tourism",
         "Customer service": "Email: support@quietvox.com"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264465",
@@ -13339,7 +13339,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264466",
@@ -13442,7 +13442,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264467",
@@ -13545,7 +13545,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264468",
@@ -13648,7 +13648,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264478",
@@ -13751,7 +13751,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902124023000"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264479",
@@ -13854,7 +13854,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902124023000"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264480",
@@ -13957,7 +13957,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902124023000"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264490",
@@ -14060,7 +14060,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264491",
@@ -14163,7 +14163,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264492",
@@ -14266,7 +14266,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264493",
@@ -14369,7 +14369,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264494",
@@ -14472,7 +14472,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264495",
@@ -14575,7 +14575,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264496",
@@ -14678,7 +14678,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264497",
@@ -14781,7 +14781,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000221600",
@@ -14872,7 +14872,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000221694",
@@ -14963,7 +14963,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123156000"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000221769",
@@ -15054,7 +15054,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000221641",
@@ -15144,7 +15144,7 @@
         "Return weight": "0.00 Kg / 0.00 Pounds",
         "Customer service": "Email: support@quietvox.com"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000221752",
@@ -15235,7 +15235,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000245407",
@@ -15333,7 +15333,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902124023000"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000195980",
@@ -15465,7 +15465,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000221883",
@@ -15556,7 +15556,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000264994",
@@ -15659,7 +15659,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+00904445266"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000264995",
@@ -15762,7 +15762,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+00904445266"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000264996",
@@ -15865,7 +15865,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+00904445266"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000264999",
@@ -15968,7 +15968,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123814000"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000265000",
@@ -16071,7 +16071,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902124023000"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000265001",
@@ -16174,7 +16174,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902124023000"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000265002",
@@ -16277,7 +16277,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902124023000"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000221601",
@@ -16368,7 +16368,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000221685",
@@ -16458,7 +16458,7 @@
         "Return weight": "0.00 Kg / 0.00 Pounds",
         "Customer service": "Email: support@quietvox.com"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000221943",
@@ -16597,7 +16597,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902124023000"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000265007",
@@ -16700,7 +16700,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000265008",
@@ -16803,7 +16803,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000265009",
@@ -16906,7 +16906,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000265010",
@@ -17009,7 +17009,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000265011",
@@ -17112,7 +17112,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000265012",
@@ -17215,7 +17215,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000221985",
@@ -17306,7 +17306,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000222027",
@@ -17397,7 +17397,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123156000"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000264997",
@@ -17500,7 +17500,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000264998",
@@ -17603,7 +17603,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000265003",
@@ -17706,7 +17706,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123814000"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000265004",
@@ -17809,7 +17809,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123814000"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000265005",
@@ -17912,7 +17912,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902124023000"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000265006",
@@ -18015,7 +18015,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902124023000"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000265013",
@@ -18118,7 +18118,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000265014",
@@ -18221,7 +18221,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000265015",
@@ -18324,7 +18324,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000265016",
@@ -18427,7 +18427,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000221693",
@@ -18638,7 +18638,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000245422",
@@ -18736,7 +18736,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902124023000"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000221640",
@@ -19204,7 +19204,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902124023000"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000221692",
@@ -31689,7 +31689,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000196118",
@@ -31819,7 +31819,7 @@
         "Return weight": "0.00 Kg / 0.00 Pounds",
         "Customer service": "Email: support@quietvox.com"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000221884",
@@ -31910,7 +31910,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123156000"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264462",
@@ -32013,7 +32013,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+00904445266"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264463",
@@ -32116,7 +32116,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+00904445266"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264464",
@@ -32219,7 +32219,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+00904445266"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264469",
@@ -32322,7 +32322,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123814000"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264470",
@@ -32425,7 +32425,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123814000"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264471",
@@ -32528,7 +32528,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123814000"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264472",
@@ -32631,7 +32631,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902124023000"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264473",
@@ -32734,7 +32734,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902124023000"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264474",
@@ -32837,7 +32837,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902124023000"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264475",
@@ -32940,7 +32940,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123814000"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264476",
@@ -33043,7 +33043,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123814000"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264477",
@@ -33146,7 +33146,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123814000"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264481",
@@ -33249,7 +33249,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264482",
@@ -33352,7 +33352,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264483",
@@ -33455,7 +33455,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264484",
@@ -33558,7 +33558,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264485",
@@ -33661,7 +33661,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264486",
@@ -33764,7 +33764,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264487",
@@ -33867,7 +33867,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264488",
@@ -33970,7 +33970,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264489",
@@ -34073,7 +34073,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000221582",
@@ -34164,7 +34164,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000221583",
@@ -34255,7 +34255,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000221686",
@@ -34346,7 +34346,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000221944",
@@ -34497,7 +34497,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902124554455"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264036",
@@ -34606,7 +34606,7 @@
         "Consolidator": "Baltac Tourism",
         "Customer service": "Email: support@quietvox.com"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264490",
@@ -34709,7 +34709,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264491",
@@ -34812,7 +34812,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264492",
@@ -34915,7 +34915,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264493",
@@ -35018,7 +35018,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264494",
@@ -35121,7 +35121,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264495",
@@ -35224,7 +35224,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264496",
@@ -35327,7 +35327,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264497",
@@ -35430,7 +35430,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000221986",
@@ -35521,7 +35521,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000222028",
@@ -35611,7 +35611,7 @@
         "Return weight": "0.00 Kg / 0.00 Pounds",
         "Customer service": "Email: support@quietvox.com"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000245479",
@@ -35709,7 +35709,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902124023000"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264465",
@@ -35812,7 +35812,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264466",
@@ -35915,7 +35915,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264467",
@@ -36018,7 +36018,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264468",
@@ -36121,7 +36121,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264478",
@@ -36224,7 +36224,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902124023000"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264479",
@@ -36327,7 +36327,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902124023000"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264480",
@@ -36430,7 +36430,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902124023000"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000221600",
@@ -36521,7 +36521,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000221694",
@@ -36612,7 +36612,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123156000"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264250",
@@ -36715,7 +36715,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902125186000"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000221769",
@@ -36806,7 +36806,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000221641",
@@ -36896,7 +36896,7 @@
         "Return weight": "0.00 Kg / 0.00 Pounds",
         "Customer service": "Email: support@quietvox.com"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000221752",
@@ -36987,7 +36987,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000245407",
@@ -37085,7 +37085,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902124023000"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000195980",
@@ -37217,7 +37217,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000221883",
@@ -37308,7 +37308,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000264994",
@@ -37411,7 +37411,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+00904445266"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000264995",
@@ -37514,7 +37514,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+00904445266"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000264996",
@@ -37617,7 +37617,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+00904445266"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000264999",
@@ -37720,7 +37720,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123814000"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000265000",
@@ -37823,7 +37823,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902124023000"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000265001",
@@ -37926,7 +37926,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902124023000"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000265002",
@@ -38029,7 +38029,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902124023000"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000265007",
@@ -38132,7 +38132,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000265008",
@@ -38235,7 +38235,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000265009",
@@ -38338,7 +38338,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000265010",
@@ -38441,7 +38441,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000265011",
@@ -38544,7 +38544,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000265012",
@@ -38647,7 +38647,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000221601",
@@ -38738,7 +38738,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000221685",
@@ -38828,7 +38828,7 @@
         "Return weight": "0.00 Kg / 0.00 Pounds",
         "Customer service": "Email: support@quietvox.com"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000221943",
@@ -38967,7 +38967,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902124023000"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000264050",
@@ -39077,7 +39077,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902124554455"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000264323",
@@ -39186,7 +39186,7 @@
         "Consolidator": "Baltac Tourism",
         "Customer service": "Email: support@quietvox.com"
       },
-      "status": "confirmed"
+      "status": "delivered"
     },
     {
       "id": "2000265013",
@@ -39289,7 +39289,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000265014",
@@ -39392,7 +39392,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000265015",
@@ -39495,7 +39495,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000265016",
@@ -39598,7 +39598,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000221985",
@@ -39689,7 +39689,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000222027",
@@ -39780,7 +39780,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123156000"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000264997",
@@ -39883,7 +39883,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000264998",
@@ -39986,7 +39986,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000265003",
@@ -40089,7 +40089,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123814000"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000265004",
@@ -40192,7 +40192,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123814000"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000265005",
@@ -40295,7 +40295,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902124023000"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000265006",
@@ -40398,7 +40398,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902124023000"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000221693",
@@ -40569,7 +40569,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000245422",
@@ -40667,7 +40667,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902124023000"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000221640",
@@ -41175,7 +41175,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902124023000"
       },
-      "status": "delivered"
+      "status": "confirmed"
     },
     {
       "id": "2000221692",
