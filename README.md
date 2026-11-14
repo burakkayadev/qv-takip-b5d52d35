@@ -102,8 +102,10 @@ Artık ana ekrandaki **Quietvox** simgesi tam ekran uygulama gibi açılır.
 | Commit hatası (403) | Adım 1.3'teki yazma iznini açın. |
 
 ### Seçicileri ayarlama (ilk kurulumda gerekebilir)
-Scraper, Quietvox'un iç sayfa yapısı görülmeden, yaygın takvim/modal kalıplarına göre sezgisel olarak yazıldı.
-İlk çalıştırmada veriler eksik gelirse bilgisayarda bir kez hata ayıklama dökümü alın:
+Scraper siparişleri takvime tıklamadan, Quietvox'un kendi veri adreslerinden okur:
+etkinlik listesi `…/calendar/getContent.html`, belgeler `/order/wayBill` ve `/order/deliveryReturnFormView`.
+Bu yapı canlı sitede doğrulandı. Quietvox sayfalarını değiştirirse ve veriler eksik gelmeye başlarsa
+bilgisayarda bir kez hata ayıklama dökümü alın:
 
 ```bash
 pip install -r requirements.txt
@@ -128,6 +130,7 @@ Ardından `QV_USER`, `QV_PASS` ortam değişkenlerini ve `QV_DEBUG=1` ayarlayıp
 | `QV_SEL_<ANAHTAR>` | `scraper.py` başındaki `SELECTORS` | Tek bir seçiciyi kod değiştirmeden ezer; adaylar `\|\|` ile ayrılır (ör. `QV_SEL_NEXT_BUTTON`, `QV_SEL_MODAL`, `QV_SEL_EVENT_PRIMARY`). |
 | `QV_WINDOW_DAYS` | `10` | Kaç gün ileriye bakılacağı. |
 | `QV_PREFER_CLICK` | `0` | `1` ise bağlantılı etkinlikler de tıklanarak açılır. |
+| `QV_CLICK_FALLBACK` | gerçek sitede `0` | `1` ise veri adresleri okunamadığında takvime tıklayan eski yola düşülür. Gerçek sitede açmayın: boş güne tıklamak "Create Order" penceresini açar. |
 
 Workflow çıkış kodları: `0` başarılı/kısmi, `1` siteye ulaşılamadı, `2` secret eksik, `3` giriş başarısız.
 

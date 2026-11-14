@@ -773,6 +773,8 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
 .dr-eq th { font-weight: 800; text-transform: uppercase; font-size: 0.82em; letter-spacing: 0.03em; }
 .dr-eq .c-qty, .dr-eq .c-wgt { width: 15%; text-align: right; white-space: nowrap; }
 .dr-eq .c-chk { width: 16%; text-align: center; white-space: nowrap; }
+/* Adet hücresinde metin de olabilir (ör. "Quietvox Lanyards"): kesilmesin, alt satıra kaysın */
+.dr-eq td.c-qty { white-space: normal; }
 .dr-eq tfoot td { font-weight: 800; }
 .tick {
   display: inline-block;
@@ -1753,11 +1755,11 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
     append(table, append(el('thead'), head), tbody);
     if (totalWeight !== null) {
       var foot = el('tr');
+      // Toplam ağırlık uzun olabilir ("4.51 Kg / 9.94 Pounds"): kalan dört sütuna yayılır
       var label = el('td', '', 'Total weight');
-      label.colSpan = 2;
-      var blank = el('td', '');
-      blank.colSpan = 2;
-      append(foot, label, el('td', 'c-wgt', orDash(totalWeight)), blank);
+      var total = el('td', 'c-total', orDash(totalWeight));
+      total.colSpan = 4;
+      append(foot, label, total);
       append(table, append(el('tfoot'), foot));
     }
     return table;
