@@ -3,7 +3,7 @@
   "demo": false,
   "status": "ok",
   "status_message": "",
-  "generated_at": "2026-11-14T18:44:55Z",
+  "generated_at": "2026-11-14T18:47:00Z",
   "timezone": "Europe/Istanbul",
   "window_days": 10,
   "deliveries": [
@@ -39,18 +39,6 @@
         "delivery_station": "Istanbul",
         "qr_content": "2000221986",
         "equipment": [
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
           {
             "item": "Lanyards",
             "quantity": "VIKING Lanyards",
@@ -142,18 +130,6 @@
         "qr_content": "2000222028",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "VIKING Lanyards",
             "weight": "",
@@ -242,18 +218,6 @@
         "delivery_station": "Istanbul",
         "qr_content": "2000245479",
         "equipment": [
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
           {
             "item": "Lanyards",
             "quantity": "Amawaterways lanyards",
@@ -351,18 +315,6 @@
         "delivery_station": "Istanbul",
         "qr_content": "2000264323",
         "equipment": [
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
           {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
@@ -472,18 +424,6 @@
         "qr_content": "2000264465",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
             "weight": "",
@@ -585,18 +525,6 @@
         "delivery_station": "Istanbul",
         "qr_content": "2000264466",
         "equipment": [
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
           {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
@@ -700,18 +628,6 @@
         "qr_content": "2000264467",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
             "weight": "",
@@ -813,18 +729,6 @@
         "delivery_station": "Istanbul",
         "qr_content": "2000264468",
         "equipment": [
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
           {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
@@ -928,18 +832,6 @@
         "qr_content": "2000264478",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
             "weight": "",
@@ -1041,18 +933,6 @@
         "delivery_station": "Istanbul",
         "qr_content": "2000264479",
         "equipment": [
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
           {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
@@ -1156,18 +1036,6 @@
         "qr_content": "2000264480",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
             "weight": "",
@@ -1269,18 +1137,6 @@
         "delivery_station": "Istanbul",
         "qr_content": "2000264490",
         "equipment": [
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
           {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
@@ -1384,18 +1240,6 @@
         "qr_content": "2000264491",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
             "weight": "",
@@ -1497,18 +1341,6 @@
         "delivery_station": "Istanbul",
         "qr_content": "2000264492",
         "equipment": [
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
           {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
@@ -1612,18 +1444,6 @@
         "qr_content": "2000264493",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
             "weight": "",
@@ -1725,18 +1545,6 @@
         "delivery_station": "Istanbul",
         "qr_content": "2000264494",
         "equipment": [
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
           {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
@@ -1840,18 +1648,6 @@
         "qr_content": "2000264495",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
             "weight": "",
@@ -1953,18 +1749,6 @@
         "delivery_station": "Istanbul",
         "qr_content": "2000264496",
         "equipment": [
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
           {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
@@ -2068,18 +1852,6 @@
         "qr_content": "2000264497",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
             "weight": "",
@@ -2182,18 +1954,6 @@
         "qr_content": "2000221600",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "VIKING Lanyards",
             "weight": "",
@@ -2283,18 +2043,6 @@
         "delivery_station": "Istanbul",
         "qr_content": "2000221694",
         "equipment": [
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
           {
             "item": "Lanyards",
             "quantity": "VIKING Lanyards",
@@ -2386,18 +2134,6 @@
         "qr_content": "2000221769",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "VIKING Lanyards",
             "weight": "",
@@ -2488,18 +2224,6 @@
         "qr_content": "2000221641",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "VIKING Lanyards",
             "weight": "",
@@ -2588,18 +2312,6 @@
         "delivery_station": "Istanbul",
         "qr_content": "2000221752",
         "equipment": [
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
           {
             "item": "Lanyards",
             "quantity": "VIKING Lanyards",
@@ -2690,18 +2402,6 @@
         "delivery_station": "Istanbul",
         "qr_content": "2000245407",
         "equipment": [
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
           {
             "item": "Lanyards",
             "quantity": "Amawaterways lanyards",
@@ -2840,18 +2540,6 @@
         "qr_content": "2000221842",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "VIKING Lanyards",
             "weight": "",
@@ -2942,18 +2630,6 @@
         "qr_content": "2000221883",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "VIKING Lanyards",
             "weight": "",
@@ -3043,18 +2719,6 @@
         "delivery_station": "Istanbul",
         "qr_content": "2000264994",
         "equipment": [
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
           {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
@@ -3158,18 +2822,6 @@
         "qr_content": "2000264995",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
             "weight": "",
@@ -3271,18 +2923,6 @@
         "delivery_station": "Istanbul",
         "qr_content": "2000264996",
         "equipment": [
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
           {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
@@ -3386,18 +3026,6 @@
         "qr_content": "2000264999",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
             "weight": "",
@@ -3499,18 +3127,6 @@
         "delivery_station": "Istanbul",
         "qr_content": "2000265000",
         "equipment": [
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
           {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
@@ -3614,18 +3230,6 @@
         "qr_content": "2000265001",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
             "weight": "",
@@ -3727,18 +3331,6 @@
         "delivery_station": "Istanbul",
         "qr_content": "2000265002",
         "equipment": [
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
           {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
@@ -3842,18 +3434,6 @@
         "qr_content": "2000221601",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "VIKING Lanyards",
             "weight": "",
@@ -3943,18 +3523,6 @@
         "delivery_station": "Istanbul",
         "qr_content": "2000221685",
         "equipment": [
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
           {
             "item": "Lanyards",
             "quantity": "VIKING Lanyards",
@@ -4085,18 +3653,6 @@
         "qr_content": "2000245494",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "Amawaterways lanyards",
             "weight": "",
@@ -4193,18 +3749,6 @@
         "delivery_station": "Istanbul",
         "qr_content": "2000265007",
         "equipment": [
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
           {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
@@ -4308,18 +3852,6 @@
         "qr_content": "2000265008",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
             "weight": "",
@@ -4421,18 +3953,6 @@
         "delivery_station": "Istanbul",
         "qr_content": "2000265009",
         "equipment": [
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
           {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
@@ -4536,18 +4056,6 @@
         "qr_content": "2000265010",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
             "weight": "",
@@ -4649,18 +4157,6 @@
         "delivery_station": "Istanbul",
         "qr_content": "2000265011",
         "equipment": [
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
           {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
@@ -4764,18 +4260,6 @@
         "qr_content": "2000265012",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
             "weight": "",
@@ -4878,18 +4362,6 @@
         "qr_content": "2000221985",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "VIKING Lanyards",
             "weight": "",
@@ -4980,18 +4452,6 @@
         "qr_content": "2000222027",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "VIKING Lanyards",
             "weight": "",
@@ -5081,18 +4541,6 @@
         "delivery_station": "Istanbul",
         "qr_content": "2000264997",
         "equipment": [
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
           {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
@@ -5196,18 +4644,6 @@
         "qr_content": "2000264998",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
             "weight": "",
@@ -5309,18 +4745,6 @@
         "delivery_station": "Istanbul",
         "qr_content": "2000265003",
         "equipment": [
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
           {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
@@ -5424,18 +4848,6 @@
         "qr_content": "2000265004",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
             "weight": "",
@@ -5537,18 +4949,6 @@
         "delivery_station": "Istanbul",
         "qr_content": "2000265005",
         "equipment": [
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
           {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
@@ -5652,18 +5052,6 @@
         "qr_content": "2000265006",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
             "weight": "",
@@ -5765,18 +5153,6 @@
         "delivery_station": "Istanbul",
         "qr_content": "2000265013",
         "equipment": [
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
           {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
@@ -5880,18 +5256,6 @@
         "qr_content": "2000265014",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
             "weight": "",
@@ -5994,18 +5358,6 @@
         "qr_content": "2000265015",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
             "weight": "",
@@ -6107,18 +5459,6 @@
         "delivery_station": "Istanbul",
         "qr_content": "2000265016",
         "equipment": [
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
           {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
@@ -6339,18 +5679,6 @@
         "qr_content": "2000221843",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "VIKING Lanyards",
             "weight": "",
@@ -6440,18 +5768,6 @@
         "delivery_station": "Istanbul",
         "qr_content": "2000245422",
         "equipment": [
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
           {
             "item": "Lanyards",
             "quantity": "Amawaterways lanyards",
@@ -6552,18 +5868,6 @@
         "qr_content": "2000221582",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "VIKING Lanyards",
             "weight": "",
@@ -6654,18 +5958,6 @@
         "qr_content": "2000221583",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "VIKING Lanyards",
             "weight": "",
@@ -6755,18 +6047,6 @@
         "delivery_station": "Istanbul",
         "qr_content": "2000221686",
         "equipment": [
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
           {
             "item": "Lanyards",
             "quantity": "VIKING Lanyards",
@@ -6898,18 +6178,6 @@
         "qr_content": "2000263767",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
             "weight": "",
@@ -7019,18 +6287,6 @@
         "qr_content": "2000264036",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
             "weight": "",
@@ -7139,18 +6395,6 @@
         "qr_content": "2000264490",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
             "weight": "",
@@ -7252,18 +6496,6 @@
         "delivery_station": "Istanbul",
         "qr_content": "2000264491",
         "equipment": [
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
           {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
@@ -7367,18 +6599,6 @@
         "qr_content": "2000264492",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
             "weight": "",
@@ -7480,18 +6700,6 @@
         "delivery_station": "Istanbul",
         "qr_content": "2000264493",
         "equipment": [
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
           {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
@@ -7595,18 +6803,6 @@
         "qr_content": "2000264494",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
             "weight": "",
@@ -7708,18 +6904,6 @@
         "delivery_station": "Istanbul",
         "qr_content": "2000264495",
         "equipment": [
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
           {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
@@ -7823,18 +7007,6 @@
         "qr_content": "2000264496",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
             "weight": "",
@@ -7936,18 +7108,6 @@
         "delivery_station": "Istanbul",
         "qr_content": "2000264497",
         "equipment": [
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
           {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
@@ -8051,18 +7211,6 @@
         "qr_content": "2000221986",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "VIKING Lanyards",
             "weight": "",
@@ -8153,18 +7301,6 @@
         "qr_content": "2000222028",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "VIKING Lanyards",
             "weight": "",
@@ -8253,18 +7389,6 @@
         "delivery_station": "Istanbul",
         "qr_content": "2000245479",
         "equipment": [
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
           {
             "item": "Lanyards",
             "quantity": "Amawaterways lanyards",
@@ -8362,18 +7486,6 @@
         "delivery_station": "Istanbul",
         "qr_content": "2000264465",
         "equipment": [
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
           {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
@@ -8477,18 +7589,6 @@
         "qr_content": "2000264466",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
             "weight": "",
@@ -8590,18 +7690,6 @@
         "delivery_station": "Istanbul",
         "qr_content": "2000264467",
         "equipment": [
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
           {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
@@ -8705,18 +7793,6 @@
         "qr_content": "2000264468",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
             "weight": "",
@@ -8818,18 +7894,6 @@
         "delivery_station": "Istanbul",
         "qr_content": "2000264478",
         "equipment": [
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
           {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
@@ -8933,18 +7997,6 @@
         "qr_content": "2000264479",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
             "weight": "",
@@ -9046,18 +8098,6 @@
         "delivery_station": "Istanbul",
         "qr_content": "2000264480",
         "equipment": [
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
           {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
@@ -9161,18 +8201,6 @@
         "qr_content": "2000221600",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "VIKING Lanyards",
             "weight": "",
@@ -9263,18 +8291,6 @@
         "qr_content": "2000221694",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "VIKING Lanyards",
             "weight": "",
@@ -9364,18 +8380,6 @@
         "delivery_station": "Istanbul",
         "qr_content": "2000264250",
         "equipment": [
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
           {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
@@ -9479,18 +8483,6 @@
         "qr_content": "2000221769",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "VIKING Lanyards",
             "weight": "",
@@ -9581,18 +8573,6 @@
         "qr_content": "2000221641",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "VIKING Lanyards",
             "weight": "",
@@ -9681,18 +8661,6 @@
         "delivery_station": "Istanbul",
         "qr_content": "2000221752",
         "equipment": [
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
           {
             "item": "Lanyards",
             "quantity": "VIKING Lanyards",
@@ -9783,18 +8751,6 @@
         "delivery_station": "Istanbul",
         "qr_content": "2000245407",
         "equipment": [
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
           {
             "item": "Lanyards",
             "quantity": "Amawaterways lanyards",
@@ -9933,18 +8889,6 @@
         "qr_content": "2000221842",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "VIKING Lanyards",
             "weight": "",
@@ -10035,18 +8979,6 @@
         "qr_content": "2000221883",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "VIKING Lanyards",
             "weight": "",
@@ -10136,18 +9068,6 @@
         "delivery_station": "Istanbul",
         "qr_content": "2000264994",
         "equipment": [
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
           {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
@@ -10251,18 +9171,6 @@
         "qr_content": "2000264995",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
             "weight": "",
@@ -10364,18 +9272,6 @@
         "delivery_station": "Istanbul",
         "qr_content": "2000264996",
         "equipment": [
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
           {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
@@ -10479,18 +9375,6 @@
         "qr_content": "2000264999",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
             "weight": "",
@@ -10592,18 +9476,6 @@
         "delivery_station": "Istanbul",
         "qr_content": "2000265000",
         "equipment": [
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
           {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
@@ -10707,18 +9579,6 @@
         "qr_content": "2000265001",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
             "weight": "",
@@ -10820,18 +9680,6 @@
         "delivery_station": "Istanbul",
         "qr_content": "2000265002",
         "equipment": [
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
           {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
@@ -10935,18 +9783,6 @@
         "qr_content": "2000265007",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
             "weight": "",
@@ -11048,18 +9884,6 @@
         "delivery_station": "Istanbul",
         "qr_content": "2000265008",
         "equipment": [
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
           {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
@@ -11163,18 +9987,6 @@
         "qr_content": "2000265009",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
             "weight": "",
@@ -11276,18 +10088,6 @@
         "delivery_station": "Istanbul",
         "qr_content": "2000265010",
         "equipment": [
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
           {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
@@ -11391,18 +10191,6 @@
         "qr_content": "2000265011",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
             "weight": "",
@@ -11504,18 +10292,6 @@
         "delivery_station": "Istanbul",
         "qr_content": "2000265012",
         "equipment": [
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
           {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
@@ -11619,18 +10395,6 @@
         "qr_content": "2000221601",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "VIKING Lanyards",
             "weight": "",
@@ -11720,18 +10484,6 @@
         "delivery_station": "Istanbul",
         "qr_content": "2000221685",
         "equipment": [
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
           {
             "item": "Lanyards",
             "quantity": "VIKING Lanyards",
@@ -11862,18 +10614,6 @@
         "qr_content": "2000245494",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "Amawaterways lanyards",
             "weight": "",
@@ -11970,18 +10710,6 @@
         "delivery_station": "Athens",
         "qr_content": "2000264050",
         "equipment": [
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
           {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
@@ -12092,18 +10820,6 @@
         "qr_content": "2000264323",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
             "weight": "",
@@ -12212,18 +10928,6 @@
         "qr_content": "2000265013",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
             "weight": "",
@@ -12325,18 +11029,6 @@
         "delivery_station": "Istanbul",
         "qr_content": "2000265014",
         "equipment": [
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
           {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
@@ -12440,18 +11132,6 @@
         "qr_content": "2000265015",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
             "weight": "",
@@ -12553,18 +11233,6 @@
         "delivery_station": "Istanbul",
         "qr_content": "2000265016",
         "equipment": [
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
           {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
@@ -12668,18 +11336,6 @@
         "qr_content": "2000221985",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "VIKING Lanyards",
             "weight": "",
@@ -12770,18 +11426,6 @@
         "qr_content": "2000222027",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "VIKING Lanyards",
             "weight": "",
@@ -12871,18 +11515,6 @@
         "delivery_station": "Istanbul",
         "qr_content": "2000264997",
         "equipment": [
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
           {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
@@ -12986,18 +11618,6 @@
         "qr_content": "2000264998",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
             "weight": "",
@@ -13099,18 +11719,6 @@
         "delivery_station": "Istanbul",
         "qr_content": "2000265003",
         "equipment": [
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
           {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
@@ -13214,18 +11822,6 @@
         "qr_content": "2000265004",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
             "weight": "",
@@ -13328,18 +11924,6 @@
         "qr_content": "2000265005",
         "equipment": [
           {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
             "weight": "",
@@ -13441,18 +12025,6 @@
         "delivery_station": "Istanbul",
         "qr_content": "2000265006",
         "equipment": [
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
-          {
-            "item": "Yes",
-            "quantity": "",
-            "weight": "",
-            "return_quantity": ""
-          },
           {
             "item": "Lanyards",
             "quantity": "Quietvox Lanyard",
