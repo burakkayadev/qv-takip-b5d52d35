@@ -159,6 +159,18 @@ CALENDARS: tuple[CalendarSpec, ...] = (
     )),
 )
 KNOWN_PROTECTED_PATH = "/calendar/returnCalendar.html"
+
+# Canlı sitede doğrulanan doğrudan uçlar (tıklamasız yol)
+FEED_FILE = "getContent.html"
+WAYBILL_PATH = "/order/wayBill"
+DR_FORM_PATH = "/order/deliveryReturnFormView"
+DR_EQUIPMENT_TABLE_ID = "delivered-retruned"  # sitedeki yazım hatası aynen korunur
+DIRECT_CONCURRENCY = 4  # siteyi yormamak için aynı anda en fazla istek
+DIRECT_SKIPPED_ROWS = {"bag id", "clients"}  # ekipman tablosunda kalem olmayan satırlar
+DIRECT_LABELS: dict[str, tuple[str, str]] = {
+    "cell phone": ("waybill", "tour_manager_phone"),
+    "service end date": ("waybill", "tour_end"),
+}
 LIST_KEY_BY_KIND = {"delivery": "deliveries", "return": "returns"}
 
 WAYBILL_FIELDS = (
@@ -239,6 +251,9 @@ class Settings:
     url_overrides: dict[str, str]
     selectors: dict[str, list[str]]
     sub_link_patterns: list[str]
+    # Doğrudan uçlar çalışmazsa takvime tıklayan eski yola düşülsün mü?
+    # Gerçek sitede kapalıdır: boş güne tıklamak "Create Order" penceresini açar.
+    click_fallback: bool = True
 
 
 def _env(env: Mapping[str, str], name: str, default: str = "") -> str:
@@ -308,6 +323,7 @@ def load_settings(env: Mapping[str, str] | None = None) -> Settings:
         url_overrides={spec.key: _env(env, spec.env_var) for spec in CALENDARS},
         selectors=load_selectors(env),
         sub_link_patterns=_env_list(env, "QV_SUB_LINK_PATTERNS", SUB_LINK_PATTERNS),
+        click_fallback=_env_flag(env, "QV_CLICK_FALLBACK", base_url != DEFAULT_BASE_URL),
     )
 
 
@@ -790,6 +806,146 @@ def finalize_details(merged: dict[str, Any]) -> dict[str, Any]:
 def parse_detail_documents(html_parts: Iterable[str]) -> dict[str, Any]:
     """Bir etkinliğe ait tüm HTML parçalarını ayrıştırıp şemaya uygun detay döner."""
     return finalize_details(merge_details(parse_detail_html(html) for html in html_parts))
+
+
+# --- Quietvox'un gerçek uçları (canlı sitede doğrulanan yapı) -----------------
+# Takvim, etkinlikleri JSON olarak `getContent.html?type=...&start=...&end=...`
+# adresinden alır; WayBill ve D&R Formu ise sipariş kimliğiyle ayrı HTML uçlarından
+# gelir. Bu yol hiçbir şeye tıklamaz, bu yüzden hem hızlı hem de güvenlidir.
+
+def feed_url_for(calendar_url: str, kind: str, today: date, days: int) -> str:
+    """Takvim sayfasının adresinden etkinlik feed adresini üretir (pencere ±1 gün paylı)."""
+    start, end = window_bounds(today, days)
+    zone = ZoneInfo(TIMEZONE_NAME)
+    low = datetime.combine(start - timedelta(days=1), datetime.min.time(), zone)
+    high = datetime.combine(end + timedelta(days=2), datetime.min.time(), zone)
+    base = calendar_url.split("#")[0].split("?")[0]
+    query = urllib.parse.urlencode(
+        {"type": kind, "start": int(low.timestamp()), "end": int(high.timestamp())})
+    return f"{urllib.parse.urljoin(base, FEED_FILE)}?{query}"
+
+
+def _html_lines(html: Any) -> str:
+    """HTML parçasını metne çevirir; <br> satır sonu sayılır."""
+    with_breaks = re.sub(r"<br\s*/?>", "\n", str(html or ""), flags=re.I)
+    return clean_text(BeautifulSoup(with_breaks, "html.parser").get_text())
+
+
+def parse_feed_items(payload: Any, today: date, days: int) -> list[dict[str, str]] | None:
+    """Feed JSON'unu pencere içindeki {id,date,time,title} listesine çevirir; biçim tanınmazsa None."""
+    if not isinstance(payload, list):
+        return None
+    items: list[dict[str, str]] = []
+    for entry in payload:
+        if not isinstance(entry, dict) or entry.get("id") in (None, ""):
+            continue
+        start = _feed_start(entry.get("start"))
+        day = valid_iso(start[:10])
+        if not in_window(day, today, days):
+            continue
+        time_text = "" if entry.get("allDay", True) else extract_time(start[10:])
+        title = " · ".join(_html_lines(entry.get("title")).split("\n"))
+        items.append({"id": str(entry["id"]), "date": day, "time": time_text, "title": title})
+    return items
+
+
+def _cell_text(cell: Any) -> str:
+    return _html_lines(cell.decode_contents())
+
+
+def _store_direct(details: dict[str, Any], label: str, value: str) -> None:
+    """Gerçek sitedeki etiketi ara biçime yazar; dolu olan ilk değer korunur."""
+    key = norm_label(label)
+    if not key or not value:
+        return
+    target = DIRECT_LABELS.get(key) or LABEL_MAP.get(key)
+    if target is None:
+        if len(details["raw"]) < MAX_RAW_ENTRIES and len(value) <= 400:
+            details["raw"].setdefault(one_line(label).rstrip(":").strip(), value)
+        return
+    section, name = target
+    details[section].setdefault(name, value)
+
+
+def parse_waybill_tables(html: str) -> dict[str, Any]:
+    """WayBill: her tabloda başlık satırı (th) ve hemen altında değer satırı (td) bulunur."""
+    details = empty_details()
+    for table in BeautifulSoup(html, "html.parser").find_all("table"):
+        rows = table.find_all("tr")
+        for head, body in zip(rows, rows[1:]):
+            labels = head.find_all("th", recursive=False)
+            cells = body.find_all("td", recursive=False)
+            if not labels or len(labels) != len(cells):
+                continue
+            for label, cell in zip(labels, cells):
+                _store_direct(details, label.get_text(), _cell_text(cell))
+    return details
+
+
+def _dr_equipment(table: Any) -> tuple[list[dict[str, str]], str, str]:
+    """D&R ekipman tablosu: (kalemler, teslim ağırlığı, iade ağırlığı)."""
+    items: list[dict[str, str]] = []
+    delivered_weight = returned_weight = ""
+    for row in table.find_all("tr")[1:]:
+        cells = [_cell_text(cell) for cell in row.find_all(["td", "th"], recursive=False)]
+        if len(cells) < 2:
+            continue
+        name = one_line(cells[0]).lstrip("#").strip()
+        returned = cells[3] if len(cells) > 3 else ""
+        if norm_label(name).startswith("weight"):
+            delivered_weight, returned_weight = one_line(cells[1]), one_line(returned)
+        elif name and norm_label(name) not in DIRECT_SKIPPED_ROWS:
+            items.append({"item": name, "quantity": one_line(cells[1]), "weight": "",
+                          "return_quantity": one_line(returned)})
+    return items, delivered_weight, returned_weight
+
+
+def parse_dr_form_tables(html: str) -> dict[str, Any]:
+    """D&R Formu: etiket (th) ve yanındaki değer (td) çiftleri + ekipman tablosu."""
+    details = empty_details()
+    soup = BeautifulSoup(html, "html.parser")
+    equipment_table = soup.find("table", id=DR_EQUIPMENT_TABLE_ID)
+    for label in soup.find_all("th"):
+        if equipment_table is not None and label.find_parent("table") is equipment_table:
+            continue
+        cell = label.find_next_sibling()
+        if cell is not None and cell.name == "td":
+            _store_direct(details, label.get_text(), _cell_text(cell))
+    if equipment_table is not None:
+        items, delivered_weight, returned_weight = _dr_equipment(equipment_table)
+        details["equipment"] = items
+        if delivered_weight:
+            details["dr_form"]["total_weight"] = delivered_weight
+        if returned_weight:
+            details["raw"]["Return weight"] = returned_weight
+    return details
+
+
+def parse_direct_documents(dr_html: str, waybill_html: str) -> dict[str, Any]:
+    """Gerçek D&R ve WayBill HTML'lerini şemaya çevirir (D&R önceliklidir: adresler oradadır)."""
+    return finalize_details(merge_details(
+        [parse_dr_form_tables(dr_html), parse_waybill_tables(waybill_html)]))
+
+
+def has_direct_content(details: dict[str, Any] | None) -> bool:
+    """Detay gerçekten okundu mu? (oturum düşerse uçlar giriş sayfası döndürür)"""
+    if not details:
+        return False
+    return bool(details["dr_form"]["customer"] or details["waybill"]["client"]
+                or details["dr_form"]["equipment"])
+
+
+def separate_repeated_ids(orders: Iterable[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Aynı sipariş farklı günlerde (parçalı teslimat) görünüyorsa kayıtlar ayrı tutulur."""
+    seen: set[str] = set()
+    result: list[dict[str, Any]] = []
+    for order in sort_orders(orders):
+        key = order["id"]
+        if key in seen:
+            order = {**order, "id": f"{key}_{order['date']}"}
+        seen.add(order["id"])
+        result.append(order)
+    return result
 
 
 def _feed_start(value: Any) -> str:
@@ -1859,10 +2015,67 @@ async def discover_calendar_urls(page: Any, settings: Settings) -> dict[str, str
     return discovered
 
 
+async def _get_text(context: Any, url: str, settings: Settings) -> str:
+    """Oturum çerezleriyle (tarayıcı bağlamı üzerinden) GET isteği atar."""
+    response = await context.request.get(
+        url, timeout=settings.nav_timeout, headers={"X-Requested-With": "XMLHttpRequest"})
+    if not response.ok:
+        raise DetailError(f"HTTP {response.status}")
+    return await response.text()
+
+
+async def _direct_order(context: Any, settings: Settings, spec: CalendarSpec,
+                        item: dict[str, str], gate: asyncio.Semaphore) -> tuple[dict[str, Any] | None, bool]:
+    """Tek siparişin D&R ve WayBill belgelerini çekip kayda çevirir; (kayıt, detay okundu mu)."""
+    query = "?" + urllib.parse.urlencode({"id": item["id"]})
+    details = None
+    async with gate:
+        try:
+            dr_html = await _get_text(context, settings.base_url + DR_FORM_PATH + query, settings)
+            waybill_html = await _get_text(context, settings.base_url + WAYBILL_PATH + query, settings)
+            details = parse_direct_documents(dr_html, waybill_html)
+        except Exception as exc:
+            log.warning("%s: bir siparişin belgeleri alınamadı (%s).", spec.name, type(exc).__name__)
+    readable = has_direct_content(details)
+    order = build_order(spec, item["date"], item["time"], item["title"], details if readable else None)
+    if order and not readable:
+        order = {**order, "id": item["id"]}
+    return order, readable
+
+
+async def scrape_calendar_direct(page: Any, settings: Settings, spec: CalendarSpec,
+                                 url: str) -> tuple[list[dict[str, Any]], int] | None:
+    """Takvimi tıklamadan, feed + belge uçlarıyla okur; feed tanınmazsa None döner."""
+    feed_url = feed_url_for(url, spec.kind, settings.today, settings.window_days)
+    try:
+        payload = json.loads(await _get_text(page.context, feed_url, settings))
+    except Exception as exc:
+        log.debug("%s: feed alınamadı (%s).", spec.name, type(exc).__name__)
+        return None
+    items = parse_feed_items(payload, settings.today, settings.window_days)
+    if items is None:
+        return None
+    unique = list({(item["id"], item["date"]): item for item in items}.values())
+    gate = asyncio.Semaphore(DIRECT_CONCURRENCY)
+    results = await asyncio.gather(
+        *(_direct_order(page.context, settings, spec, item, gate) for item in unique))
+    orders = [order for order, _readable in results if order]
+    errors = sum(1 for _order, readable in results if not readable)
+    return separate_repeated_ids(orders), errors
+
+
 async def scrape_calendar(page: Any, settings: Settings, spec: CalendarSpec,
                           urls: list[str]) -> tuple[list[dict[str, Any]] | None, int]:
     """Aday URL'leri sırayla dener; (siparişler | None, detay hata sayısı) döner."""
     for url in urls:
+        direct = await scrape_calendar_direct(page, settings, spec, url)
+        if direct is not None:
+            log.info("%s: doğrudan uçlardan pencere içinde %d kayıt.", spec.name, len(direct[0]))
+            return direct
+        if not settings.click_fallback:
+            log.info("%s: feed okunamadı, tıklama yolu kapalı: %s", spec.name,
+                     urllib.parse.urlsplit(url).path)
+            continue
         scraper = CalendarScraper(page, settings, spec)
         try:
             orders = await scraper.run(url)
