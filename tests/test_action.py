@@ -33,6 +33,16 @@ def test_invalid_requests_are_rejected(env, problem):
     assert problem in qv_action.read_request(env)
 
 
+def test_status_codes_match_quietvox_form_values():
+    # Canlı sitede doğrulandı: 2 = Delivered, 6 = Returned (5 Confirmed'dır, kullanılmamalı)
+    import scraper
+
+    assert qv_action.ACTIONS["delivered"].status_value == "2"
+    assert qv_action.ACTIONS["returned"].status_value == "6"
+    assert scraper.ORDER_STATUS_NAMES[2] == "delivered"
+    assert scraper.ORDER_STATUS_NAMES[5] == "confirmed"
+
+
 def test_valid_request_selects_calendar_and_status():
     spec, order_id, day = qv_action.read_request(
         {"QV_ACTION": "Returned", "QV_ORDER_ID": "2000000001", "QV_ORDER_DATE": "2026-11-14"})

@@ -53,7 +53,8 @@ class ActionSpec:
 
 
 ACTIONS = {
-    "delivered": ActionSpec("5", "delivered", "delivery", "/calendar/deliveryCalendar.html", "Delivered"),
+    # Form değerleri canlı sitede doğrulandı: 2 = Delivered, 6 = Returned (5 = Confirmed'dır!)
+    "delivered": ActionSpec("2", "delivered", "delivery", "/calendar/deliveryCalendar.html", "Delivered"),
     "returned": ActionSpec("6", "returned", "return", "/calendar/returnCalendar.html", "Returned"),
 }
 
@@ -169,6 +170,10 @@ async def set_status(page: Any, spec: ActionSpec) -> bool:
             "#Order_status option", "els => els.map(el => el.textContent.trim())")
         raise RuntimeError(f"bu sipariş şu an '{spec.label}' yapılamıyor (seçenekler: {', '.join(names)})")
     await page.select_option("#Order_status", spec.status_value)
+    # Güvenlik: seçilen seçeneğin görünen adı beklenen durumla aynı değilse hiçbir şey kaydetme
+    chosen = await page.eval_on_selector("#Order_status", "el => el.selectedOptions[0].textContent.trim()")
+    if chosen != spec.label:
+        raise RuntimeError(f"durum seçimi doğrulanamadı (seçilen: {chosen})")
     return True
 
 

@@ -167,10 +167,10 @@ DR_FORM_PATH = "/order/deliveryReturnFormView"
 DR_EQUIPMENT_TABLE_ID = "delivered-retruned"  # sitedeki yazım hatası aynen korunur
 DIRECT_CONCURRENCY = 4  # siteyi yormamak için aynı anda en fazla istek
 DIRECT_SKIPPED_ROWS = {"bag id", "clients"}  # ekipman tablosunda kalem olmayan satırlar
-# Takvim feed'indeki durum kodları (1, 2, 5, 6 canlı sitede renk/sayılarla doğrulandı;
-# 4 ve 7 düzenleme formundaki seçenek sırasından çıkarım)
-ORDER_STATUS_NAMES = {1: "reserved", 2: "confirmed", 4: "cancelled", 5: "delivered",
-                      6: "returned", 7: "lost"}
+# Sipariş durum kodları: canlı sitede her kod için gerçek siparişlerin düzenleme formundaki
+# seçili durumla karşılaştırılarak doğrulandı (feed ve form aynı kodları kullanır).
+ORDER_STATUS_NAMES = {1: "reserved", 2: "delivered", 3: "lost", 4: "cancelled", 5: "confirmed",
+                      6: "returned", 8: "duplicated"}
 # Belgeleri her çalıştırmada yeniden okunacak gün aralığı; dışındakiler önceki data.json'dan alınır
 REFRESH_PAST_DAYS = 1
 REFRESH_FUTURE_DAYS = 10
@@ -1385,7 +1385,7 @@ def build_reminder_text(deliveries: list[dict[str, Any]], returns: list[dict[str
 
 def _is_open(order: dict[str, Any], done_statuses: tuple[str, ...]) -> bool:
     """Sipariş hâlâ yapılacak mı? (iptal/kayıp ya da tamamlanmış olanlar sayılmaz)"""
-    return order.get("status", "") not in done_statuses + ("cancelled", "lost")
+    return order.get("status", "") not in done_statuses + ("cancelled", "lost", "duplicated")
 
 
 def build_today_text(deliveries: list[dict[str, Any]], returns: list[dict[str, Any]], today: date) -> str:

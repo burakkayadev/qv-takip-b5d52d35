@@ -88,7 +88,7 @@ def test_feed_items_keep_only_window_and_split_title_lines():
     items = scraper.parse_feed_items(payload, TODAY, 10)
 
     assert items == [{"id": "2000000001", "date": "2026-11-14", "time": "", "title": "Örnek Travel · Demo Otel",
-                      "status": "confirmed"}]
+                      "status": "delivered"}]
 
 
 def test_feed_items_reject_unknown_shape_but_accept_empty_list():
