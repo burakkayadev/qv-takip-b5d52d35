@@ -93,9 +93,10 @@ Artık ana ekrandaki **Quietvox** simgesi tam ekran uygulama gibi açılır.
   Son 31 gün ve önümüzdeki 31 gün görüntülenebilir.
 - Her kartta Quietvox'taki durum rozeti görünür (Onaylı, Teslim edildi, İade alındı…).
 - Kartta **📞 Ara** ve **WhatsApp** ile rehbere tek dokunuşla ulaşın.
-- **🖨️ WayBill (A5)** ve **🖨️ D&R Formu (A4)** ayrı ayrı yazdırılır; her birinin altında **Önizle** vardır.
-  Yazdırma ekranında ölçek **%100**, "üstbilgi/altbilgi" **kapalı** olmalıdır. Yazıcıda A5 kâğıt yoksa
-  WayBill A4 kâğıdın köşesine A5 boyutunda basılır.
+- **🖨️ WayBill (yarım A4)** ve **🖨️ D&R Formu (A4)** ayrı ayrı yazdırılır; her birinin altında **Önizle** vardır.
+  Yazdırma ekranında kâğıt **A4**, ölçek **%100**, "üstbilgi/altbilgi" **kapalı** olmalıdır. WayBill yatay ve sıkıştırılmış
+  olarak A4 kâğıdın üst yarısına basılır; kesikli çizgiden katlayın ya da kesin.
+- **Otel filtresi:** tarih çubuğunun altındaki otel adına dokununca yalnızca o otelin siparişleri görünür.
 
 ### Quietvox'a yazma (Hazırlandı / Teslim Alındı)
 - **Hazırlandı** (Verilecekler): Quietvox'ta durumu **Delivered** yapar, **Self Delivery** ve **Self Return** işaretler.

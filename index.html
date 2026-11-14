@@ -618,8 +618,30 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
   overflow: hidden;
   background: #fff;
 }
-/* A5: aynı düzen 0,7 oranında küçültülür (136mm × 194mm; A5 − 2×6mm kenar içine sığar) */
-.sheet-wrap.a5 { --paper: 0.7; }
+/* WayBill: A4 kâğıdın üst yarısına yatay basılır (194mm × 134mm).
+   Kutunun alt kenarındaki kesikli çizgi sayfanın tam ortasına denk gelir (katlama/kesme yeri). */
+.sheet-wrap.half { height: calc(140.5mm * var(--pv-scale)); border-bottom: 1px dashed #000; box-sizing: border-box; }
+.sheet-wrap.half .sheet { height: 134mm; }
+.wb-half .wb-head { padding: 2.5mm 4mm; align-items: center; }
+.wb-half .wb-head .wb-title { font-size: 15pt; }
+.wb-id { font-family: var(--font-head); font-weight: 800; font-size: 27pt; letter-spacing: 0.02em; white-space: nowrap; line-height: 1; }
+.wb-id small { font-family: var(--font-body); font-size: 9pt; font-weight: 700; letter-spacing: 0.04em; margin-right: 2.5mm; }
+.wb-cols {
+  flex: 1 1 auto;
+  min-height: 0;
+  border: 2px solid #000;
+  display: grid;
+  grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+}
+.wb-cols .wb-grid { border: 0; grid-template-columns: 24mm minmax(0, 1fr); }
+.wb-cols .wb-grid.left {
+  border-right: 1px solid #000;
+  grid-template-rows: minmax(0, 1.3fr) minmax(0, 0.95fr) minmax(0, 0.85fr) minmax(0, 0.6fr) minmax(0, 0.6fr);
+}
+.wb-cols .wb-grid.right { grid-template-rows: minmax(0, 1.2fr) minmax(0, 1fr); }
+.wb-half .wb-l { font-size: 8pt; padding: 1.5mm 2mm; }
+.wb-half .wb-v { font-size: 12.5pt; padding: 1.5mm 3mm; }
+.wb-half .wb-in .big { font-size: 1.4em; }
 .sheet {
   width: 194mm;
   height: 277mm;
@@ -872,7 +894,29 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
 .chip.st-confirmed { background: var(--info-bg); color: var(--info-ink); }
 .chip.st-delivered { background: #EADCF3; color: #4B1F63; }
 .chip.st-returned { background: var(--ok-bg); color: var(--ok); }
-.chip.st-cancelled, .chip.st-lost { background: var(--err-bg); color: var(--err-ink); }
+.chip.st-cancelled, .chip.st-lost, .chip.st-duplicated { background: var(--err-bg); color: var(--err-ink); }
+
+/* Otel filtresi: yatay kaydırılan düğmeler */
+.hotels { display: flex; gap: 8px; overflow-x: auto; padding: 2px 2px 6px; scrollbar-width: thin; -webkit-overflow-scrolling: touch; }
+.hotels:empty { display: none; }
+.hotel-chip {
+  flex: none;
+  min-height: 46px;
+  max-width: 78vw;
+  border-radius: 999px;
+  border: 2px solid var(--gold);
+  background: var(--glass-strong);
+  color: var(--navy);
+  font: inherit;
+  font-weight: 700;
+  font-size: 15px;
+  padding: 4px 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.hotel-chip[aria-pressed="true"] { background: var(--navy); border-color: var(--navy); color: var(--white); }
 .chip.pending { background: var(--warn-bg); color: var(--warn-ink); font-weight: 800; }
 
 .checks.single { grid-template-columns: 1fr; }
@@ -955,6 +999,7 @@ dialog.dlg::backdrop { background: rgba(27, 32, 48, 0.55); }
   /* Sayfalar arasında kır; son sayfadan sonra KIRMA (boş sayfa çıkmasın) */
   .sheet-wrap { break-after: page; page-break-after: always; }
   .sheet-wrap:last-child { break-after: auto; page-break-after: auto; }
+  .sheet-wrap.half { height: 140.5mm !important; }
   .glass { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; box-shadow: none !important; }
 }
 </style>
@@ -1024,6 +1069,9 @@ dialog.dlg::backdrop { background: rgba(27, 32, 48, 0.55); }
     <button type="button" id="date-next" aria-label="Sonraki gün">›</button>
   </div>
 
+  <!-- Otel filtresi: bir otele dokununca yalnızca o otelin siparişleri görünür -->
+  <div class="hotels" id="hotels" role="group" aria-label="Otel filtresi"></div>
+
   <!-- Sipariş listesi -->
   <div class="list" id="list" role="tabpanel" aria-labelledby="tab-deliveries" tabindex="-1">
     <div class="glass empty">Yükleniyor…</div>
@@ -1086,8 +1134,9 @@ dialog.dlg::backdrop { background: rgba(27, 32, 48, 0.55); }
   var CONSUMABLE_RE = /QV1\.38\b|battery\s+aa|QV1\.2S\b|earphone\s+3[.,]5\s*mm\s+new\s+style/i;
   var STATUS_LABELS = {
     reserved: 'Rezerve', confirmed: 'Onaylı', delivered: 'Teslim edildi',
-    returned: 'İade alındı', cancelled: 'İptal', lost: 'Kayıp'
+    returned: 'İade alındı', cancelled: 'İptal', lost: 'Kayıp', duplicated: 'Mükerrer'
   };
+  var INACTIVE_STATUSES = { cancelled: true, lost: true, duplicated: true }; // yapılacak iş sayılmaz
   var STATUS_RANK = { reserved: 1, confirmed: 2, delivered: 5, returned: 6 };
   var ACTIONS = {
     delivered: { field: 'prepared', label: 'Hazırlandı', quietvox: 'Delivered' },
@@ -1110,6 +1159,7 @@ dialog.dlg::backdrop { background: rgba(27, 32, 48, 0.55); }
     filter: 'all',
     filterChosen: false,   // kullanıcı filtreyi elle seçti mi
     date: '',              // filter === 'date' iken seçili gün (YYYY-AA-GG)
+    hotel: '',             // seçili otel adı (boş = tüm oteller)
     pending: {},           // { "delivery:2000…": { action, ts } }
     token: '',             // GitHub erişim anahtarı
     marks: {},             // { "delivery:QV-1": { prepared, done, ts } }
@@ -1400,9 +1450,32 @@ dialog.dlg::backdrop { background: rgba(27, 32, 48, 0.55); }
     return ordersOf(tab).filter(function (o) { return o.date >= state.today; });
   }
 
-  function filteredOrdersFor(tab) {
+  // Tarih filtresinden geçen siparişler (otel filtresi uygulanmadan)
+  function dateOrdersFor(tab) {
     var day = viewDate();
     return day ? ordersOn(tab, day) : upcomingOrders(tab);
+  }
+
+  function hotelOf(order) {
+    return order.location_name || order.title || 'Adı belirtilmemiş';
+  }
+
+  function filteredOrdersFor(tab) {
+    var orders = dateOrdersFor(tab);
+    if (!state.hotel) return orders;
+    return orders.filter(function (o) { return hotelOf(o) === state.hotel; });
+  }
+
+  // Görünümdeki oteller: [ad, sipariş sayısı], çoktan aza
+  function hotelCounts(tab) {
+    var counts = {};
+    dateOrdersFor(tab).forEach(function (o) {
+      var name = hotelOf(o);
+      counts[name] = (counts[name] || 0) + 1;
+    });
+    return Object.keys(counts)
+      .map(function (name) { return [name, counts[name]]; })
+      .sort(function (a, b) { return b[1] - a[1] || a[0].localeCompare(b[0], 'tr'); });
   }
 
   function filteredOrders() {
@@ -1556,13 +1629,32 @@ dialog.dlg::backdrop { background: rgba(27, 32, 48, 0.55); }
     $('#date-input').value = viewDate() || state.today;
   }
 
+  function hotelChip(label, name, count) {
+    var chip = el('button', 'hotel-chip', label + ' (' + count + ')');
+    chip.type = 'button';
+    chip.setAttribute('aria-pressed', state.hotel === name ? 'true' : 'false');
+    chip.addEventListener('click', function () {
+      setState({ hotel: state.hotel === name ? '' : name });
+      render(true);
+    });
+    return chip;
+  }
+
+  function renderHotels() {
+    var hotels = hotelCounts(state.tab);
+    var box = $('#hotels');
+    if (hotels.length < 2 && !state.hotel) { box.replaceChildren(); return; }
+    var total = hotels.reduce(function (sum, pair) { return sum + pair[1]; }, 0);
+    var chips = [hotelChip('Tüm oteller', '', total)];
+    hotels.forEach(function (pair) { chips.push(hotelChip(pair[0], pair[0], pair[1])); });
+    box.replaceChildren.apply(box, chips);
+  }
+
   // Bugünün paneli: kaç iş var, kaçı Quietvox'ta tamamlanmış
   function renderDayPanel() {
     Object.keys(TAB_INFO).forEach(function (tab) {
       // İptal ve kayıp siparişler yapılacak iş sayılmaz
-      var orders = ordersOn(tab, state.today).filter(function (o) {
-        return o.status !== 'cancelled' && o.status !== 'lost';
-      });
+      var orders = ordersOn(tab, state.today).filter(function (o) { return !INACTIVE_STATUSES[o.status]; });
       var done = orders.filter(function (o) { return isDone(o, tab); }).length;
       $('#tile-n-' + tab).textContent = orders.length;
       $('#tile-s-' + tab).textContent = orders.length ? done + ' tamam · ' + (orders.length - done) + ' bekliyor' : 'iş yok';
@@ -1790,10 +1882,10 @@ dialog.dlg::backdrop { background: rgba(27, 32, 48, 0.55); }
         late ? '⚠️ Quietvox\'ta değişmedi' : '⏳ Quietvox\'a gönderildi'));
     }
 
-    // Etiketler ayrı ayrı yazdırılır: WayBill A5, D&R Formu A4
+    // Etiketler ayrı ayrı yazdırılır: WayBill yarım A4 (yatay), D&R Formu tam A4
     var printRow = el('div', 'print-row');
     var printGrid = el('div', 'print-grid');
-    [['waybill', '🖨️ WayBill (A5)'], ['form', '🖨️ D&R Formu (A4)']].forEach(function (pair) {
+    [['waybill', '🖨️ WayBill (yarım A4)'], ['form', '🖨️ D&R Formu (A4)']].forEach(function (pair) {
       var col = el('div', 'print-col');
       var printBtn = el('button', 'btn btn-print', pair[1]);
       printBtn.type = 'button';
@@ -1870,13 +1962,18 @@ dialog.dlg::backdrop { background: rgba(27, 32, 48, 0.55); }
     if (state.data && !state.filterChosen) {
       setState({ filter: defaultFilter(state.tab) });
     }
+    // Seçili otel bu görünümde yoksa filtreyi kaldır (boş liste görünmesin)
+    if (state.hotel && state.data && !hotelCounts(state.tab).some(function (pair) { return pair[0] === state.hotel; })) {
+      setState({ hotel: '' });
+    }
     prunePending();
     renderUpdated();
     renderBanners();
     renderTabsAndFilters();
     renderDayPanel();
+    renderHotels();
 
-    var signature = JSON.stringify([state.data, state.tab, state.filter, state.date, state.today,
+    var signature = JSON.stringify([state.data, state.tab, state.filter, state.date, state.hotel, state.today,
       state.loadError, state.pending, state.token !== '']);
     if (force || signature !== lastSignature) {
       lastSignature = signature;
@@ -1919,28 +2016,35 @@ dialog.dlg::backdrop { background: rgba(27, 32, 48, 0.55); }
 
   function buildWaybillSheet(order) {
     var w = order.waybill;
-    var wrap = el('div', 'sheet-wrap p1');
-    var sheet = el('div', 'sheet');
+    // Yarım A4 (yatay): solda kişi ve tur bilgileri, sağda adresler; QV ID başlıkta büyük
+    var wrap = el('div', 'sheet-wrap half');
+    var sheet = el('div', 'sheet wb-half');
     sheet.lang = 'en'; // İngilizce etiketler: büyük harfte "İ" yerine "I" kullanılsın
 
     var head = el('div', 'wb-head');
-    append(head, el('div', 'wb-title', 'QUIETVOX — WAYBILL'), el('div', 'wb-kind', order.cruise ? 'CRUISE' : ''));
+    var idBox = el('div', 'wb-id');
+    append(idBox, el('small', '', order.cruise ? 'CRUISE · QV ID' : 'QV ID'),
+      document.createTextNode(orDash(w.qv_id || order.id)));
+    append(head, el('div', 'wb-title', 'QUIETVOX — WAYBILL'), idBox);
 
-    var grid = el('div', 'wb-grid');
     var manager = el('div', 'wb-in');
     append(manager, el('div', 'big', orDash(w.tour_manager_name)));
     if (w.tour_manager_phone) append(manager, el('div', 'tel', w.tour_manager_phone));
 
-    wbRow(grid, 'Tour Manager', manager);
-    wbRow(grid, 'Tour Reference', wbText(w.tour_reference || order.dr_form.reference));
-    wbRow(grid, 'QV ID', wbText(w.qv_id || order.id, 'huge'));
-    wbRow(grid, 'Client', wbText(clientName(order)));
-    wbRow(grid, 'Delivery Location', wbAddress(w.delivery_location || order.location_name, w.delivery_phone));
-    wbRow(grid, 'Return Location', wbAddress(w.return_location, ''));
-    wbRow(grid, 'Tour Start', wbText(shortDate(w.tour_start)));
-    wbRow(grid, 'Tour End', wbText(shortDate(w.tour_end)), true);
+    var left = el('div', 'wb-grid left');
+    wbRow(left, 'Tour Manager', manager);
+    wbRow(left, 'Client', wbText(clientName(order)));
+    wbRow(left, 'Tour Reference', wbText(w.tour_reference || order.dr_form.reference));
+    wbRow(left, 'Tour Start', wbText(shortDate(w.tour_start)));
+    wbRow(left, 'Tour End', wbText(shortDate(w.tour_end)), true);
 
-    append(sheet, head, grid);
+    var right = el('div', 'wb-grid right');
+    wbRow(right, 'Delivery Location', wbAddress(w.delivery_location || order.location_name, w.delivery_phone));
+    wbRow(right, 'Return Location', wbAddress(w.return_location, ''), true);
+
+    var cols = el('div', 'wb-cols');
+    append(cols, left, right);
+    append(sheet, head, cols);
     return append(wrap, sheet);
   }
 
@@ -2139,9 +2243,8 @@ dialog.dlg::backdrop { background: rgba(27, 32, 48, 0.55); }
       style.id = 'page-size';
       document.head.appendChild(style);
     }
-    style.textContent = which === 'waybill'
-      ? '@page { size: A5; margin: 6mm; }'
-      : '@page { size: A4; margin: 8mm; }';
+    // İki çıktı da A4 kâğıda basılır; WayBill kâğıdın üst yarısını kullanır
+    style.textContent = '@page { size: A4; margin: 8mm; }';
   }
 
   function fillPrintArea(order, which) {
@@ -2149,7 +2252,6 @@ dialog.dlg::backdrop { background: rgba(27, 32, 48, 0.55); }
     var sheet;
     if (which === 'waybill') {
       sheet = buildWaybillSheet(order);
-      sheet.classList.add('a5');
     } else {
       sheet = buildFormSheet(order);
     }
@@ -2176,8 +2278,7 @@ dialog.dlg::backdrop { background: rgba(27, 32, 48, 0.55); }
     var sheet = document.querySelector('#print-sheets .sheet');
     if (!sheet) return;
     var available = window.innerWidth - 24;
-    var paper = sheet.parentElement.classList.contains('a5') ? 0.7 : 1;
-    var scale = Math.min(1, available / (sheet.offsetWidth * paper));
+    var scale = Math.min(1, available / sheet.offsetWidth);
     $('#print-root').style.setProperty('--pv-scale', String(scale));
   }
 
@@ -2190,7 +2291,7 @@ dialog.dlg::backdrop { background: rgba(27, 32, 48, 0.55); }
     root.setAttribute('role', 'dialog');
     root.setAttribute('aria-modal', 'true');
     root.setAttribute('aria-labelledby', 'pv-title');
-    $('#pv-title').textContent = (which === 'waybill' ? 'WayBill (A5) · ' : 'D&R Formu (A4) · ') +
+    $('#pv-title').textContent = (which === 'waybill' ? 'WayBill (yarım A4) · ' : 'D&R Formu (A4) · ') +
       (order.location_name || order.id || '');
     updatePreviewScale();
     root.scrollTop = 0;
