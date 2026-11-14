@@ -49,7 +49,10 @@ DR_HTML = """
   <table id="delivered-retruned" class="delivery-return-form-table big-table">
     <tr><th>Equipment</th><th>Delivered by quietvox</th><th>Received by Customer</th>
         <th>Returned by Customer</th><th>Received by quietvox</th></tr>
-    <tr><td># Bag ID</td><td></td><td>YesNo</td><td>YesNo</td><td></td></tr>
+    <tr><td># Bag ID</td><td></td>
+        <td><table class="bag-ids"><tr><td>Yes</td><td></td><td>No</td><td></td></tr></table></td>
+        <td><table class="bag-ids"><tr><td>Yes</td><td></td><td>No</td><td></td></tr></table></td>
+        <td></td></tr>
     <tr><td># Clients</td><td>32</td><td></td><td></td><td></td></tr>
     <tr><td># QV9 TX EU(QV9.2)</td><td>2</td><td></td><td>2</td><td></td></tr>
     <tr><td># QV9 RX EU(QV9.1)</td><td>32</td><td></td><td>32</td><td></td></tr>

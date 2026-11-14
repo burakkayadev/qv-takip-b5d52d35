@@ -886,7 +886,9 @@ def _dr_equipment(table: Any) -> tuple[list[dict[str, str]], str, str]:
     """D&R ekipman tablosu: (kalemler, teslim ağırlığı, iade ağırlığı)."""
     items: list[dict[str, str]] = []
     delivered_weight = returned_weight = ""
-    for row in table.find_all("tr")[1:]:
+    # Yalnızca bu tablonun kendi satırları: "Bag ID" hücrelerindeki iç tablolar kalem değildir
+    own_rows = [row for row in table.find_all("tr") if row.find_parent("table") is table]
+    for row in own_rows[1:]:
         cells = [_cell_text(cell) for cell in row.find_all(["td", "th"], recursive=False)]
         if len(cells) < 2:
             continue
