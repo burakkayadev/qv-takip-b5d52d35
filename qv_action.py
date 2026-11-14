@@ -147,7 +147,10 @@ async def open_edit_dialog(page: Any, settings: scraper.Settings, spec: ActionSp
         raise RuntimeError(result["error"])
     if result.get("count") != 1:
         raise RuntimeError(f"takvimde tek etkinlik bekleniyordu, {result.get('count')} bulundu")
-    await page.click("#extended_calendar .fc-event a.edit-order")
+    # Düzenle simgesi yalnızca fare etkinliğin üzerindeyken görünür; bu yüzden görünürlük
+    # beklenmez, sitenin kendi tıklama işleyicisi doğrudan tetiklenir.
+    await page.hover("#extended_calendar .fc-event")
+    await page.evaluate("document.querySelector('#extended_calendar .fc-event a.edit-order').click()")
     await page.wait_for_selector("#dialog_large.in #order-form #Order_status", timeout=settings.nav_timeout)
     heading = await page.inner_text("#dialog_large")
     if not re.search(rf"Update Order\s+{order_id}\b", heading):
@@ -158,6 +161,7 @@ async def set_status(page: Any, spec: ActionSpec) -> bool:
     """Durumu seçer; zaten o durumdaysa False döner. Seçenek yoksa hata verir."""
     current = await page.eval_on_selector("#Order_status", "el => el.value")
     options = await page.eval_on_selector_all("#Order_status option", "els => els.map(el => el.value)")
+    log.info("Mevcut durum kodu: %s; seçilebilir kodlar: %s", current, ", ".join(options))
     if current == spec.status_value:
         return False
     if spec.status_value not in options:
