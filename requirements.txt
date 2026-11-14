@@ -1,0 +1,5 @@
+# Quietvox kazıyıcısının çalışma zamanı bağımlılıkları
+playwright>=1.49,<2
+beautifulsoup4>=4.12,<5
+# zoneinfo için saat dilimi verisi (Windows'ta şart, Linux'ta zararsız)
+tzdata>=2024.1

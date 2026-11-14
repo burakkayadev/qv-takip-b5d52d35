@@ -1,0 +1,2006 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Quietvox Sipariş Takip</title>
+<meta name="description" content="Quietvox teslimat ve iade siparişlerini takip etme ve etiket yazdırma uygulaması.">
+<meta name="theme-color" content="#1B2030">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Quietvox">
+<meta name="format-detection" content="telephone=no">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="./icons/apple-touch-icon.png">
+
+<!-- Fontlar: Google Fonts. Yüklenemezse (çevrimdışı) aşağıdaki sistem fontu yedekleri devreye girer. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" crossorigin="anonymous" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&display=swap">
+
+<style>
+/* ==========================================================================
+   1) TASARIM DEĞİŞKENLERİ
+   ========================================================================== */
+:root {
+  /* Palet */
+  --cream: #F4F1EA;        /* krem arka plan */
+  --navy: #1B2030;         /* koyu lacivert: metin, başlık, üst çubuk */
+  --gold: #9C7A4B;         /* altın/bronz vurgu: çizgi, kenarlık, büyük öğeler */
+  --gold-deep: #6F5126;    /* küçük metin ve dolu butonlar için koyu altın (AA kontrast) */
+  --ink-soft: #454B5C;     /* ikincil metin (krem üzerinde AA) */
+  --white: #FFFFFF;
+
+  /* Cam (glassmorphism) kart */
+  --glass: rgba(255, 255, 255, 0.64);
+  --glass-strong: rgba(255, 255, 255, 0.86);
+  --glass-border: rgba(255, 255, 255, 0.8);
+  --hairline: rgba(27, 32, 48, 0.14);
+  --shadow: 0 8px 28px rgba(27, 32, 48, 0.10);
+  --blur: 14px;
+
+  /* Durum renkleri (metin/zemin çiftleri AA kontrastlıdır) */
+  --ok: #1B6337;
+  --ok-bg: #DDF0E2;
+  --warn-bg: #FFF0BF;
+  --warn-ink: #513B00;
+  --err-bg: #FAD8D4;
+  --err-ink: #7A1410;
+  --info-bg: #E2E7F4;
+  --info-ink: #1B2030;
+  --whatsapp: #0B6B5F;
+
+  /* Ölçüler */
+  --radius: 20px;
+  --radius-sm: 14px;
+  --tap: 54px;             /* en küçük dokunma yüksekliği (≥48px) */
+  --gap: 14px;
+
+  /* Yazı tipleri (sistem yedekli) */
+  --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-head: 'Montserrat', 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* ==========================================================================
+   2) TEMEL
+   ========================================================================== */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  font-family: var(--font-body);
+  font-size: 18px;
+  line-height: 1.45;
+  color: var(--navy);
+  /* Krem zemin + cam efektinin görünmesi için çok hafif altın/lacivert lekeler */
+  background-color: var(--cream);
+  background-image:
+    radial-gradient(60vmax 40vmax at 100% 0%, rgba(156, 122, 75, 0.22), transparent 60%),
+    radial-gradient(50vmax 40vmax at 0% 45%, rgba(27, 32, 48, 0.08), transparent 60%),
+    radial-gradient(60vmax 45vmax at 90% 100%, rgba(156, 122, 75, 0.16), transparent 60%);
+  background-attachment: fixed;
+  -webkit-tap-highlight-color: transparent;
+}
+
+h1, h2, h3 { font-family: var(--font-head); margin: 0; line-height: 1.2; }
+p { margin: 0; }
+button { font: inherit; color: inherit; }
+a { color: inherit; }
+
+/* Klavye odağı her yerde belirgin */
+:focus-visible {
+  outline: 3px solid var(--gold-deep);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+
+/* Cam kart ortak görünümü */
+.glass {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  -webkit-backdrop-filter: blur(var(--blur)) saturate(140%);
+  backdrop-filter: blur(var(--blur)) saturate(140%);
+}
+
+/* ==========================================================================
+   3) ÜST ÇUBUK
+   ========================================================================== */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--navy);
+  color: var(--white);
+  padding: calc(10px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) 10px calc(16px + env(safe-area-inset-left));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  box-shadow: 0 4px 18px rgba(27, 32, 48, 0.25);
+}
+.brand { min-width: 0; }
+.brand h1 {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+.brand h1 span { color: #D9B981; } /* lacivert üzerinde açık altın (AA) */
+.brand .updated {
+  font-size: 15px;
+  color: #D5D8E2;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.btn-refresh {
+  flex: none;
+  min-height: 48px;
+  min-width: 48px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 2px solid #D9B981;
+  background: transparent;
+  color: var(--white);
+  font-weight: 700;
+  font-size: 17px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.btn-refresh:active { background: rgba(255, 255, 255, 0.12); }
+.btn-refresh .spin { display: inline-block; }
+.btn-refresh[aria-busy="true"] .spin { animation: spin 0.9s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ==========================================================================
+   4) ANA YERLEŞİM
+   ========================================================================== */
+main {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 14px calc(14px + env(safe-area-inset-right)) calc(40px + env(safe-area-inset-bottom)) calc(14px + env(safe-area-inset-left));
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+}
+
+/* Uyarı bantları */
+.banners { display: flex; flex-direction: column; gap: 8px; }
+.banners:empty { display: none; }
+.banner {
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  font-size: 17px;
+  font-weight: 600;
+  border: 1px solid transparent;
+}
+.banner.info  { background: var(--info-bg); color: var(--info-ink); border-color: rgba(27, 32, 48, 0.2); }
+.banner.warn  { background: var(--warn-bg); color: var(--warn-ink); border-color: rgba(81, 59, 0, 0.3); }
+.banner.error { background: var(--err-bg);  color: var(--err-ink);  border-color: rgba(122, 20, 16, 0.35); }
+
+/* ==========================================================================
+   5) YARIN HATIRLATICISI
+   ========================================================================== */
+.reminder {
+  padding: 16px;
+  border: 2px solid var(--gold);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.82), rgba(255, 248, 232, 0.72));
+}
+.reminder h2 {
+  font-size: 21px;
+  font-weight: 800;
+}
+.reminder .rem-date {
+  color: var(--gold-deep);
+  font-weight: 700;
+  font-size: 16px;
+  margin-top: 2px;
+}
+.rem-rows { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+.rem-row {
+  width: 100%;
+  min-height: 64px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--hairline);
+  background: var(--glass-strong);
+  cursor: pointer;
+}
+.rem-row:active { background: var(--white); }
+.rem-count {
+  min-width: 52px;
+  height: 52px;
+  padding: 0 8px;
+  border-radius: 14px;
+  background: var(--navy);
+  color: var(--white);
+  font-family: var(--font-head);
+  font-weight: 800;
+  font-size: 26px;
+  display: grid;
+  place-items: center;
+}
+.rem-row.zero .rem-count { background: #5B6072; }
+.rem-text { min-width: 0; }
+.rem-title { font-weight: 700; font-size: 18px; }
+.rem-hotels { font-size: 16px; color: var(--ink-soft); overflow-wrap: anywhere; }
+.rem-arrow { font-size: 24px; color: var(--gold-deep); font-weight: 700; }
+
+/* ==========================================================================
+   6) SEKMELER ve FİLTRELER
+   ========================================================================== */
+.tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 6px;
+}
+.tab {
+  min-height: 60px;
+  border-radius: 15px;
+  border: 0;
+  background: transparent;
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 17px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 6px 8px;
+  color: var(--navy);
+  white-space: nowrap;
+}
+.tab[aria-selected="true"] {
+  background: var(--navy);
+  color: var(--white);
+  box-shadow: 0 4px 12px rgba(27, 32, 48, 0.3);
+}
+.badge {
+  min-width: 28px;
+  height: 28px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: var(--gold-deep);
+  color: var(--white);
+  font-size: 15px;
+  font-weight: 700;
+  display: inline-grid;
+  place-items: center;
+  font-family: var(--font-body);
+}
+.tab[aria-selected="true"] .badge { background: #D9B981; color: var(--navy); }
+
+.filters {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.filter {
+  min-height: var(--tap);
+  border-radius: 999px;
+  border: 2px solid var(--navy);
+  background: var(--glass-strong);
+  font-weight: 700;
+  font-size: 17px;
+  cursor: pointer;
+  padding: 4px 6px;
+}
+.filter[aria-pressed="true"] {
+  background: var(--gold-deep);
+  border-color: var(--gold-deep);
+  color: var(--white);
+}
+
+/* ==========================================================================
+   7) LİSTE ve SİPARİŞ KARTI
+   ========================================================================== */
+.list { display: flex; flex-direction: column; gap: var(--gap); }
+.group-title {
+  font-size: 19px;
+  font-weight: 800;
+  padding: 6px 4px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.group-title::after {
+  content: "";
+  flex: 1;
+  height: 2px;
+  background: var(--gold);
+  opacity: 0.6;
+  border-radius: 2px;
+}
+.empty {
+  padding: 28px 18px;
+  text-align: center;
+  font-size: 19px;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+.empty .btn { margin-top: 14px; }
+
+.card { padding: 16px; position: relative; }
+.card.done { background: rgba(255, 255, 255, 0.4); }
+.card.done .card-main { opacity: 0.62; }
+.card.done .hotel { text-decoration: line-through; text-decoration-thickness: 2px; }
+.done-flag {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: var(--ok-bg);
+  color: var(--ok);
+  font-weight: 800;
+  font-size: 17px;
+}
+.card.done .done-flag { display: flex; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 3px 12px;
+  border-radius: 999px;
+  font-size: 16px;
+  font-weight: 700;
+  background: rgba(27, 32, 48, 0.08);
+  color: var(--navy);
+}
+.chip.cruise { background: var(--navy); color: var(--white); }
+.chip.qv { background: transparent; border: 1.5px solid var(--gold); color: var(--gold-deep); }
+
+.hotel {
+  font-size: 25px;
+  font-weight: 800;
+  margin-top: 10px;
+  overflow-wrap: anywhere;
+}
+.meta {
+  margin: 10px 0 0;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 12px;
+  font-size: 18px;
+}
+.meta dt { color: var(--ink-soft); font-weight: 500; }
+.meta dd { margin: 0; font-weight: 700; overflow-wrap: anywhere; }
+
+/* Butonlar */
+.btn {
+  min-height: var(--tap);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  border: 2px solid transparent;
+  font-weight: 700;
+  font-size: 18px;
+  text-decoration: none;
+  cursor: pointer;
+  text-align: center;
+  white-space: nowrap;
+}
+.btn:active { transform: translateY(1px); }
+.btn-call { background: var(--navy); color: var(--white); }
+.btn-wa { background: var(--whatsapp); color: var(--white); }
+.btn-ghost { background: var(--glass-strong); border-color: var(--navy); color: var(--navy); }
+.btn-print { background: var(--gold-deep); color: var(--white); width: 100%; min-height: 60px; font-size: 19px; }
+.btn-link {
+  background: transparent;
+  border: 0;
+  color: var(--navy);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  min-height: 48px;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+.actions.single { grid-template-columns: 1fr; }
+.no-phone {
+  margin-top: 14px;
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  border: 1.5px dashed rgba(27, 32, 48, 0.45);
+  color: var(--ink-soft);
+  font-size: 17px;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* Onay işaretleri */
+.checks { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+.check {
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  border: 2px solid var(--navy);
+  background: var(--glass-strong);
+  font-weight: 700;
+  font-size: 17px;
+  line-height: 1.2;
+  cursor: pointer;
+  text-align: left;
+}
+.check .box {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  border: 2.5px solid var(--navy);
+  background: var(--white);
+  display: grid;
+  place-items: center;
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1;
+  color: transparent;
+}
+.check[aria-pressed="true"] { background: var(--ok-bg); border-color: var(--ok); color: var(--ok); }
+.check[aria-pressed="true"] .box { background: var(--ok); border-color: var(--ok); color: var(--white); }
+
+.print-row { margin-top: 14px; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+
+/* Açılır ayrıntılar */
+details.more { margin-top: 6px; border-top: 1px solid var(--hairline); }
+details.more > summary {
+  list-style: none;
+  min-height: var(--tap);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-weight: 700;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px 2px;
+}
+details.more > summary::-webkit-details-marker { display: none; }
+details.more > summary::after { content: "▾"; font-size: 22px; color: var(--gold-deep); }
+details.more[open] > summary::after { content: "▴"; }
+.more-body { padding: 4px 2px 6px; display: flex; flex-direction: column; gap: 14px; }
+.field-label {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--gold-deep);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.field-value { font-size: 18px; font-weight: 600; white-space: pre-line; overflow-wrap: anywhere; }
+.field-links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.field-links .btn { min-height: 48px; font-size: 17px; }
+.pairs { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.equip { width: 100%; border-collapse: collapse; font-size: 17px; margin-top: 4px; }
+.equip th, .equip td { padding: 8px 6px; text-align: left; border-bottom: 1px solid var(--hairline); }
+.equip th { font-size: 15px; color: var(--ink-soft); font-weight: 700; }
+.equip td.num, .equip th.num { text-align: right; white-space: nowrap; }
+.equip tfoot td { font-weight: 800; border-bottom: 0; }
+
+/* Kısa bilgi balonu (ekran okuyucuya da duyurulur) */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(18px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  background: var(--navy);
+  color: var(--white);
+  padding: 12px 18px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 17px;
+  box-shadow: 0 8px 24px rgba(27, 32, 48, 0.35);
+  z-index: 60;
+  max-width: calc(100vw - 32px);
+  text-align: center;
+}
+.toast:empty { display: none; }
+
+/* Telefon genişliği: sekme yazısı tek satıra sığsın */
+@media (max-width: 420px) {
+  .tab { font-size: 15px; gap: 6px; padding: 6px 4px; }
+  .badge { min-width: 26px; height: 26px; padding: 0 6px; }
+}
+
+/* Dar ekranlar */
+@media (max-width: 359px) {
+  body { font-size: 17px; }
+  .checks, .actions { grid-template-columns: 1fr; }
+  .hotel { font-size: 22px; }
+  .tab { font-size: 13px; }
+  .btn-print { font-size: 16px; }
+}
+
+/* Hareket azaltma tercihi */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .btn:active { transform: none; }
+}
+
+/* ==========================================================================
+   8) YAZDIRMA ALANI (ekranda: gizli ya da önizleme)
+   Sayfa kutuları hem ekranda (önizleme) hem kâğıtta aynı mm ölçüleriyle çizilir.
+   ========================================================================== */
+#print-root {
+  /* Ekranda görünmez ama ölçüm yapılabilsin diye düzen (layout) içinde tutulur */
+  position: fixed;
+  left: -20000px;
+  top: 0;
+  visibility: hidden;
+  --pv-scale: 1;
+}
+.pv-bar { display: none; }
+
+/* Önizleme kipi */
+body.pv-open { overflow: hidden; }
+body.pv-open #print-root {
+  left: 0; right: 0; top: 0; bottom: 0;
+  visibility: visible;
+  z-index: 100;
+  background: #4B5060;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 0 0 calc(24px + env(safe-area-inset-bottom));
+}
+body.pv-open .pv-bar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--navy);
+  color: var(--white);
+  padding: calc(10px + env(safe-area-inset-top)) calc(12px + env(safe-area-inset-right)) 10px calc(12px + env(safe-area-inset-left));
+}
+.pv-bar h2 { font-size: 18px; font-weight: 700; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pv-bar .pv-btns { flex: none; }
+.pv-bar .pv-btns { display: flex; gap: 8px; }
+.pv-bar .btn { min-height: 48px; font-size: 17px; }
+.pv-bar .btn-close { background: transparent; border-color: var(--white); color: var(--white); }
+.pv-bar .btn-go { background: #D9B981; color: var(--navy); }
+body.pv-open #print-sheets {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 12px 0;
+}
+body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
+
+/* Sayfa kutusu: A4 (297mm) − 2×8mm kenar = 281mm; güvenli pay ile 277mm */
+.sheet-wrap {
+  width: calc(194mm * var(--pv-scale));
+  height: calc(277mm * var(--pv-scale));
+  overflow: hidden;
+  background: #fff;
+}
+.sheet {
+  width: 194mm;
+  height: 277mm;
+  box-sizing: border-box;
+  overflow: hidden;
+  background: #fff;
+  color: #000;
+  font-family: var(--font-body);
+  line-height: 1.2;
+  display: flex;
+  flex-direction: column;
+  transform: scale(var(--pv-scale));
+  transform-origin: 0 0;
+}
+.sheet * { box-sizing: border-box; }
+
+/* ---- 1. Sayfa: WayBill ---- */
+.wb-head {
+  flex: none;
+  border: 2px solid #000;
+  border-bottom: 0;
+  padding: 4mm 5mm;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 6mm;
+}
+.wb-head .wb-title { font-family: var(--font-head); font-weight: 800; font-size: 24pt; letter-spacing: 0.02em; }
+.wb-head .wb-kind { font-size: 12pt; font-weight: 700; white-space: nowrap; }
+.wb-grid {
+  flex: 1 1 auto;
+  min-height: 0;
+  border: 2px solid #000;
+  display: grid;
+  grid-template-columns: 48mm minmax(0, 1fr);
+  /* Satır yükseklikleri sayfayı dolduracak şekilde oranlıdır */
+  grid-template-rows:
+    minmax(0, 1.3fr)   /* Tour Manager */
+    minmax(0, 0.8fr)   /* Tour Reference */
+    minmax(0, 1.2fr)   /* QV ID */
+    minmax(0, 0.9fr)   /* Client */
+    minmax(0, 2.6fr)   /* Delivery Location */
+    minmax(0, 1.9fr)   /* Return Location */
+    minmax(0, 0.65fr)  /* Tour Start */
+    minmax(0, 0.65fr); /* Tour End */
+}
+.wb-l, .wb-v {
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #000;
+}
+.wb-l {
+  padding: 2mm 3mm;
+  border-right: 1px solid #000;
+  font-size: 13pt;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.wb-v { padding: 2mm 4mm; font-size: 20pt; font-weight: 600; }
+.wb-grid > .last { border-bottom: 0; }
+.wb-in { width: 100%; overflow-wrap: anywhere; }
+.wb-in .big { font-size: 1.45em; font-weight: 800; font-family: var(--font-head); line-height: 1.1; }
+.wb-in .huge { font-size: 2.1em; font-weight: 800; font-family: var(--font-head); line-height: 1.05; letter-spacing: 0.02em; }
+.wb-in .line { margin-top: 0.12em; }
+.wb-in .tel { margin-top: 0.3em; font-weight: 700; }
+
+/* ---- 2. Sayfa: Delivery and Return Form ---- */
+.dr-head {
+  flex: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 6mm;
+  border-bottom: 2px solid #000;
+  padding-bottom: 3mm;
+}
+.dr-head .dr-brand { font-size: 11pt; font-weight: 700; letter-spacing: 0.18em; }
+.dr-head .dr-title { font-family: var(--font-head); font-size: 23pt; font-weight: 800; margin-top: 1.5mm; line-height: 1.1; }
+.dr-head .dr-sub { font-size: 12pt; font-weight: 600; margin-top: 2.5mm; overflow-wrap: anywhere; }
+.dr-head .dr-left { min-width: 0; }
+.dr-qr { flex: none; width: 40mm; text-align: center; }
+.dr-qr canvas {
+  display: block;
+  width: 32mm;
+  height: 32mm;
+  margin: 0 auto;
+  image-rendering: pixelated;
+}
+.dr-qr .dr-qr-id { font-size: 9.5pt; font-weight: 700; margin-top: 1.2mm; overflow-wrap: anywhere; }
+.dr-qr .dr-qr-fallback {
+  border: 2px solid #000;
+  min-height: 32mm;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2mm;
+  font-size: 15pt;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+  word-break: break-all;
+}
+
+.dr-info {
+  flex: none;
+  margin-top: 4mm;
+  border: 2px solid #000;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+.dr-cell { padding: 1.4mm 2.5mm; border-bottom: 1px solid #000; min-width: 0; overflow: hidden; }
+.dr-cell:nth-child(odd) { border-right: 1px solid #000; }
+.dr-cell:nth-last-child(-n+2) { border-bottom: 0; }
+.dr-cell .k { font-size: 7.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+/* Uzun değerler kesilmez, alt satıra kayar; ekipman tablosu kalan alana göre küçülür.
+   Aşırı uzun metin sayfayı bozmasın diye en fazla 3 satır basılır. */
+.dr-cell .v {
+  font-size: 11.5pt;
+  font-weight: 700;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+}
+
+.dr-eq-wrap { flex: 1 1 auto; min-height: 0; overflow: hidden; margin-top: 4mm; }
+/* Tablo kutusu: çok uzun listelerde yan yana iki tablo olur */
+.dr-eq-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 3mm;
+  font-size: 12pt; /* satır sayısına göre JS ile küçültülür */
+}
+.dr-eq {
+  flex: 1 1 0;
+  min-width: 0;
+  width: 100%;
+  border-collapse: collapse;
+  border: 2px solid #000;
+  font-size: inherit;
+  table-layout: fixed;
+}
+.dr-eq th, .dr-eq td { border: 1px solid #000; padding: 0.36em 0.5em; text-align: left; overflow: hidden; overflow-wrap: anywhere; }
+.dr-eq-box.dense th, .dr-eq-box.dense td { padding: 0.2em 0.5em; }
+.dr-eq-box.two th .tick { display: none; }
+.dr-eq-box.two .c-chk { width: 19%; }
+.dr-eq-box.two th { letter-spacing: 0; }
+.dr-eq th { font-weight: 800; text-transform: uppercase; font-size: 0.82em; letter-spacing: 0.03em; }
+.dr-eq .c-qty, .dr-eq .c-wgt { width: 15%; text-align: right; white-space: nowrap; }
+.dr-eq .c-chk { width: 16%; text-align: center; white-space: nowrap; }
+.dr-eq tfoot td { font-weight: 800; }
+.tick {
+  display: inline-block;
+  width: 1.2em;
+  height: 1.2em;
+  border: 1.5px solid #000;
+  vertical-align: middle;
+}
+.dr-eq th .tick { width: 1em; height: 1em; margin-left: 0.3em; }
+
+.dr-sign {
+  flex: none;
+  margin-top: 4mm;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3mm;
+}
+.sig {
+  border: 1.5px solid #000;
+  height: 21mm;
+  padding: 1.5mm 2.5mm 2mm;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+}
+.sig .sig-t { font-size: 9.5pt; font-weight: 800; }
+.sig .sig-lines { display: flex; gap: 4mm; font-size: 8.5pt; font-weight: 600; }
+.sig .sig-lines span { flex: 1; border-bottom: 1px solid #000; padding-bottom: 0.6mm; white-space: nowrap; }
+.sig .sig-lines span:first-child { flex: 0 0 34%; }
+
+/* ==========================================================================
+   9) KÂĞIT ÇIKTISI
+   ========================================================================== */
+@page { size: A4; margin: 8mm; }
+
+@media print {
+  html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    background: #fff !important;
+  }
+  /* Yazdırma alanı doluysa uygulama arayüzünü tümüyle gizle */
+  body.has-print > *:not(#print-root) { display: none !important; }
+  body.has-print #print-root {
+    position: static !important;
+    visibility: visible !important;
+    display: block !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: none !important;
+    overflow: visible !important;
+    --pv-scale: 1 !important;
+  }
+  .pv-bar { display: none !important; }
+  #print-sheets { display: block !important; padding: 0 !important; margin: 0 !important; }
+  .sheet-wrap {
+    width: 194mm !important;
+    height: 277mm !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    overflow: hidden !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .sheet { transform: none !important; }
+  /* 1. sayfadan sonra kır; 2. sayfadan sonra KIRMA (boş 3. sayfa çıkmasın) */
+  .sheet-wrap.p1 { break-after: page; page-break-after: always; }
+  .sheet-wrap.p2 { break-after: auto; page-break-after: auto; }
+  .glass { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; box-shadow: none !important; }
+}
+</style>
+</head>
+<body>
+
+<!-- ÜST ÇUBUK -->
+<header class="topbar">
+  <div class="brand">
+    <h1>Quiet<span>vox</span></h1>
+    <div class="updated" id="updated">Son güncelleme: —</div>
+  </div>
+  <button type="button" class="btn-refresh" id="btn-refresh" aria-label="Verileri yenile">
+    <span class="spin" aria-hidden="true">↻</span><span>Yenile</span>
+  </button>
+</header>
+
+<main id="app">
+  <!-- Uyarı bantları (örnek veri, oturum hatası, eski veri, çevrimdışı) -->
+  <div class="banners" id="banners" role="status" aria-live="polite"></div>
+
+  <!-- Yarın hatırlatıcısı -->
+  <section class="glass reminder" id="reminder" aria-labelledby="rem-h">
+    <h2 id="rem-h">🔔 Yarın Hatırlatıcısı</h2>
+    <p class="rem-date" id="rem-date"></p>
+    <div class="rem-rows" id="rem-rows"></div>
+  </section>
+
+  <!-- Ana sekmeler -->
+  <div class="glass tabs" role="tablist" aria-label="Sipariş türü">
+    <button type="button" class="tab" role="tab" id="tab-deliveries" data-tab="deliveries" aria-controls="list" aria-selected="true">
+      <span>📦 Verilecekler</span><span class="badge" id="badge-deliveries">0</span>
+    </button>
+    <button type="button" class="tab" role="tab" id="tab-returns" data-tab="returns" aria-controls="list" aria-selected="false" tabindex="-1">
+      <span>🔄 Alınacaklar</span><span class="badge" id="badge-returns">0</span>
+    </button>
+  </div>
+
+  <!-- Hızlı filtreler -->
+  <div class="filters" role="group" aria-label="Tarih filtresi">
+    <button type="button" class="filter" data-filter="today" aria-pressed="false">Bugün</button>
+    <button type="button" class="filter" data-filter="tomorrow" aria-pressed="false">Yarın</button>
+    <button type="button" class="filter" data-filter="all" aria-pressed="false">Tümü</button>
+  </div>
+
+  <!-- Sipariş listesi -->
+  <div class="list" id="list" role="tabpanel" aria-labelledby="tab-deliveries" tabindex="-1">
+    <div class="glass empty">Yükleniyor…</div>
+  </div>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<noscript>
+  <p style="padding:20px;font-size:20px">Bu uygulamanın çalışması için tarayıcıda JavaScript açık olmalıdır.</p>
+</noscript>
+
+<!-- YAZDIRMA ALANI: ekranda gizli; "Önizleme" ile görünür; yazdırırken yalnızca bu alan basılır -->
+<div id="print-root" aria-hidden="true">
+  <div class="pv-bar">
+    <h2 id="pv-title">Önizleme</h2>
+    <div class="pv-btns">
+      <button type="button" class="btn btn-close" id="pv-close">Kapat</button>
+      <button type="button" class="btn btn-go" id="pv-print">🖨️ Yazdır</button>
+    </div>
+  </div>
+  <div id="print-sheets"></div>
+</div>
+
+<!-- QR kod kütüphanesi (yüklenemezse yazdırmada kimlik büyük metin olarak basılır) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" integrity="sha512-CNgIRecGo7nphbeZ04Sc13ka07paqdeTu0WR1IM4kNcpmBAUSHSQX0FslNhTDadL4O5SAGapGt4FodqL8My0mA==" crossorigin="anonymous" referrerpolicy="no-referrer" defer></script>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ========================================================================
+     SABİTLER
+     ======================================================================== */
+  var TZ = 'Europe/Istanbul';                 // Tarihler her zaman İstanbul saatine göre
+  var DATA_URL = './data.json';               // Göreli yol: GitHub Pages alt yolunda çalışır
+  var LS_MARKS = 'qv.marks.v1';               // Onay işaretleri
+  var LS_CACHE = 'qv.cache.v1';               // Son başarılı veri (çevrimdışı için)
+  var REFRESH_MS = 5 * 60 * 1000;             // Otomatik yenileme aralığı
+  var MIN_REFRESH_GAP_MS = 20 * 1000;         // Sekme görünür olunca en az bu kadar arayla yenile
+  var STALE_MS = 6 * 60 * 60 * 1000;          // Veri bu süreden eskiyse uyar
+  var MARK_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 günden eski işaretleri sil
+  var EMPTY = '—';
+  var ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+  var PT_TO_PX = 96 / 72;
+  var WAYBILL_MIN_PT = 8;                     // WayBill hücresinde en küçük yazı
+  var EQUIP_MIN_PT = 5;                       // Ekipman tablosunda en küçük yazı
+  var EQUIP_DENSE_ROWS = 12;                  // Bu sayıdan çok satırda sıkı düzene geç
+  var EQUIP_TWO_COL_ROWS = 28;                // Bu sayıdan çok satırda yan yana iki tablo
+  var QR_PIXELS = 384;
+
+  var TAB_INFO = {
+    deliveries: { kind: 'delivery', finalLabel: 'Teslim Edildi', noun: 'verilecek' },
+    returns:    { kind: 'return',   finalLabel: 'Teslim Alındı', noun: 'alınacak' }
+  };
+
+  /* ========================================================================
+     DURUM (state) — her değişiklikte yeni nesne üretilir
+     ======================================================================== */
+  var state = {
+    data: null,            // normalleştirilmiş veri
+    offline: false,        // son yükleme ağdan yapılamadı mı
+    loadError: false,      // hiç veri yok ve yüklenemedi
+    tab: 'deliveries',
+    filter: 'all',
+    filterChosen: false,   // kullanıcı filtreyi elle seçti mi
+    marks: {},             // { "delivery:QV-1": { prepared, done, ts } }
+    today: '',
+    tomorrow: ''
+  };
+  var openDetails = {};    // açık ayrıntı panelleri (yeniden çizimde korunur)
+  var lastSignature = '';  // gereksiz yeniden çizimi önlemek için
+  var loading = false;
+  var lastLoadAt = 0;
+  var toastTimer = 0;
+  var previewReturnFocus = null;
+
+  function setState(patch) {
+    state = Object.assign({}, state, patch);
+  }
+
+  /* ========================================================================
+     KÜÇÜK YARDIMCILAR
+     ======================================================================== */
+  function $(sel) { return document.querySelector(sel); }
+
+  // Her değeri güvenli, kırpılmış metne çevirir (null/undefined → '')
+  function str(v) {
+    if (v === null || v === undefined) return '';
+    return String(v).trim();
+  }
+
+  function orDash(v) {
+    var s = str(v);
+    return s === '' ? EMPTY : s;
+  }
+
+  // Güvenli öğe oluşturucu: veri yalnızca textContent ile yazılır (XSS yok)
+  function el(tag, className, text) {
+    var node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text !== undefined && text !== null) node.textContent = String(text);
+    return node;
+  }
+
+  function append(parent) {
+    for (var i = 1; i < arguments.length; i++) {
+      if (arguments[i]) parent.appendChild(arguments[i]);
+    }
+    return parent;
+  }
+
+  /* ---- Tarih ---- */
+  // İstanbul'a göre bugünün tarihi (YYYY-AA-GG); cihaz saat diliminden bağımsız
+  function istanbulDate(now) {
+    var parts = new Intl.DateTimeFormat('en-CA', {
+      timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit'
+    }).formatToParts(now);
+    var map = {};
+    parts.forEach(function (p) { map[p.type] = p.value; });
+    return map.year + '-' + map.month + '-' + map.day;
+  }
+
+  function addDays(dateStr, days) {
+    var p = dateStr.split('-').map(Number);
+    return new Date(Date.UTC(p[0], p[1] - 1, p[2] + days)).toISOString().slice(0, 10);
+  }
+
+  // "16 Kasım Pazartesi"
+  function longDate(dateStr) {
+    if (!ISO_DATE.test(dateStr)) return dateStr || 'Tarihi belli değil';
+    return new Intl.DateTimeFormat('tr-TR', {
+      day: 'numeric', month: 'long', weekday: 'long', timeZone: 'UTC'
+    }).format(new Date(dateStr + 'T12:00:00Z'));
+  }
+
+  // "14.11.2026" (ISO değilse olduğu gibi)
+  function shortDate(dateStr) {
+    var s = str(dateStr);
+    if (!ISO_DATE.test(s)) return s;
+    return s.slice(8, 10) + '.' + s.slice(5, 7) + '.' + s.slice(0, 4);
+  }
+
+  function dayLabel(dateStr) {
+    if (dateStr === state.today) return 'Bugün · ' + longDate(dateStr);
+    if (dateStr === state.tomorrow) return 'Yarın · ' + longDate(dateStr);
+    return longDate(dateStr);
+  }
+
+  /* ---- Telefon ---- */
+  // Kurallar: rakam dışını at; baştaki 00'ı at; 0+10 hane → 90...; 5 ile başlayan 10 hane → 90...
+  function normalizePhone(raw) {
+    var d = str(raw).replace(/\D/g, '');
+    if (d.indexOf('00') === 0) d = d.slice(2);
+    if (d.length === 11 && d.charAt(0) === '0') d = '90' + d.slice(1);
+    else if (d.length === 10 && d.charAt(0) === '5') d = '90' + d;
+    return d.length >= 7 ? d : '';
+  }
+
+  function mapsUrl(address) {
+    var q = str(address).replace(/\s*\n\s*/g, ', ');
+    return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(q);
+  }
+
+  /* ---- localStorage (her erişim try/catch içinde) ---- */
+  function lsRead(key) {
+    try {
+      var raw = window.localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : null;
+    } catch (err) {
+      return null;
+    }
+  }
+
+  function lsWrite(key, value) {
+    try {
+      window.localStorage.setItem(key, JSON.stringify(value));
+      return true;
+    } catch (err) {
+      return false;
+    }
+  }
+
+  // Kayıtlı işaretleri oku; 30 günden eskileri ayıkla
+  function loadMarks() {
+    var saved = lsRead(LS_MARKS);
+    if (!saved || typeof saved !== 'object') return {};
+    var now = Date.now();
+    var fresh = {};
+    var changed = false;
+    Object.keys(saved).forEach(function (key) {
+      var m = saved[key];
+      if (m && typeof m === 'object' && typeof m.ts === 'number' && now - m.ts < MARK_TTL_MS) {
+        fresh[key] = { prepared: m.prepared === true, done: m.done === true, ts: m.ts };
+      } else {
+        changed = true;
+      }
+    });
+    if (changed) lsWrite(LS_MARKS, fresh);
+    return fresh;
+  }
+
+  function showToast(message) {
+    var t = $('#toast');
+    t.textContent = message;
+    window.clearTimeout(toastTimer);
+    toastTimer = window.setTimeout(function () { t.textContent = ''; }, 2600);
+  }
+
+  /* ========================================================================
+     VERİ: normalleştirme ve yükleme
+     Şema data.json ile birebir aynıdır; eksik alanlar boş metne çevrilir.
+     ======================================================================== */
+  function normalizeEquipment(list) {
+    if (!Array.isArray(list)) return [];
+    return list.filter(function (e) { return e && typeof e === 'object'; }).map(function (e) {
+      return { item: str(e.item), quantity: str(e.quantity), weight: str(e.weight) };
+    });
+  }
+
+  function normalizeOrder(o) {
+    var w = (o && typeof o.waybill === 'object' && o.waybill) || {};
+    var f = (o && typeof o.dr_form === 'object' && o.dr_form) || {};
+    return {
+      id: str(o.id),
+      type: str(o.type),
+      date: str(o.date),
+      time: str(o.time),
+      cruise: o.cruise === true,
+      title: str(o.title),
+      location_name: str(o.location_name),
+      waybill: {
+        tour_manager_name: str(w.tour_manager_name),
+        tour_manager_phone: str(w.tour_manager_phone),
+        tour_reference: str(w.tour_reference),
+        qv_id: str(w.qv_id),
+        client: str(w.client),
+        delivery_location: str(w.delivery_location),
+        delivery_phone: str(w.delivery_phone),
+        return_location: str(w.return_location),
+        tour_start: str(w.tour_start),
+        tour_end: str(w.tour_end)
+      },
+      dr_form: {
+        customer: str(f.customer),
+        reference: str(f.reference),
+        qv_booking_id: str(f.qv_booking_id),
+        clients: str(f.clients),
+        groups: str(f.groups),
+        instruction_language: str(f.instruction_language),
+        service_start_date: str(f.service_start_date),
+        delivery_station: str(f.delivery_station),
+        qr_content: str(f.qr_content),
+        equipment: normalizeEquipment(f.equipment),
+        total_weight: str(f.total_weight)
+      }
+    };
+  }
+
+  function byDateTime(a, b) {
+    if (a.date !== b.date) return a.date < b.date ? -1 : 1;
+    var ta = a.time || '99:99';
+    var tb = b.time || '99:99';
+    if (ta !== tb) return ta < tb ? -1 : 1;
+    return 0;
+  }
+
+  function normalizeList(list) {
+    if (!Array.isArray(list)) return [];
+    return list
+      .filter(function (o) { return o && typeof o === 'object'; })
+      .map(normalizeOrder)
+      .sort(byDateTime);
+  }
+
+  function normalizeData(raw) {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
+      throw new Error('Beklenmeyen veri biçimi');
+    }
+    return {
+      demo: raw.demo === true,
+      status: str(raw.status) || 'ok',
+      status_message: str(raw.status_message),
+      generated_at: str(raw.generated_at),
+      deliveries: normalizeList(raw.deliveries),
+      returns: normalizeList(raw.returns)
+    };
+  }
+
+  function loadData(manual) {
+    if (loading) return Promise.resolve();
+    loading = true;
+    lastLoadAt = Date.now();
+    var btn = $('#btn-refresh');
+    btn.setAttribute('aria-busy', 'true');
+
+    return fetch(DATA_URL + '?t=' + Date.now(), { cache: 'no-store' })
+      .then(function (res) {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+      })
+      .then(function (raw) {
+        var data = normalizeData(raw);
+        lsWrite(LS_CACHE, { savedAt: Date.now(), raw: raw });
+        setState({ data: data, offline: false, loadError: false });
+        if (manual) showToast('Veriler güncellendi');
+      })
+      .catch(function () {
+        // Ağ yok ya da veri bozuk: son başarılı veriyi kullan
+        var data = state.data;
+        if (!data) {
+          var cached = lsRead(LS_CACHE);
+          try {
+            data = cached && cached.raw ? normalizeData(cached.raw) : null;
+          } catch (err) {
+            data = null;
+          }
+        }
+        setState({ data: data, offline: true, loadError: !data });
+        if (manual) showToast(data ? 'Bağlantı yok: kayıtlı veri gösteriliyor' : 'Veri yüklenemedi');
+      })
+      .then(function () {
+        loading = false;
+        btn.setAttribute('aria-busy', 'false');
+        render();
+      });
+  }
+
+  /* ========================================================================
+     SEÇİCİLER
+     ======================================================================== */
+  function ordersOf(tab) {
+    return state.data ? state.data[tab] : [];
+  }
+
+  function ordersOn(tab, dateStr) {
+    return ordersOf(tab).filter(function (o) { return o.date === dateStr; });
+  }
+
+  function filteredOrders() {
+    if (state.filter === 'today') return ordersOn(state.tab, state.today);
+    if (state.filter === 'tomorrow') return ordersOn(state.tab, state.tomorrow);
+    return ordersOf(state.tab);
+  }
+
+  // Varsayılan filtre: bugün kayıt varsa "Bugün", yoksa "Tümü"
+  function defaultFilter(tab) {
+    return ordersOn(tab, state.today).length > 0 ? 'today' : 'all';
+  }
+
+  // İşaret anahtarı: tür + id (id yoksa tarih + başlık)
+  function orderKey(order, kind) {
+    var id = order.id || order.waybill.qv_id || (order.date + '|' + order.title + '|' + order.location_name);
+    return kind + ':' + id;
+  }
+
+  function markOf(key) {
+    return state.marks[key] || { prepared: false, done: false, ts: 0 };
+  }
+
+  function clientName(order) {
+    return order.waybill.client || order.dr_form.customer;
+  }
+
+  /* ========================================================================
+     ÇİZİM: üst bilgi, bantlar, hatırlatıcı, sekmeler
+     ======================================================================== */
+  function renderUpdated() {
+    var node = $('#updated');
+    var gen = state.data ? new Date(state.data.generated_at) : null;
+    if (!gen || isNaN(gen.getTime())) {
+      node.textContent = 'Son güncelleme: ' + EMPTY;
+      return;
+    }
+    var time = new Intl.DateTimeFormat('tr-TR', { timeZone: TZ, hour: '2-digit', minute: '2-digit', hour12: false }).format(gen);
+    var sameDay = istanbulDate(gen) === state.today;
+    var day = sameDay ? '' : new Intl.DateTimeFormat('tr-TR', { timeZone: TZ, day: 'numeric', month: 'short' }).format(gen) + ' ';
+    node.textContent = 'Son güncelleme: ' + day + time;
+  }
+
+  function renderBanners() {
+    var box = $('#banners');
+    var items = [];
+    var d = state.data;
+
+    if (state.loadError) {
+      items.push(['error', 'Veri yüklenemedi. İnternet bağlantınızı kontrol edip "Yenile"ye basın.']);
+    }
+    if (d) {
+      if (d.status === 'login_failed') {
+        items.push(['error', 'Quietvox oturumu açılamadı, şifreyi kontrol edin.']);
+      } else if (d.status === 'partial') {
+        items.push(['warn', 'Veriler eksik olabilir' + (d.status_message ? ': ' + d.status_message : '.')]);
+      } else if (d.status !== 'ok' && d.status_message) {
+        items.push(['warn', d.status_message]);
+      }
+      var gen = new Date(d.generated_at);
+      if (!isNaN(gen.getTime()) && Date.now() - gen.getTime() > STALE_MS) {
+        var hours = Math.floor((Date.now() - gen.getTime()) / 3600000);
+        items.push(['warn', 'Veri eski olabilir (yaklaşık ' + hours + ' saat önce güncellendi).']);
+      }
+      if (state.offline) {
+        items.push(['info', 'Çevrimdışı: en son kaydedilen veri gösteriliyor.']);
+      }
+      if (d.demo) {
+        items.push(['info', 'Örnek veri gösteriliyor.']);
+      }
+    }
+
+    box.replaceChildren.apply(box, items.map(function (it) {
+      return el('div', 'banner ' + it[0], it[1]);
+    }));
+  }
+
+  function hotelSummary(orders) {
+    var names = [];
+    orders.forEach(function (o) {
+      var n = o.location_name || o.title || EMPTY;
+      if (names.indexOf(n) === -1) names.push(n);
+    });
+    return names.join(', ');
+  }
+
+  function reminderRow(tab, icon, label) {
+    var orders = ordersOn(tab, state.tomorrow);
+    var row = el('button', 'rem-row' + (orders.length === 0 ? ' zero' : ''));
+    row.type = 'button';
+    var text = el('span', 'rem-text');
+    append(text,
+      el('span', 'rem-title', icon + ' ' + label),
+      el('br'),
+      el('span', 'rem-hotels', orders.length ? hotelSummary(orders) : 'Yarın için kayıt yok')
+    );
+    append(row, el('span', 'rem-count', orders.length), text, el('span', 'rem-arrow', '›'));
+    row.setAttribute('aria-label', 'Yarın ' + label.toLowerCase() + ': ' + orders.length + ' sipariş. Listeyi aç.');
+    row.addEventListener('click', function () {
+      setState({ tab: tab, filter: 'tomorrow', filterChosen: true });
+      render(true);
+      $('#list').scrollIntoView({ block: 'start', behavior: reducedMotion() ? 'auto' : 'smooth' });
+    });
+    return row;
+  }
+
+  function reducedMotion() {
+    return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+
+  function renderReminder() {
+    $('#rem-date').textContent = longDate(state.tomorrow);
+    $('#rem-rows').replaceChildren(
+      reminderRow('deliveries', '📦', 'Verilecek'),
+      reminderRow('returns', '🔄', 'Alınacak')
+    );
+  }
+
+  function renderTabsAndFilters() {
+    Object.keys(TAB_INFO).forEach(function (tab) {
+      var btn = $('#tab-' + tab);
+      var selected = state.tab === tab;
+      btn.setAttribute('aria-selected', selected ? 'true' : 'false');
+      btn.tabIndex = selected ? 0 : -1;
+      $('#badge-' + tab).textContent = ordersOf(tab).length;
+    });
+    $('#list').setAttribute('aria-labelledby', 'tab-' + state.tab);
+
+    var counts = {
+      today: ordersOn(state.tab, state.today).length,
+      tomorrow: ordersOn(state.tab, state.tomorrow).length,
+      all: ordersOf(state.tab).length
+    };
+    var labels = { today: 'Bugün', tomorrow: 'Yarın', all: 'Tümü' };
+    document.querySelectorAll('.filter').forEach(function (btn) {
+      var f = btn.getAttribute('data-filter');
+      btn.setAttribute('aria-pressed', state.filter === f ? 'true' : 'false');
+      btn.textContent = labels[f] + ' (' + counts[f] + ')';
+    });
+  }
+
+  /* ========================================================================
+     ÇİZİM: sipariş kartı
+     ======================================================================== */
+  function linkButton(className, text, href, newTab) {
+    var a = el('a', 'btn ' + className, text);
+    a.href = href;
+    if (newTab) {
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+    }
+    return a;
+  }
+
+  function cardChips(order) {
+    var chips = el('div', 'chips');
+    var when = shortDate(order.date) || 'Tarih yok';
+    append(chips, el('span', 'chip', '📅 ' + when + (order.time ? ' · ' + order.time : '')));
+    if (order.cruise) append(chips, el('span', 'chip cruise', '🚢 Cruise'));
+    var qv = order.waybill.qv_id || order.id;
+    if (qv) append(chips, el('span', 'chip qv', 'QV ID: ' + qv));
+    return chips;
+  }
+
+  function cardMeta(order) {
+    var dl = el('dl', 'meta');
+    [
+      ['Müşteri', clientName(order)],
+      ['Kişi sayısı', order.dr_form.clients],
+      ['Rehber', order.waybill.tour_manager_name]
+    ].forEach(function (pair) {
+      append(dl, el('dt', '', pair[0]), el('dd', '', orDash(pair[1])));
+    });
+    return dl;
+  }
+
+  // "Ara" ve "WhatsApp": yalnızca rehber telefonu varsa
+  function cardPhoneActions(order) {
+    var phone = normalizePhone(order.waybill.tour_manager_phone);
+    if (!phone) return el('div', 'no-phone', 'Rehber telefonu yok');
+    var who = order.waybill.tour_manager_name || 'rehber';
+    var box = el('div', 'actions');
+    var call = linkButton('btn-call', '📞 Ara', 'tel:+' + phone, false);
+    call.setAttribute('aria-label', 'Rehberi ara: ' + who);
+    var wa = linkButton('btn-wa', '💬 WhatsApp', 'https://wa.me/' + phone, true);
+    wa.setAttribute('aria-label', 'WhatsApp ile yaz: ' + who);
+    return append(box, call, wa);
+  }
+
+  function checkButton(key, field, label, card) {
+    var btn = el('button', 'check');
+    btn.type = 'button';
+    btn.setAttribute('aria-pressed', markOf(key)[field] ? 'true' : 'false');
+    append(btn, el('span', 'box', '✓'), el('span', '', label));
+    btn.querySelector('.box').setAttribute('aria-hidden', 'true');
+    btn.addEventListener('click', function () {
+      var current = markOf(key);
+      var next = Object.assign({}, current, { ts: Date.now() });
+      next[field] = !current[field];
+      var marks = Object.assign({}, state.marks);
+      if (!next.prepared && !next.done) delete marks[key];
+      else marks[key] = next;
+      setState({ marks: marks });
+      var saved = lsWrite(LS_MARKS, marks);
+      // Kartı yerinde güncelle (odak kaybolmasın)
+      btn.setAttribute('aria-pressed', next[field] ? 'true' : 'false');
+      card.classList.toggle('done', next.done === true);
+      if (!saved) showToast('İşaret bu cihaza kaydedilemedi');
+    });
+    return btn;
+  }
+
+  function addressField(label, address, phone) {
+    var box = el('div');
+    append(box, el('div', 'field-label', label), el('div', 'field-value', orDash(address)));
+    var links = el('div', 'field-links');
+    if (str(address)) append(links, linkButton('btn-ghost', '🗺️ Harita', mapsUrl(address), true));
+    var tel = normalizePhone(phone);
+    if (tel) append(links, linkButton('btn-ghost', '📞 Oteli Ara', 'tel:+' + tel, false));
+    if (links.childNodes.length) append(box, links);
+    return box;
+  }
+
+  function simpleField(label, value) {
+    var box = el('div');
+    return append(box, el('div', 'field-label', label), el('div', 'field-value', orDash(value)));
+  }
+
+  function equipmentTable(form) {
+    var box = el('div');
+    append(box, el('div', 'field-label', 'Ekipman'));
+    if (form.equipment.length === 0) {
+      return append(box, el('div', 'field-value', 'Ekipman listesi yok'));
+    }
+    var table = el('table', 'equip');
+    var head = el('tr');
+    append(head, el('th', '', 'Kalem'), el('th', 'num', 'Adet'), el('th', 'num', 'Ağırlık'));
+    head.childNodes.forEach(function (th) { th.scope = 'col'; });
+    var thead = append(el('thead'), head);
+    var tbody = el('tbody');
+    form.equipment.forEach(function (e) {
+      append(tbody, append(el('tr'),
+        el('td', '', orDash(e.item)), el('td', 'num', orDash(e.quantity)), el('td', 'num', orDash(e.weight))));
+    });
+    var foot = el('tr');
+    var footLabel = el('td', '', 'Toplam ağırlık');
+    footLabel.colSpan = 2;
+    append(foot, footLabel, el('td', 'num', orDash(form.total_weight)));
+    append(table, thead, tbody, append(el('tfoot'), foot));
+    return append(box, table);
+  }
+
+  function cardDetails(order, key) {
+    var w = order.waybill;
+    var f = order.dr_form;
+    var details = el('details', 'more');
+    details.open = openDetails[key] === true;
+    details.addEventListener('toggle', function () {
+      if (details.open) openDetails[key] = true;
+      else delete openDetails[key];
+    });
+    append(details, el('summary', '', 'Ayrıntılar'));
+
+    var body = el('div', 'more-body');
+    var dates = el('div', 'pairs');
+    append(dates, simpleField('Tur başlangıç', shortDate(w.tour_start)), simpleField('Tur bitiş', shortDate(w.tour_end)));
+    var refs = el('div', 'pairs');
+    append(refs, simpleField('Referans', w.tour_reference || f.reference), simpleField('Grup sayısı', f.groups));
+    var extra = el('div', 'pairs');
+    append(extra, simpleField('Anlatım dili', f.instruction_language), simpleField('Rehber telefonu', w.tour_manager_phone));
+
+    append(body,
+      addressField('Teslimat adresi', w.delivery_location, w.delivery_phone),
+      addressField('İade adresi', w.return_location, ''),
+      dates, refs, extra,
+      order.title ? simpleField('Kayıt başlığı', order.title) : null,
+      equipmentTable(f)
+    );
+    return append(details, body);
+  }
+
+  function buildCard(order, tab) {
+    var info = TAB_INFO[tab];
+    var key = orderKey(order, info.kind);
+    var w = order.waybill;
+    var card = el('article', 'glass card' + (markOf(key).done ? ' done' : ''));
+    var hotelName = order.location_name || order.title || 'Adı belirtilmemiş';
+
+    var main = el('div', 'card-main');
+    append(main, cardChips(order), el('h3', 'hotel', hotelName), cardMeta(order));
+
+    // Ana adres: teslimatta teslimat yeri, iadede iade yeri
+    var address = tab === 'returns'
+      ? (w.return_location || w.delivery_location || order.location_name)
+      : (w.delivery_location || w.return_location || order.location_name);
+    var hotelTel = normalizePhone(w.delivery_phone);
+    var quick = el('div', 'actions' + (address && hotelTel ? '' : ' single'));
+    if (address) {
+      var map = linkButton('btn-ghost', '🗺️ Harita', mapsUrl(address), true);
+      map.setAttribute('aria-label', 'Haritada aç: ' + hotelName);
+      append(quick, map);
+    }
+    if (hotelTel) append(quick, linkButton('btn-ghost', '📞 Oteli Ara', 'tel:+' + hotelTel, false));
+
+    var checks = el('div', 'checks');
+    append(checks,
+      checkButton(key, 'prepared', 'Hazırlandı', card),
+      checkButton(key, 'done', info.finalLabel, card));
+
+    var printRow = el('div', 'print-row');
+    var printBtn = el('button', 'btn btn-print', '🖨️ Etiketleri Yazdır (2 Sayfa)');
+    printBtn.type = 'button';
+    printBtn.addEventListener('click', function () { printOrder(order); });
+    var previewBtn = el('button', 'btn btn-link', 'Önizleme (yazdırmadan önce bak)');
+    previewBtn.type = 'button';
+    previewBtn.addEventListener('click', function () { openPreview(order, previewBtn); });
+    append(printRow, printBtn, previewBtn);
+
+    return append(card,
+      el('div', 'done-flag', '✓ ' + info.finalLabel),
+      main,
+      cardPhoneActions(order),
+      quick.childNodes.length ? quick : null,
+      checks,
+      printRow,
+      cardDetails(order, key)
+    );
+  }
+
+  function emptyMessage() {
+    var noun = TAB_INFO[state.tab].noun;
+    if (state.filter === 'today') return 'Bugün ' + noun + ' sipariş yok.';
+    if (state.filter === 'tomorrow') return 'Yarın ' + noun + ' sipariş yok.';
+    return 'Önümüzdeki günlerde ' + noun + ' sipariş görünmüyor.';
+  }
+
+  function renderList() {
+    var list = $('#list');
+    if (!state.data) {
+      list.replaceChildren(el('div', 'glass empty', state.loadError ? 'Gösterilecek veri yok.' : 'Yükleniyor…'));
+      return;
+    }
+    var orders = filteredOrders();
+    if (orders.length === 0) {
+      var empty = el('div', 'glass empty');
+      append(empty, el('p', '', emptyMessage()));
+      if (state.filter !== 'all' && ordersOf(state.tab).length > 0) {
+        var all = el('button', 'btn btn-ghost', 'Tümünü göster');
+        all.type = 'button';
+        all.addEventListener('click', function () {
+          setState({ filter: 'all', filterChosen: true });
+          render(true);
+        });
+        append(empty, all);
+      }
+      list.replaceChildren(empty);
+      return;
+    }
+
+    // Tarihe göre gruplandır (liste zaten tarih sıralı)
+    var nodes = [];
+    var currentDate = null;
+    orders.forEach(function (order) {
+      if (order.date !== currentDate) {
+        currentDate = order.date;
+        nodes.push(el('h2', 'group-title', dayLabel(order.date)));
+      }
+      nodes.push(buildCard(order, state.tab));
+    });
+    list.replaceChildren.apply(list, nodes);
+  }
+
+  // Tüm ekranı çiz. force=false iken hiçbir şey değişmediyse listeye dokunma
+  // (otomatik yenilemede açık ayrıntılar ve kaydırma konumu bozulmasın).
+  function render(force) {
+    var today = istanbulDate(new Date());
+    if (today !== state.today) {
+      setState({ today: today, tomorrow: addDays(today, 1) });
+    }
+    if (state.data && !state.filterChosen) {
+      setState({ filter: defaultFilter(state.tab) });
+    }
+    renderUpdated();
+    renderBanners();
+    renderTabsAndFilters();
+
+    var signature = JSON.stringify([state.data, state.tab, state.filter, state.today, state.loadError]);
+    if (force || signature !== lastSignature) {
+      lastSignature = signature;
+      renderReminder();
+      renderList();
+    }
+  }
+
+  /* ========================================================================
+     YAZDIRMA
+     Her sayfa sabit boyutlu bir kutudur (194mm × 277mm). İçerik sığmazsa
+     yazı küçültülür; böylece çıktı her zaman TAM 2 sayfa olur.
+     ======================================================================== */
+  function wbRow(grid, label, inner, isLast) {
+    var l = el('div', 'wb-l' + (isLast ? ' last' : ''), label);
+    var v = el('div', 'wb-v' + (isLast ? ' last' : ''));
+    append(v, inner);
+    append(grid, l, v);
+  }
+
+  function wbText(text, className) {
+    var inner = el('div', 'wb-in');
+    append(inner, el('div', className || '', orDash(text)));
+    return inner;
+  }
+
+  // Çok satırlı adres: ilk satır (otel adı) büyük, altında diğer satırlar ve telefon
+  function wbAddress(address, phone) {
+    var inner = el('div', 'wb-in');
+    var lines = str(address).split('\n').map(str).filter(Boolean);
+    if (lines.length === 0) {
+      append(inner, el('div', '', EMPTY));
+    }
+    lines.forEach(function (line, i) {
+      append(inner, el('div', i === 0 ? 'big' : 'line', line));
+    });
+    if (str(phone)) append(inner, el('div', 'tel', 'Tel: ' + str(phone)));
+    return inner;
+  }
+
+  function buildWaybillSheet(order) {
+    var w = order.waybill;
+    var wrap = el('div', 'sheet-wrap p1');
+    var sheet = el('div', 'sheet');
+    sheet.lang = 'en'; // İngilizce etiketler: büyük harfte "İ" yerine "I" kullanılsın
+
+    var head = el('div', 'wb-head');
+    append(head, el('div', 'wb-title', 'QUIETVOX — WAYBILL'), el('div', 'wb-kind', order.cruise ? 'CRUISE' : ''));
+
+    var grid = el('div', 'wb-grid');
+    var manager = el('div', 'wb-in');
+    append(manager, el('div', 'big', orDash(w.tour_manager_name)));
+    if (w.tour_manager_phone) append(manager, el('div', 'tel', w.tour_manager_phone));
+
+    wbRow(grid, 'Tour Manager', manager);
+    wbRow(grid, 'Tour Reference', wbText(w.tour_reference || order.dr_form.reference));
+    wbRow(grid, 'QV ID', wbText(w.qv_id || order.id, 'huge'));
+    wbRow(grid, 'Client', wbText(clientName(order)));
+    wbRow(grid, 'Delivery Location', wbAddress(w.delivery_location || order.location_name, w.delivery_phone));
+    wbRow(grid, 'Return Location', wbAddress(w.return_location, ''));
+    wbRow(grid, 'Tour Start', wbText(shortDate(w.tour_start)));
+    wbRow(grid, 'Tour End', wbText(shortDate(w.tour_end)), true);
+
+    append(sheet, head, grid);
+    return append(wrap, sheet);
+  }
+
+  // QR kodu senkron üretir; kütüphane yoksa ya da hata olursa null döner
+  function makeQrCanvas(text) {
+    if (typeof window.QRCode !== 'function') return null;
+    try {
+      var tmp = document.createElement('div');
+      // eslint-disable-next-line no-new
+      new window.QRCode(tmp, {
+        text: text,
+        width: QR_PIXELS,
+        height: QR_PIXELS,
+        correctLevel: window.QRCode.CorrectLevel.H
+      });
+      var source = tmp.querySelector('canvas');
+      if (!source || !source.getContext) return null;
+      // Kütüphane kendi canvas'ını sonradan gizleyebilir; bu yüzden kopyasını kullan
+      var copy = document.createElement('canvas');
+      copy.width = source.width;
+      copy.height = source.height;
+      copy.getContext('2d').drawImage(source, 0, 0);
+      return copy;
+    } catch (err) {
+      return null;
+    }
+  }
+
+  function buildQrBlock(order) {
+    var f = order.dr_form;
+    var content = f.qr_content || f.qv_booking_id || order.id;
+    var box = el('div', 'dr-qr');
+    if (!content) {
+      return append(box, el('div', 'dr-qr-fallback', EMPTY));
+    }
+    var canvas = makeQrCanvas(content);
+    if (canvas) {
+      canvas.setAttribute('role', 'img');
+      canvas.setAttribute('aria-label', 'QR kod: ' + content);
+      return append(box, canvas, el('div', 'dr-qr-id', content));
+    }
+    // QR üretilemedi: kimliği büyük metin olarak bas
+    return append(box, el('div', 'dr-qr-fallback', content));
+  }
+
+  function drCell(label, value) {
+    var cell = el('div', 'dr-cell');
+    return append(cell, el('div', 'k', label), el('div', 'v', orDash(value)));
+  }
+
+  function tickCell() {
+    var td = el('td', 'c-chk');
+    return append(td, el('span', 'tick'));
+  }
+
+  function tickHeader(label) {
+    var th = el('th', 'c-chk', label);
+    return append(th, el('span', 'tick'));
+  }
+
+  // Tek ekipman tablosu; totalWeight null ise toplam satırı eklenmez
+  function buildEquipmentPrintTable(rows, totalWeight) {
+    var table = el('table', 'dr-eq');
+    var head = el('tr');
+    append(head,
+      el('th', 'c-item', 'Item'), el('th', 'c-qty', 'Quantity'), el('th', 'c-wgt', 'Weight'),
+      tickHeader('Delivered'), tickHeader('Returned'));
+    var tbody = el('tbody');
+    rows.forEach(function (e) {
+      append(tbody, append(el('tr'),
+        el('td', 'c-item', orDash(e.item)), el('td', 'c-qty', orDash(e.quantity)), el('td', 'c-wgt', orDash(e.weight)),
+        tickCell(), tickCell()));
+    });
+    append(table, append(el('thead'), head), tbody);
+    if (totalWeight !== null) {
+      var foot = el('tr');
+      var label = el('td', '', 'Total weight');
+      label.colSpan = 2;
+      var blank = el('td', '');
+      blank.colSpan = 2;
+      append(foot, label, el('td', 'c-wgt', orDash(totalWeight)), blank);
+      append(table, append(el('tfoot'), foot));
+    }
+    return table;
+  }
+
+  // Ekipman bölümü: liste çok uzunsa satırlar yan yana iki tabloya bölünür
+  function buildEquipmentPrintBox(form) {
+    var rows = form.equipment.length ? form.equipment : [{ item: '', quantity: '', weight: '' }];
+    var box = el('div', 'dr-eq-box');
+    box.setAttribute('data-rows', String(rows.length));
+    if (rows.length > EQUIP_DENSE_ROWS) box.classList.add('dense');
+    if (rows.length <= EQUIP_TWO_COL_ROWS) {
+      return append(box, buildEquipmentPrintTable(rows, form.total_weight));
+    }
+    box.classList.add('two');
+    var half = Math.ceil(rows.length / 2);
+    return append(box,
+      buildEquipmentPrintTable(rows.slice(0, half), null),
+      buildEquipmentPrintTable(rows.slice(half), form.total_weight));
+  }
+
+  function signatureBox(title) {
+    var box = el('div', 'sig');
+    var lines = el('div', 'sig-lines');
+    append(lines, el('span', '', 'Date'), el('span', '', 'Signature'));
+    return append(box, el('div', 'sig-t', title), lines);
+  }
+
+  function buildFormSheet(order) {
+    var f = order.dr_form;
+    var wrap = el('div', 'sheet-wrap p2');
+    var sheet = el('div', 'sheet');
+    sheet.lang = 'en';
+
+    var head = el('div', 'dr-head');
+    var left = el('div', 'dr-left');
+    var sub = [order.location_name, shortDate(order.date)].filter(Boolean).join(' · ');
+    append(left,
+      el('div', 'dr-brand', 'QUIETVOX'),
+      el('div', 'dr-title', 'Delivery and Return Form'),
+      sub ? el('div', 'dr-sub', sub) : null);
+    append(head, left, buildQrBlock(order));
+
+    var info = el('div', 'dr-info');
+    append(info,
+      drCell('Customer', f.customer || order.waybill.client),
+      drCell('Reference', f.reference || order.waybill.tour_reference),
+      drCell('QV Booking ID', f.qv_booking_id || order.id),
+      drCell('Clients', f.clients),
+      drCell('Groups', f.groups),
+      drCell('Instruction Language', f.instruction_language),
+      drCell('Service Start Date', shortDate(f.service_start_date)),
+      drCell('Delivery Station', f.delivery_station));
+
+    var eqWrap = el('div', 'dr-eq-wrap');
+    append(eqWrap, buildEquipmentPrintBox(f));
+
+    var sign = el('div', 'dr-sign');
+    append(sign,
+      signatureBox('Delivered by'),
+      signatureBox('Received by (Tour Manager)'),
+      signatureBox('Returned by'),
+      signatureBox('Checked by Quietvox'));
+
+    append(sheet, head, info, eqWrap, sign);
+    return append(wrap, sheet);
+  }
+
+  // Ekipman satır sayısına göre başlangıç yazı boyutu (pt)
+  function equipmentStartPt(rowCount) {
+    if (rowCount <= EQUIP_DENSE_ROWS) return 12;
+    if (rowCount <= 18) return 10.5;
+    if (rowCount <= EQUIP_TWO_COL_ROWS) return 9.5;
+    return 8.5;
+  }
+
+  // İçerik kutusuna sığana kadar yazıyı küçült (ölçüm ekran dışı düzende yapılır)
+  function fitPrintSheets(root) {
+    root.querySelectorAll('.wb-v').forEach(function (cell) {
+      var inner = cell.firstElementChild;
+      if (!inner) return;
+      var cs = window.getComputedStyle(cell);
+      var room = cell.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+      var size = parseFloat(cs.fontSize);
+      var min = WAYBILL_MIN_PT * PT_TO_PX;
+      while (inner.offsetHeight > room && size > min) {
+        size = Math.max(min, size * 0.93);
+        cell.style.fontSize = size + 'px';
+      }
+    });
+
+    var wrap = root.querySelector('.dr-eq-wrap');
+    var box = root.querySelector('.dr-eq-box');
+    if (wrap && box) {
+      var rows = Number(box.getAttribute('data-rows')) || 0;
+      // İki sütunlu düzende her tabloda satırların yarısı vardır
+      var pt = equipmentStartPt(box.classList.contains('two') ? Math.ceil(rows / 2) : rows);
+      box.style.fontSize = pt + 'pt';
+      while (box.offsetHeight > wrap.clientHeight && pt > EQUIP_MIN_PT) {
+        pt = Math.max(EQUIP_MIN_PT, pt * 0.95);
+        box.style.fontSize = pt + 'pt';
+      }
+    }
+  }
+
+  function fillPrintArea(order) {
+    var sheets = $('#print-sheets');
+    sheets.replaceChildren(buildWaybillSheet(order), buildFormSheet(order));
+    document.body.classList.add('has-print');
+    fitPrintSheets(sheets);
+  }
+
+  function clearPrintArea() {
+    $('#print-sheets').replaceChildren();
+    document.body.classList.remove('has-print');
+  }
+
+  // Kart üzerindeki buton: alanı doldur (QR dahil, senkron) ve hemen yazdır
+  function printOrder(order) {
+    fillPrintArea(order);
+    window.print();
+  }
+
+  /* ---- Önizleme ---- */
+  function updatePreviewScale() {
+    if (!document.body.classList.contains('pv-open')) return;
+    var sheet = document.querySelector('#print-sheets .sheet');
+    if (!sheet) return;
+    var available = window.innerWidth - 24;
+    var scale = Math.min(1, available / sheet.offsetWidth);
+    $('#print-root').style.setProperty('--pv-scale', String(scale));
+  }
+
+  function openPreview(order, opener) {
+    fillPrintArea(order);
+    previewReturnFocus = opener || null;
+    var root = $('#print-root');
+    document.body.classList.add('pv-open');
+    root.setAttribute('aria-hidden', 'false');
+    root.setAttribute('role', 'dialog');
+    root.setAttribute('aria-modal', 'true');
+    root.setAttribute('aria-labelledby', 'pv-title');
+    $('#pv-title').textContent = 'Önizleme · ' + (order.location_name || order.id || '');
+    updatePreviewScale();
+    root.scrollTop = 0;
+    $('#pv-close').focus();
+  }
+
+  function closePreview() {
+    if (!document.body.classList.contains('pv-open')) return;
+    var root = $('#print-root');
+    document.body.classList.remove('pv-open');
+    root.setAttribute('aria-hidden', 'true');
+    root.removeAttribute('role');
+    root.removeAttribute('aria-modal');
+    root.style.setProperty('--pv-scale', '1');
+    clearPrintArea();
+    if (previewReturnFocus && document.contains(previewReturnFocus)) previewReturnFocus.focus();
+    previewReturnFocus = null;
+  }
+
+  /* ========================================================================
+     OLAYLAR
+     ======================================================================== */
+  function selectTab(tab, focus) {
+    setState({ tab: tab });
+    if (!state.filterChosen) setState({ filter: defaultFilter(tab) });
+    render(true);
+    if (focus) $('#tab-' + tab).focus();
+  }
+
+  function bindEvents() {
+    document.querySelectorAll('.tab').forEach(function (btn) {
+      btn.addEventListener('click', function () { selectTab(btn.getAttribute('data-tab'), false); });
+      // Sekmeler arasında ok tuşlarıyla gezinme
+      btn.addEventListener('keydown', function (ev) {
+        if (ev.key !== 'ArrowLeft' && ev.key !== 'ArrowRight') return;
+        ev.preventDefault();
+        selectTab(state.tab === 'deliveries' ? 'returns' : 'deliveries', true);
+      });
+    });
+
+    document.querySelectorAll('.filter').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        setState({ filter: btn.getAttribute('data-filter'), filterChosen: true });
+        render(true);
+      });
+    });
+
+    $('#btn-refresh').addEventListener('click', function () { loadData(true); });
+
+    $('#pv-close').addEventListener('click', closePreview);
+    $('#pv-print').addEventListener('click', function () { window.print(); });
+    document.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Escape') closePreview();
+    });
+    window.addEventListener('resize', updatePreviewScale);
+
+    // Yazdırma bitince alanı temizle (önizleme açıksa açık kalsın).
+    // Küçük gecikme: bazı mobil tarayıcılar olayı erken tetikler.
+    window.addEventListener('afterprint', function () {
+      window.setTimeout(function () {
+        if (!document.body.classList.contains('pv-open')) clearPrintArea();
+      }, 800);
+    });
+
+    // Sekme/uygulama yeniden görünür olunca yenile
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState === 'visible' && Date.now() - lastLoadAt > MIN_REFRESH_GAP_MS) {
+        loadData(false);
+      }
+    });
+    window.addEventListener('online', function () { loadData(false); });
+
+    // ~5 dakikada bir otomatik yenile (gün değişimi de burada yakalanır)
+    window.setInterval(function () {
+      if (document.visibilityState === 'visible') loadData(false);
+    }, REFRESH_MS);
+  }
+
+  function registerServiceWorker() {
+    if (!('serviceWorker' in navigator)) return;
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('./sw.js', { scope: './' }).catch(function () {
+        /* Service worker kurulamazsa uygulama yine çalışır (yalnızca çevrimdışı desteği olmaz) */
+      });
+    });
+  }
+
+  /* ========================================================================
+     BAŞLAT
+     ======================================================================== */
+  function init() {
+    var today = istanbulDate(new Date());
+    setState({ today: today, tomorrow: addDays(today, 1), marks: loadMarks() });
+    bindEvents();
+    render(true);
+    loadData(false);
+    registerServiceWorker();
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>

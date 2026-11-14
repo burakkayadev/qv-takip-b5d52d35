@@ -1,0 +1,9 @@
+# Oturum çerezleri ve hata ayıklama dökümleri ASLA commit edilmez (müşteri verisi / sır içerir)
+cookies.json
+debug/
+
+# Python
+__pycache__/
+.venv/
+*.pyc
+.pytest_cache/

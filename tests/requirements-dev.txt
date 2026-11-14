@@ -1,0 +1,3 @@
+# Test bağımlılıkları (yalnızca yerel geliştirme; workflow bunları kurmaz)
+-r ../requirements.txt
+pytest>=8

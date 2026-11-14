@@ -1,0 +1,183 @@
+{
+  "schema_version": 1,
+  "demo": true,
+  "status": "ok",
+  "status_message": "",
+  "generated_at": "2026-11-14T11:00:00Z",
+  "timezone": "Europe/Istanbul",
+  "window_days": 10,
+  "deliveries": [
+    {
+      "id": "QV-900101",
+      "type": "delivery",
+      "date": "2026-11-14",
+      "time": "09:30",
+      "cruise": false,
+      "source_calendar": "Calendar Delivery",
+      "title": "Ornek Tur A - Demo Otel Sultanahmet",
+      "location_name": "Demo Otel Sultanahmet",
+      "waybill": {
+        "tour_manager_name": "Ayşe Örnek",
+        "tour_manager_phone": "+90 555 000 00 01",
+        "tour_reference": "DEMO-TR-001",
+        "qv_id": "QV-900101",
+        "client": "Örnek Travel GmbH",
+        "delivery_location": "Demo Otel Sultanahmet\nÖrnek Cad. No:1\n34122 Fatih / İstanbul",
+        "delivery_phone": "+90 212 000 00 01",
+        "return_location": "Demo Otel Sultanahmet\nÖrnek Cad. No:1\n34122 Fatih / İstanbul",
+        "tour_start": "2026-11-14",
+        "tour_end": "2026-11-18"
+      },
+      "dr_form": {
+        "customer": "Örnek Travel GmbH",
+        "reference": "DEMO-TR-001",
+        "qv_booking_id": "QV-900101",
+        "clients": "32",
+        "groups": "1",
+        "instruction_language": "German",
+        "service_start_date": "2026-11-14",
+        "delivery_station": "Istanbul",
+        "qr_content": "QV-900101",
+        "equipment": [
+          { "item": "QV9 TX EU", "quantity": "2", "weight": "0.20 kg" },
+          { "item": "QV9 RX EU", "quantity": "32", "weight": "2.24 kg" },
+          { "item": "Battery AA", "quantity": "68", "weight": "1.56 kg" },
+          { "item": "Earphone", "quantity": "34", "weight": "0.34 kg" },
+          { "item": "Microphone", "quantity": "2", "weight": "0.06 kg" },
+          { "item": "Carrying case", "quantity": "1", "weight": "1.80 kg" }
+        ],
+        "total_weight": "6.20 kg"
+      },
+      "raw": {}
+    },
+    {
+      "id": "QV-900102",
+      "type": "delivery",
+      "date": "2026-11-15",
+      "time": "",
+      "cruise": false,
+      "source_calendar": "Calendar Delivery",
+      "title": "Ornek Tur B - Demo Palace Beşiktaş",
+      "location_name": "Demo Palace Beşiktaş",
+      "waybill": {
+        "tour_manager_name": "Mehmet Deneme",
+        "tour_manager_phone": "0555 000 00 02",
+        "tour_reference": "DEMO-TR-002",
+        "qv_id": "QV-900102",
+        "client": "Sample Tours Ltd.",
+        "delivery_location": "Demo Palace Beşiktaş\nDeneme Sok. No:5\n34357 Beşiktaş / İstanbul",
+        "delivery_phone": "+90 212 000 00 02",
+        "return_location": "Demo Airport Hotel\nHavalimanı Yolu No:9\nArnavutköy / İstanbul",
+        "tour_start": "2026-11-15",
+        "tour_end": "2026-11-22"
+      },
+      "dr_form": {
+        "customer": "Sample Tours Ltd.",
+        "reference": "DEMO-TR-002",
+        "qv_booking_id": "QV-900102",
+        "clients": "18",
+        "groups": "1",
+        "instruction_language": "English",
+        "service_start_date": "2026-11-15",
+        "delivery_station": "Istanbul",
+        "qr_content": "QV-900102",
+        "equipment": [
+          { "item": "QV9 TX EU", "quantity": "1", "weight": "0.10 kg" },
+          { "item": "QV9 RX EU", "quantity": "18", "weight": "1.26 kg" },
+          { "item": "Battery AA", "quantity": "38", "weight": "0.87 kg" },
+          { "item": "Earphone", "quantity": "19", "weight": "0.19 kg" },
+          { "item": "Carrying case", "quantity": "1", "weight": "1.80 kg" }
+        ],
+        "total_weight": "4.22 kg"
+      },
+      "raw": {}
+    },
+    {
+      "id": "QV-900103",
+      "type": "delivery",
+      "date": "2026-11-15",
+      "time": "14:00",
+      "cruise": true,
+      "source_calendar": "Cruises Calendar Delivery",
+      "title": "Demo Cruise - Galataport",
+      "location_name": "Galataport Demo Terminal",
+      "waybill": {
+        "tour_manager_name": "",
+        "tour_manager_phone": "",
+        "tour_reference": "DEMO-CR-003",
+        "qv_id": "QV-900103",
+        "client": "Demo Cruises Inc.",
+        "delivery_location": "Galataport Demo Terminal\nKılıçali Paşa Mah.\nBeyoğlu / İstanbul",
+        "delivery_phone": "",
+        "return_location": "Galataport Demo Terminal",
+        "tour_start": "2026-11-15",
+        "tour_end": "2026-11-15"
+      },
+      "dr_form": {
+        "customer": "Demo Cruises Inc.",
+        "reference": "DEMO-CR-003",
+        "qv_booking_id": "QV-900103",
+        "clients": "120",
+        "groups": "4",
+        "instruction_language": "English",
+        "service_start_date": "2026-11-15",
+        "delivery_station": "Istanbul",
+        "qr_content": "QV-900103",
+        "equipment": [
+          { "item": "QV9 TX EU", "quantity": "4", "weight": "0.40 kg" },
+          { "item": "QV9 RX EU", "quantity": "120", "weight": "8.40 kg" },
+          { "item": "Battery AA", "quantity": "248", "weight": "5.70 kg" },
+          { "item": "Earphone", "quantity": "124", "weight": "1.24 kg" },
+          { "item": "Microphone", "quantity": "4", "weight": "0.12 kg" },
+          { "item": "Carrying case", "quantity": "4", "weight": "7.20 kg" }
+        ],
+        "total_weight": "23.06 kg"
+      },
+      "raw": {}
+    }
+  ],
+  "returns": [
+    {
+      "id": "QV-900090",
+      "type": "return",
+      "date": "2026-11-15",
+      "time": "11:00",
+      "cruise": false,
+      "source_calendar": "Calendar Return",
+      "title": "Ornek Tur Z - Demo Bosphorus Hotel",
+      "location_name": "Demo Bosphorus Hotel",
+      "waybill": {
+        "tour_manager_name": "Zeynep Test",
+        "tour_manager_phone": "+90 555 000 00 09",
+        "tour_reference": "DEMO-TR-090",
+        "qv_id": "QV-900090",
+        "client": "Örnek Travel GmbH",
+        "delivery_location": "Demo Otel Sultanahmet\nÖrnek Cad. No:1\n34122 Fatih / İstanbul",
+        "delivery_phone": "+90 212 000 00 01",
+        "return_location": "Demo Bosphorus Hotel\nSahil Yolu No:12\n34349 Beşiktaş / İstanbul",
+        "tour_start": "2026-11-08",
+        "tour_end": "2026-11-15"
+      },
+      "dr_form": {
+        "customer": "Örnek Travel GmbH",
+        "reference": "DEMO-TR-090",
+        "qv_booking_id": "QV-900090",
+        "clients": "25",
+        "groups": "1",
+        "instruction_language": "German",
+        "service_start_date": "2026-11-08",
+        "delivery_station": "Istanbul",
+        "qr_content": "QV-900090",
+        "equipment": [
+          { "item": "QV9 TX EU", "quantity": "2", "weight": "0.20 kg" },
+          { "item": "QV9 RX EU", "quantity": "25", "weight": "1.75 kg" },
+          { "item": "Battery AA", "quantity": "54", "weight": "1.24 kg" },
+          { "item": "Earphone", "quantity": "27", "weight": "0.27 kg" },
+          { "item": "Carrying case", "quantity": "1", "weight": "1.80 kg" }
+        ],
+        "total_weight": "5.26 kg"
+      },
+      "raw": {}
+    }
+  ]
+}

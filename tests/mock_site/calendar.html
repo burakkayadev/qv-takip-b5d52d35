@@ -1,0 +1,155 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Mock Calendar</title>
+<style>
+  body { font-family: sans-serif; margin: 12px; }
+  table { border-collapse: collapse; }
+  .fc-grid, .fc-row table { width: 100%; table-layout: fixed; }
+  .fc-grid td { border: 1px solid #ccc; height: 96px; vertical-align: top; }
+  .fc-row { position: relative; height: 96px; border-bottom: 1px solid #ccc; }
+  .fc-bg { position: absolute; top: 0; left: 0; right: 0; bottom: 0; }
+  .fc-bg table { height: 100%; }
+  .fc-bg td { border-left: 1px solid #ccc; }
+  .fc-content-skeleton { position: relative; }
+  .fc-event { display: block; background: #3a87ad; color: #fff; margin: 2px; padding: 1px 3px; cursor: pointer; font-size: 12px; }
+  .modal, .ui-dialog { display: none; position: fixed; top: 40px; left: 20%; width: 60%; max-height: 80%; overflow: auto;
+    background: #fff; border: 2px solid #333; padding: 12px; z-index: 10; }
+  .modal.show, .modal.in { display: block; }
+</style>
+</head>
+<body>
+__MENU__
+<!-- FullCalendar benzeri sahte takvim (yalnızca test içindir) -->
+<div id="calendar" class="fc">
+  <div class="fc-toolbar">
+    <button type="button" class="fc-prev-button" aria-label="prev">&lsaquo;</button>
+    <button type="button" class="fc-next-button" aria-label="next">&rsaquo;</button>
+    <div class="fc-center"><h2></h2></div>
+  </div>
+  <div class="fc-view-container"></div>
+</div>
+
+<div class="modal" id="detail-modal" tabindex="-1">
+  <button type="button" class="close" data-dismiss="modal">&times;</button>
+  <ul class="nav-tabs" id="detail-tabs"></ul>
+  <div class="modal-body"></div>
+</div>
+<div class="ui-dialog" id="detail-dialog" role="dialog">
+  <button type="button" class="ui-dialog-titlebar-close">x</button>
+  <div class="ui-dialog-content"></div>
+  <button type="button" id="load-dr">D&amp;R Form</button>
+</div>
+
+<script>
+const CFG = __CONFIG__;
+const view = document.querySelector('.fc-view-container');
+const modal = document.getElementById('detail-modal');
+const dialog = document.getElementById('detail-dialog');
+let current = new Date(CFG.today.slice(0, 7) + '-01T00:00:00Z');
+let events = CFG.events;
+let openKey = '';
+
+const iso = (d) => d.toISOString().slice(0, 10);
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const fragment = async (key, part) => (await fetch('/api/detail?id=' + key + '&part=' + part)).text();
+
+function eventHtml(e) {
+  const time = e.time ? '<span class="fc-time">' + e.time + '</span> ' : '';
+  return '<a class="fc-event fc-day-grid-event" data-id="' + e.id + '" data-key="' + e.key + '">'
+    + '<div class="fc-content">' + time + '<span class="fc-title">' + e.title + '</span></div></a>';
+}
+const dayEvents = (day) => events.filter((e) => e.date === day).map(eventHtml).join('');
+
+// "cells" stili: etkinlik doğrudan data-date taşıyan hücrenin içinde
+function rowCells(days) {
+  return '<tr>' + days.map((d) => '<td class="fc-day" data-date="' + d + '"><div class="num">'
+    + Number(d.slice(8)) + '</div>' + dayEvents(d) + '</td>').join('') + '</tr>';
+}
+// "v3" stili: tarih arka plan tablosunda, etkinlik ayrı iskelet tablosunda (tarih geometriyle bulunur)
+function rowV3(days) {
+  const bg = days.map((d) => '<td class="fc-day" data-date="' + d + '"></td>').join('');
+  const head = days.map((d) => '<td class="fc-day-top" data-date="' + d + '">' + Number(d.slice(8)) + '</td>').join('');
+  const body = days.map((d) => '<td class="fc-event-container">' + dayEvents(d) + '</td>').join('');
+  return '<div class="fc-row"><div class="fc-bg"><table><tbody><tr>' + bg + '</tr></tbody></table></div>'
+    + '<div class="fc-content-skeleton"><table><thead><tr>' + head + '</tr></thead><tbody><tr>' + body
+    + '</tr></tbody></table></div></div>';
+}
+
+function render() {
+  document.querySelector('.fc-center h2').textContent = current.toISOString().slice(0, 7);
+  const start = new Date(current);
+  start.setUTCDate(1 - ((current.getUTCDay() + 6) % 7));
+  let out = '';
+  for (let week = 0; week < 6; week++) {
+    const days = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(start);
+      d.setUTCDate(start.getUTCDate() + week * 7 + i);
+      days.push(iso(d));
+    }
+    out += CFG.style === 'v3' ? rowV3(days) : rowCells(days);
+  }
+  view.innerHTML = CFG.style === 'v3' ? out : '<table class="fc-grid"><tbody>' + out + '</tbody></table>';
+}
+
+function shift(months) {
+  current.setUTCMonth(current.getUTCMonth() + months);
+  render();
+}
+
+// Bootstrap benzeri modal: içerik gecikmeli AJAX ile gelir; eski içerik o ana kadar DOM'da kalır
+async function openTabs(key) {
+  document.getElementById('detail-tabs').innerHTML =
+    '<li><a href="#waybill" role="tab" data-part="waybill">WayBill</a></li>'
+    + '<li><a href="#dr" role="tab" data-part="dr">Delivery and Return Form</a></li>';
+  modal.classList.add('show');
+  await sleep(200);
+  modal.querySelector('.modal-body').innerHTML = await fragment(key, 'waybill');
+}
+async function openLink(key) {
+  document.getElementById('detail-tabs').innerHTML = '';
+  modal.classList.add('in');
+  await sleep(150);
+  modal.querySelector('.modal-body').innerHTML = await fragment(key, 'waybill_colon');
+}
+async function openDialog(key) {
+  dialog.style.display = 'block';
+  await sleep(150);
+  dialog.querySelector('.ui-dialog-content').innerHTML = await fragment(key, 'waybill_dl');
+}
+
+view.addEventListener('click', (event) => {
+  const el = event.target.closest('.fc-event');
+  if (!el) return;
+  openKey = el.dataset.key;
+  if (CFG.detail === 'tabs') openTabs(openKey);
+  else if (CFG.detail === 'link') openLink(openKey);
+  else if (CFG.detail === 'dialog') openDialog(openKey);
+  else window.open('/doc/full.html?id=' + openKey, '_blank');
+});
+document.getElementById('detail-tabs').addEventListener('click', async (event) => {
+  const tab = event.target.closest('[data-part]');
+  if (!tab) return;
+  event.preventDefault();
+  modal.querySelector('.modal-body').innerHTML = await fragment(openKey, tab.dataset.part);
+});
+document.getElementById('load-dr').addEventListener('click', async () => {
+  const extra = document.createElement('div');
+  extra.innerHTML = await fragment(openKey, 'dr_inputs');
+  dialog.querySelector('.ui-dialog-content').appendChild(extra);
+});
+modal.querySelector('.close').addEventListener('click', () => modal.classList.remove('show', 'in'));
+dialog.querySelector('.ui-dialog-titlebar-close').addEventListener('click', () => { dialog.style.display = 'none'; });
+document.querySelector('.fc-next-button').addEventListener('click', () => shift(1));
+document.querySelector('.fc-prev-button').addEventListener('click', () => shift(-1));
+
+(async () => {
+  if (CFG.source === 'feed') events = await (await fetch('/api/events?cal=' + CFG.cal)).json();
+  events = events.map((e) => ({ ...e, date: e.date || e.start.slice(0, 10), time: e.time || (e.start || '').slice(11, 16) }));
+  render();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,74 @@
+name: Quietvox Senkronizasyon
+
+on:
+  schedule:
+    # Her 30 dakikada bir veri senkronizasyonu (UTC). Dakika 5 ve 35 seçildi:
+    # 15:00'teki hatırlatma zamanlamasıyla çakışmasın ve saat başı yoğunluğuna takılmasın
+    - cron: '5,35 * * * *'
+    # Her gün 15:00 UTC = 18:00 Türkiye saati: yarının hatırlatma bildirimi
+    - cron: '0 15 * * *'
+  workflow_dispatch:
+    inputs:
+      send_reminder:
+        description: 'Yarının teslimat/iade hatırlatmasını ntfy ile gönder'
+        type: boolean
+        default: false
+
+# data.json'ı commit edebilmek için yazma izni
+permissions:
+  contents: write
+
+# Aynı anda tek çalışma; süren iş iptal edilmez, yenisi sıraya girer
+concurrency:
+  group: quietvox-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Depoyu al
+        uses: actions/checkout@v4
+
+      - name: Python 3.12 kur
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Bağımlılıkları kur
+        run: pip install -r requirements.txt
+
+      - name: Playwright Chromium kur
+        run: python -m playwright install --with-deps chromium
+
+      - name: Kazıyıcıyı çalıştır
+        env:
+          QV_USER: ${{ secrets.QV_USER }}
+          QV_PASS: ${{ secrets.QV_PASS }}
+          # İsteğe bağlı: HTTP Basic katmanı farklı bilgi istiyorsa (boşsa QV_USER/QV_PASS kullanılır)
+          QV_HTTP_USER: ${{ secrets.QV_HTTP_USER }}
+          QV_HTTP_PASS: ${{ secrets.QV_HTTP_PASS }}
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+          # Hatırlatma yalnızca 18:00 TR zamanlamasında ya da elle istenince gönderilir
+          SEND_REMINDER: ${{ (github.event.schedule == '0 15 * * *' || inputs.send_reminder == true) && '1' || '0' }}
+        run: python scraper.py
+
+      # Giriş başarısız olsa bile (login_failed durumu) data.json commit edilebilmeli
+      - name: data.json değiştiyse commit et ve gönder
+        if: always()
+        run: |
+          # Yalnızca data.json eklenir; cookies.json ve debug/ asla commit edilmez
+          git add data.json 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "data.json değişmedi; commit atlanıyor."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # Not: "[skip ci]" eklenmez; GitHub Pages yayınının tetiklenmesini engelleyebilir
+          git commit -m "chore: data.json güncellendi"
+          # Araya başka commit girdiyse üzerine taşı, sonra gönder
+          git pull --rebase --autostash origin "${GITHUB_REF_NAME}"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
