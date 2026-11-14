@@ -12,7 +12,7 @@
 'use strict';
 
 // Kabukta değişiklik yapınca bu sürümü artırın: eski önbellekler silinir.
-const VERSION = 'v2';
+const VERSION = 'v3';
 const SHELL_CACHE = 'qv-shell-' + VERSION;
 const DATA_CACHE = 'qv-data-' + VERSION;
 const CDN_CACHE = 'qv-cdn-' + VERSION;
@@ -76,6 +76,22 @@ async function networkFirstData(request) {
   }
 }
 
+// Önce ağ; olmazsa önbellekteki sayfa (uygulamanın kendisi için)
+async function networkFirstShell(request) {
+  const cache = await caches.open(SHELL_CACHE);
+  try {
+    const response = await fetch(request, { cache: 'no-store' });
+    if (response.ok) {
+      await cache.put(INDEX_KEY, response.clone());
+    }
+    return response;
+  } catch (err) {
+    const cached = await cache.match(INDEX_KEY);
+    if (cached) return cached;
+    throw err;
+  }
+}
+
 // Önce önbellek; arka planda güncelle (kabuk ve CDN için)
 async function cacheFirstWithRefresh(event, cacheName, cacheKey, fallbackKey) {
   const cache = await caches.open(cacheName);
@@ -125,8 +141,8 @@ self.addEventListener('fetch', (event) => {
       return;
     }
     if (request.mode === 'navigate') {
-      // Sayfa açılışı: önbellekteki index.html (çevrimdışı da açılır)
-      event.respondWith(cacheFirstWithRefresh(event, SHELL_CACHE, INDEX_KEY, INDEX_KEY));
+      // Sayfa açılışı: önce ağ (güncellemeler hemen görünsün); bağlantı yoksa önbellekteki index.html
+      event.respondWith(networkFirstShell(request));
       return;
     }
     if (url.pathname === new URL(self.registration.scope).pathname + 'sw.js') return;
