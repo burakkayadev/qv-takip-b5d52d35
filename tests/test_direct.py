@@ -78,7 +78,8 @@ def test_feed_url_uses_sibling_endpoint_and_kind():
 
 def test_feed_items_keep_only_window_and_split_title_lines():
     payload = [
-        {"id": 2000000001, "title": "Örnek Travel<br>Demo Otel<br>", "start": "2026-11-14", "allDay": True},
+        {"id": 2000000001, "title": "Örnek Travel<br>Demo Otel<br>", "start": "2026-11-14", "allDay": True,
+         "status": 2},
         {"id": 2000000002, "title": "Geçmiş", "start": "2026-11-13", "allDay": True},
         {"id": 2000000003, "title": "Uzak", "start": "2026-11-24", "allDay": True},
         {"title": "Kimliksiz", "start": "2026-11-15"},
@@ -86,7 +87,8 @@ def test_feed_items_keep_only_window_and_split_title_lines():
 
     items = scraper.parse_feed_items(payload, TODAY, 10)
 
-    assert items == [{"id": "2000000001", "date": "2026-11-14", "time": "", "title": "Örnek Travel · Demo Otel"}]
+    assert items == [{"id": "2000000001", "date": "2026-11-14", "time": "", "title": "Örnek Travel · Demo Otel",
+                      "status": "confirmed"}]
 
 
 def test_feed_items_reject_unknown_shape_but_accept_empty_list():
@@ -148,3 +150,61 @@ def test_same_order_on_two_days_stays_as_two_records():
     result = scraper.separate_repeated_ids(orders)
 
     assert [order["id"] for order in result] == ["7", "8", "7_2026-11-15"]
+
+
+def test_feed_items_can_look_back_for_history():
+    payload = [{"id": 5, "title": "Eski", "start": "2026-11-01", "status": 6}]
+
+    assert scraper.parse_feed_items(payload, TODAY, 10) == []
+    assert scraper.parse_feed_items(payload, TODAY, 10, past=31)[0]["status"] == "returned"
+
+
+def test_old_order_is_reused_from_cache_with_fresh_status():
+    cached = {"id": "5", "date": "2026-11-01", "status": "delivered", "title": "Eski",
+              "waybill": {"client": "Örnek"}, "dr_form": {}}
+    item = {"id": "5", "date": "2026-11-01", "time": "", "title": "Eski", "status": "returned"}
+
+    reused = scraper.reusable_order(item, cached, TODAY)
+
+    assert reused["status"] == "returned" and reused["waybill"] == {"client": "Örnek"}
+
+
+def test_near_or_unread_orders_are_never_reused():
+    filled = {"id": "5", "date": "2026-11-15", "waybill": {"client": "Örnek"}, "dr_form": {}}
+    empty = {"id": "6", "date": "2026-11-01", "waybill": {"client": ""}, "dr_form": {}}
+
+    assert scraper.reusable_order({"id": "5", "date": "2026-11-15", "title": "", "status": ""}, filled, TODAY) is None
+    assert scraper.reusable_order({"id": "6", "date": "2026-11-01", "title": "", "status": ""}, empty, TODAY) is None
+    assert scraper.reusable_order({"id": "7", "date": "2026-11-01", "title": "", "status": ""}, None, TODAY) is None
+
+
+def _order(day, status, name="Demo Otel"):
+    return {"date": day, "status": status, "location_name": name}
+
+
+def test_today_reminder_lists_only_pending_work():
+    deliveries = [_order("2026-11-14", "confirmed"), _order("2026-11-14", "delivered"),
+                  _order("2026-11-14", "cancelled")]
+    returns = [_order("2026-11-14", "delivered", "Demo Palace"), _order("2026-11-14", "returned")]
+
+    text = scraper.build_today_text(deliveries, returns, TODAY)
+
+    assert text == ("📦 Bugün 1 Teslimat (Demo Otel) bekliyor.\n"
+                    "🔄 Bugün 1 İade Alımı (Demo Palace) bekliyor.")
+    assert scraper.build_today_text([_order("2026-11-14", "delivered")], [], TODAY) == ""
+
+
+def test_missed_return_warning_covers_past_week_only():
+    returns = [_order("2026-11-13", "delivered", "Dün Otel"), _order("2026-11-13", "returned"),
+               _order("2026-11-14", "delivered"), _order("2026-11-01", "delivered")]
+
+    assert scraper.build_missed_text(returns, TODAY) == "⚠️ Almayı unuttun: 1 iade hâlâ alınmadı (Dün Otel)."
+    assert scraper.build_missed_text([], TODAY) == ""
+
+
+def test_reminder_kinds_choose_their_messages():
+    document = {"deliveries": [_order("2026-11-14", "confirmed")], "returns": [_order("2026-11-13", "delivered")]}
+
+    assert len(scraper.reminder_messages("morning", document, TODAY)) == 2
+    assert scraper.reminder_messages("evening", document, TODAY) == ["Yarın teslimat veya iade yok."]
+    assert scraper.reminder_messages("", document, TODAY) == []

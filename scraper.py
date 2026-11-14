@@ -167,6 +167,14 @@ DR_FORM_PATH = "/order/deliveryReturnFormView"
 DR_EQUIPMENT_TABLE_ID = "delivered-retruned"  # sitedeki yazım hatası aynen korunur
 DIRECT_CONCURRENCY = 4  # siteyi yormamak için aynı anda en fazla istek
 DIRECT_SKIPPED_ROWS = {"bag id", "clients"}  # ekipman tablosunda kalem olmayan satırlar
+# Takvim feed'indeki durum kodları (1, 2, 5, 6 canlı sitede renk/sayılarla doğrulandı;
+# 4 ve 7 düzenleme formundaki seçenek sırasından çıkarım)
+ORDER_STATUS_NAMES = {1: "reserved", 2: "confirmed", 4: "cancelled", 5: "delivered",
+                      6: "returned", 7: "lost"}
+# Belgeleri her çalıştırmada yeniden okunacak gün aralığı; dışındakiler önceki data.json'dan alınır
+REFRESH_PAST_DAYS = 1
+REFRESH_FUTURE_DAYS = 10
+MISSED_RETURN_DAYS = 7  # "almayı unuttun" uyarısı kaç gün geriye bakar
 DIRECT_LABELS: dict[str, tuple[str, str]] = {
     "cell phone": ("waybill", "tour_manager_phone"),
     "service end date": ("waybill", "tour_end"),
@@ -254,6 +262,8 @@ class Settings:
     # Doğrudan uçlar çalışmazsa takvime tıklayan eski yola düşülsün mü?
     # Gerçek sitede kapalıdır: boş güne tıklamak "Create Order" penceresini açar.
     click_fallback: bool = True
+    past_days: int = 0  # bugünden geriye kaç günün siparişi tutulur (geçmişe bakmak için)
+    reminder: str = ""  # "evening" (yarın özeti) | "morning" | "noon" (bugün + unutulan iadeler)
 
 
 def _env(env: Mapping[str, str], name: str, default: str = "") -> str:
@@ -324,6 +334,8 @@ def load_settings(env: Mapping[str, str] | None = None) -> Settings:
         selectors=load_selectors(env),
         sub_link_patterns=_env_list(env, "QV_SUB_LINK_PATTERNS", SUB_LINK_PATTERNS),
         click_fallback=_env_flag(env, "QV_CLICK_FALLBACK", base_url != DEFAULT_BASE_URL),
+        past_days=max(0, _env_int(env, "QV_PAST_DAYS", 0)),
+        reminder=_env(env, "REMINDER").lower() or ("evening" if _env_flag(env, "SEND_REMINDER", False) else ""),
     )
 
 
@@ -814,9 +826,9 @@ def parse_detail_documents(html_parts: Iterable[str]) -> dict[str, Any]:
 # adresinden alır; WayBill ve D&R Formu ise sipariş kimliğiyle ayrı HTML uçlarından
 # gelir. Bu yol hiçbir şeye tıklamaz, bu yüzden hem hızlı hem de güvenlidir.
 
-def feed_url_for(calendar_url: str, kind: str, today: date, days: int) -> str:
+def feed_url_for(calendar_url: str, kind: str, today: date, days: int, past: int = 0) -> str:
     """Takvim sayfasının adresinden etkinlik feed adresini üretir (pencere ±1 gün paylı)."""
-    start, end = window_bounds(today, days)
+    start, end = window_bounds(today, days, past)
     zone = ZoneInfo(TIMEZONE_NAME)
     low = datetime.combine(start - timedelta(days=1), datetime.min.time(), zone)
     high = datetime.combine(end + timedelta(days=2), datetime.min.time(), zone)
@@ -832,8 +844,16 @@ def _html_lines(html: Any) -> str:
     return clean_text(BeautifulSoup(with_breaks, "html.parser").get_text())
 
 
-def parse_feed_items(payload: Any, today: date, days: int) -> list[dict[str, str]] | None:
-    """Feed JSON'unu pencere içindeki {id,date,time,title} listesine çevirir; biçim tanınmazsa None."""
+def order_status_name(code: Any) -> str:
+    """Quietvox durum kodunu ada çevirir; bilinmeyen kod metin olarak kalır."""
+    try:
+        return ORDER_STATUS_NAMES.get(int(code), str(code))
+    except (TypeError, ValueError):
+        return ""
+
+
+def parse_feed_items(payload: Any, today: date, days: int, past: int = 0) -> list[dict[str, str]] | None:
+    """Feed JSON'unu pencere içindeki {id,date,time,title,status} listesine çevirir; biçim tanınmazsa None."""
     if not isinstance(payload, list):
         return None
     items: list[dict[str, str]] = []
@@ -842,11 +862,12 @@ def parse_feed_items(payload: Any, today: date, days: int) -> list[dict[str, str
             continue
         start = _feed_start(entry.get("start"))
         day = valid_iso(start[:10])
-        if not in_window(day, today, days):
+        if not in_window(day, today, days, past):
             continue
         time_text = "" if entry.get("allDay", True) else extract_time(start[10:])
         title = " · ".join(_html_lines(entry.get("title")).split("\n"))
-        items.append({"id": str(entry["id"]), "date": day, "time": time_text, "title": title})
+        items.append({"id": str(entry["id"]), "date": day, "time": time_text, "title": title,
+                      "status": order_status_name(entry.get("status"))})
     return items
 
 
@@ -1078,17 +1099,17 @@ def candidate_urls(spec: CalendarSpec, settings: Settings, discovered: Mapping[s
 # ============================================================================
 
 
-def window_bounds(today: date, days: int) -> tuple[date, date]:
-    """Bugün dahil `days` günlük pencerenin ilk ve son günü."""
-    return today, today + timedelta(days=days - 1)
+def window_bounds(today: date, days: int, past: int = 0) -> tuple[date, date]:
+    """Pencerenin ilk ve son günü: `past` gün geriye, bugün dahil `days` gün ileriye."""
+    return today - timedelta(days=past), today + timedelta(days=days - 1)
 
 
-def in_window(date_text: Any, today: date, days: int) -> bool:
+def in_window(date_text: Any, today: date, days: int, past: int = 0) -> bool:
     """Tarih (YYYY-AA-GG) pencere içinde mi?"""
     iso = valid_iso(date_text)
     if not iso:
         return False
-    start, end = window_bounds(today, days)
+    start, end = window_bounds(today, days, past)
     return start <= date.fromisoformat(iso) <= end
 
 
@@ -1196,7 +1217,8 @@ def _preserved_orders(previous: dict[str, Any] | None, spec: CalendarSpec, setti
     kept = []
     for order in previous.get(LIST_KEY_BY_KIND[spec.kind], []) or []:
         same_calendar = isinstance(order, dict) and order.get("source_calendar") == spec.name
-        if same_calendar and in_window(order.get("date", ""), settings.today, settings.window_days):
+        if same_calendar and in_window(order.get("date", ""), settings.today,
+                                       settings.window_days, settings.past_days):
             kept.append(order)
     return kept
 
@@ -1361,12 +1383,53 @@ def build_reminder_text(deliveries: list[dict[str, Any]], returns: list[dict[str
     return "Yarın teslimat veya iade yok."
 
 
+def _is_open(order: dict[str, Any], done_statuses: tuple[str, ...]) -> bool:
+    """Sipariş hâlâ yapılacak mı? (iptal/kayıp ya da tamamlanmış olanlar sayılmaz)"""
+    return order.get("status", "") not in done_statuses + ("cancelled", "lost")
+
+
+def build_today_text(deliveries: list[dict[str, Any]], returns: list[dict[str, Any]], today: date) -> str:
+    """Bugün hâlâ bekleyen teslimat ve iadeler için Türkçe özet; bekleyen yoksa boş string."""
+    iso = today.isoformat()
+    due_deliveries = [order for order in deliveries
+                      if order.get("date") == iso and _is_open(order, ("delivered", "returned"))]
+    due_returns = [order for order in returns
+                   if order.get("date") == iso and _is_open(order, ("returned",))]
+    parts = []
+    if due_deliveries:
+        parts.append(f"📦 Bugün {len(due_deliveries)} Teslimat{_names_summary(due_deliveries)} bekliyor.")
+    if due_returns:
+        parts.append(f"🔄 Bugün {len(due_returns)} İade Alımı{_names_summary(due_returns)} bekliyor.")
+    return "\n".join(parts)
+
+
+def build_missed_text(returns: list[dict[str, Any]], today: date) -> str:
+    """Günü geçtiği hâlde Quietvox'ta hâlâ 'Delivered' duran iadeler için uyarı metni."""
+    oldest = (today - timedelta(days=MISSED_RETURN_DAYS)).isoformat()
+    missed = [order for order in returns
+              if oldest <= order.get("date", "") < today.isoformat() and order.get("status") == "delivered"]
+    if not missed:
+        return ""
+    return f"⚠️ Almayı unuttun: {len(missed)} iade hâlâ alınmadı{_names_summary(missed)}."
+
+
+def reminder_messages(kind: str, document: dict[str, Any], today: date) -> list[str]:
+    """Hatırlatma türüne göre gönderilecek mesajlar (boş olanlar atılır)."""
+    deliveries, returns = document["deliveries"], document["returns"]
+    if kind == "evening":
+        return [build_reminder_text(deliveries, returns, today + timedelta(days=1))]
+    if kind in ("morning", "noon"):
+        return [text for text in (build_today_text(deliveries, returns, today),
+                                  build_missed_text(returns, today)) if text]
+    return []
+
+
 def maybe_send_reminder(settings: Settings, document: dict[str, Any]) -> bool:
-    """NTFY_TOPIC tanımlı ve SEND_REMINDER=1 ise yarının özetini gönderir."""
-    if not (settings.ntfy_topic and settings.send_reminder):
+    """NTFY_TOPIC tanımlıysa REMINDER türüne göre hatırlatmaları gönderir."""
+    if not (settings.ntfy_topic and settings.reminder):
         return False
-    tomorrow = settings.today + timedelta(days=1)
-    return send_ntfy(settings, build_reminder_text(document["deliveries"], document["returns"], tomorrow))
+    messages = reminder_messages(settings.reminder, document, settings.today)
+    return any([send_ntfy(settings, message) for message in messages])
 
 
 # ============================================================================
@@ -2062,25 +2125,54 @@ async def _direct_order(context: Any, settings: Settings, spec: CalendarSpec,
     order = build_order(spec, item["date"], item["time"], item["title"], details if readable else None)
     if order and not readable:
         order = {**order, "id": item["id"]}
+    if order:
+        order = {**order, "status": item.get("status", "")}
     return order, readable
+
+
+def reusable_order(item: dict[str, str], cached: dict[str, Any] | None, today: date) -> dict[str, Any] | None:
+    """Yakın tarihli olmayan ve daha önce okunmuş siparişi önbellekten döner (durum feed'den güncellenir)."""
+    if not cached or cached.get("date") != item["date"] or not _richness(cached):
+        return None
+    day = date.fromisoformat(item["date"])
+    if today - timedelta(days=REFRESH_PAST_DAYS) <= day <= today + timedelta(days=REFRESH_FUTURE_DAYS):
+        return None
+    return {**cached, "status": item.get("status", ""), "title": item["title"]}
+
+
+def previous_orders_by_id(settings: Settings, spec: CalendarSpec) -> dict[str, dict[str, Any]]:
+    """Önceki data.json'daki aynı takvimin kayıtları (belge önbelleği olarak kullanılır)."""
+    previous = load_previous(settings.output)
+    if not previous or previous.get("demo"):
+        return {}
+    orders = previous.get(LIST_KEY_BY_KIND[spec.kind], []) or []
+    return {str(order.get("id")): order for order in orders
+            if isinstance(order, dict) and order.get("source_calendar") == spec.name}
 
 
 async def scrape_calendar_direct(page: Any, settings: Settings, spec: CalendarSpec,
                                  url: str) -> tuple[list[dict[str, Any]], int] | None:
     """Takvimi tıklamadan, feed + belge uçlarıyla okur; feed tanınmazsa None döner."""
-    feed_url = feed_url_for(url, spec.kind, settings.today, settings.window_days)
+    feed_url = feed_url_for(url, spec.kind, settings.today, settings.window_days, settings.past_days)
     try:
         payload = json.loads(await _get_text(page.context, feed_url, settings))
     except Exception as exc:
         log.debug("%s: feed alınamadı (%s).", spec.name, type(exc).__name__)
         return None
-    items = parse_feed_items(payload, settings.today, settings.window_days)
+    items = parse_feed_items(payload, settings.today, settings.window_days, settings.past_days)
     if items is None:
         return None
     unique = list({(item["id"], item["date"]): item for item in items}.values())
+    cache = previous_orders_by_id(settings, spec)
     gate = asyncio.Semaphore(DIRECT_CONCURRENCY)
-    results = await asyncio.gather(
-        *(_direct_order(page.context, settings, spec, item, gate) for item in unique))
+
+    async def resolve(item: dict[str, str]) -> tuple[dict[str, Any] | None, bool]:
+        reused = reusable_order(item, cache.get(item["id"]), settings.today)
+        if reused is not None:
+            return reused, True
+        return await _direct_order(page.context, settings, spec, item, gate)
+
+    results = await asyncio.gather(*(resolve(item) for item in unique))
     orders = [order for order, _readable in results if order]
     errors = sum(1 for _order, readable in results if not readable)
     return separate_repeated_ids(orders), errors

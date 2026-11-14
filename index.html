@@ -612,11 +612,14 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
 
 /* Sayfa kutusu: A4 (297mm) − 2×8mm kenar = 281mm; güvenli pay ile 277mm */
 .sheet-wrap {
-  width: calc(194mm * var(--pv-scale));
-  height: calc(277mm * var(--pv-scale));
+  --paper: 1;
+  width: calc(194mm * var(--pv-scale) * var(--paper));
+  height: calc(277mm * var(--pv-scale) * var(--paper));
   overflow: hidden;
   background: #fff;
 }
+/* A5: aynı düzen 0,7 oranında küçültülür (136mm × 194mm; A5 − 2×6mm kenar içine sığar) */
+.sheet-wrap.a5 { --paper: 0.7; }
 .sheet {
   width: 194mm;
   height: 277mm;
@@ -628,7 +631,7 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
   line-height: 1.2;
   display: flex;
   flex-direction: column;
-  transform: scale(var(--pv-scale));
+  transform: scale(calc(var(--pv-scale) * var(--paper, 1)));
   transform-origin: 0 0;
 }
 .sheet * { box-sizing: border-box; }
@@ -773,6 +776,8 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
 .dr-eq th { font-weight: 800; text-transform: uppercase; font-size: 0.82em; letter-spacing: 0.03em; }
 .dr-eq .c-qty, .dr-eq .c-wgt { width: 15%; text-align: right; white-space: nowrap; }
 .dr-eq .c-chk { width: 16%; text-align: center; white-space: nowrap; }
+.dr-eq.no-weight .c-qty { width: 22%; }
+.dr-eq.no-weight .c-chk { width: 18%; }
 /* Adet hücresinde metin de olabilir (ör. "Quietvox Lanyards"): kesilmesin, alt satıra kaysın */
 .dr-eq td.c-qty { white-space: normal; }
 .dr-eq tfoot td { font-weight: 800; }
@@ -809,6 +814,109 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
 /* ==========================================================================
    9) KÂĞIT ÇIKTISI
    ========================================================================== */
+/* ==========================================================================
+   8b) GÜN PANELİ, TARİH ÇUBUĞU, DURUM ROZETLERİ, PENCERELER
+   ========================================================================== */
+.top-actions { display: flex; gap: 8px; align-items: center; }
+.btn-gear { min-width: var(--tap); padding: 0 12px; justify-content: center; }
+
+.daypanel { padding: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.daypanel h2 { grid-column: 1 / -1; margin: 0; font-size: 17px; font-weight: 800; }
+.tile {
+  border: 0;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+  min-height: var(--tap);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  background: var(--navy);
+  color: var(--white);
+}
+.tile.alt { background: var(--gold-deep); }
+.tile .n { font-family: var(--font-head); font-size: 34px; font-weight: 800; line-height: 1; }
+.tile .t { font-size: 15px; font-weight: 700; margin-top: 4px; }
+.tile .s { font-size: 13px; margin-top: 2px; }
+
+.datebar { display: grid; grid-template-columns: var(--tap) minmax(0, 1fr) var(--tap); gap: 8px; align-items: center; }
+.datebar > button {
+  min-height: var(--tap);
+  border-radius: 14px;
+  border: 2px solid var(--navy);
+  background: var(--glass-strong);
+  color: var(--navy);
+  font-size: 26px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.date-pick {
+  position: relative;
+  min-height: var(--tap);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  border: 2px solid var(--gold);
+  background: var(--glass-strong);
+  font-weight: 800;
+  font-size: 17px;
+  text-align: center;
+  padding: 4px 10px;
+}
+.date-pick input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; border: 0; }
+.date-pick.active { background: var(--gold-deep); border-color: var(--gold-deep); color: var(--white); }
+.date-pick:focus-within { outline: 3px solid var(--navy); outline-offset: 2px; }
+
+.chip.st { font-weight: 800; }
+.chip.st-reserved { background: #E4E6EC; color: #2B3040; }
+.chip.st-confirmed { background: var(--info-bg); color: var(--info-ink); }
+.chip.st-delivered { background: #EADCF3; color: #4B1F63; }
+.chip.st-returned { background: var(--ok-bg); color: var(--ok); }
+.chip.st-cancelled, .chip.st-lost { background: var(--err-bg); color: var(--err-ink); }
+.chip.pending { background: var(--warn-bg); color: var(--warn-ink); font-weight: 800; }
+
+.checks.single { grid-template-columns: 1fr; }
+.check .sub { display: block; font-size: 12px; font-weight: 600; opacity: 0.85; }
+.print-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
+.print-col { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 0; }
+.print-grid .btn-print { font-size: 16px; padding-left: 6px; padding-right: 6px; }
+
+dialog.dlg {
+  border: 0;
+  padding: 0;
+  border-radius: var(--radius);
+  width: min(92vw, 460px);
+  max-height: 86vh;
+  background: var(--cream);
+  color: var(--navy);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+}
+dialog.dlg::backdrop { background: rgba(27, 32, 48, 0.55); }
+.dlg-body { padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.dlg-body h2 { margin: 0; font-size: 20px; font-weight: 800; }
+.dlg-body p { margin: 0; font-size: 16px; line-height: 1.4; }
+.dlg-list { margin: 0; padding: 0; list-style: none; font-size: 15px; max-height: 38vh; overflow: auto; }
+.dlg-list li { display: flex; justify-content: space-between; gap: 12px; padding: 7px 0; border-bottom: 1px solid var(--hairline); }
+.dlg-list li b { white-space: nowrap; }
+.dlg-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.dlg-btns.one { grid-template-columns: 1fr; }
+.dlg-input {
+  min-height: var(--tap);
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: 12px;
+  border: 2px solid var(--navy);
+  padding: 0 12px;
+  font-size: 16px;
+  background: var(--white);
+  color: var(--navy);
+}
+.dlg-note { font-size: 14px !important; color: var(--ink-soft); }
+
+/* ==========================================================================
+   9) KÂĞIT ÇIKTISI
+   Varsayılan A4; WayBill yazdırılırken sayfa boyutu betikle A5'e çevrilir.
+   ========================================================================== */
 @page { size: A4; margin: 8mm; }
 
 @media print {
@@ -835,18 +943,18 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
   .pv-bar { display: none !important; }
   #print-sheets { display: block !important; padding: 0 !important; margin: 0 !important; }
   .sheet-wrap {
-    width: 194mm !important;
-    height: 277mm !important;
+    width: calc(194mm * var(--paper, 1)) !important;
+    height: calc(277mm * var(--paper, 1)) !important;
     margin: 0 !important;
     box-shadow: none !important;
     overflow: hidden !important;
     break-inside: avoid;
     page-break-inside: avoid;
   }
-  .sheet { transform: none !important; }
-  /* 1. sayfadan sonra kır; 2. sayfadan sonra KIRMA (boş 3. sayfa çıkmasın) */
-  .sheet-wrap.p1 { break-after: page; page-break-after: always; }
-  .sheet-wrap.p2 { break-after: auto; page-break-after: auto; }
+  .sheet { transform: scale(var(--paper, 1)) !important; }
+  /* Sayfalar arasında kır; son sayfadan sonra KIRMA (boş sayfa çıkmasın) */
+  .sheet-wrap { break-after: page; page-break-after: always; }
+  .sheet-wrap:last-child { break-after: auto; page-break-after: auto; }
   .glass { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; box-shadow: none !important; }
 }
 </style>
@@ -859,14 +967,28 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
     <h1>Quiet<span>vox</span></h1>
     <div class="updated" id="updated">Son güncelleme: —</div>
   </div>
-  <button type="button" class="btn-refresh" id="btn-refresh" aria-label="Verileri yenile">
-    <span class="spin" aria-hidden="true">↻</span><span>Yenile</span>
-  </button>
+  <div class="top-actions">
+    <button type="button" class="btn-refresh" id="btn-refresh" aria-label="Verileri yenile">
+      <span class="spin" aria-hidden="true">↻</span><span>Yenile</span>
+    </button>
+    <button type="button" class="btn-refresh btn-gear" id="btn-settings" aria-label="Ayarlar">⚙</button>
+  </div>
 </header>
 
 <main id="app">
   <!-- Uyarı bantları (örnek veri, oturum hatası, eski veri, çevrimdışı) -->
   <div class="banners" id="banners" role="status" aria-live="polite"></div>
+
+  <!-- Bugünün paneli -->
+  <section class="glass daypanel" id="daypanel" aria-labelledby="day-h">
+    <h2 id="day-h">Bugün</h2>
+    <button type="button" class="tile" id="tile-deliveries" data-tab="deliveries">
+      <div class="n" id="tile-n-deliveries">0</div><div class="t">📦 Verilecek</div><div class="s" id="tile-s-deliveries"></div>
+    </button>
+    <button type="button" class="tile alt" id="tile-returns" data-tab="returns">
+      <div class="n" id="tile-n-returns">0</div><div class="t">🔄 Alınacak</div><div class="s" id="tile-s-returns"></div>
+    </button>
+  </section>
 
   <!-- Yarın hatırlatıcısı -->
   <section class="glass reminder" id="reminder" aria-labelledby="rem-h">
@@ -892,6 +1014,16 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
     <button type="button" class="filter" data-filter="all" aria-pressed="false">Tümü</button>
   </div>
 
+  <!-- Tarih çubuğu: istenen güne git (geçmiş günler dahil) -->
+  <div class="datebar" role="group" aria-label="Gün seç">
+    <button type="button" id="date-prev" aria-label="Önceki gün">‹</button>
+    <label class="date-pick" id="date-pick">
+      <span id="date-label">📅 Tarih seç</span>
+      <input type="date" id="date-input" aria-label="Tarih seç">
+    </label>
+    <button type="button" id="date-next" aria-label="Sonraki gün">›</button>
+  </div>
+
   <!-- Sipariş listesi -->
   <div class="list" id="list" role="tabpanel" aria-labelledby="tab-deliveries" tabindex="-1">
     <div class="glass empty">Yükleniyor…</div>
@@ -899,6 +1031,9 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
 </main>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<!-- Onay ve ayar pencereleri (içerik betikle doldurulur) -->
+<dialog class="dlg" id="dlg" aria-labelledby="dlg-title"><div class="dlg-body" id="dlg-body"></div></dialog>
 
 <noscript>
   <p style="padding:20px;font-size:20px">Bu uygulamanın çalışması için tarayıcıda JavaScript açık olmalıdır.</p>
@@ -943,6 +1078,22 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
   var EQUIP_TWO_COL_ROWS = 28;                // Bu sayıdan çok satırda yan yana iki tablo
   var QR_PIXELS = 384;
 
+  var LS_GITHUB = 'qv.github.v1';             // GitHub erişim anahtarı (yalnızca bu cihazda)
+  var LS_PENDING = 'qv.pending.v1';           // Quietvox'a gönderilmiş, sonucu beklenen işlemler
+  var PENDING_FAIL_MS = 12 * 60 * 1000;       // Bu süre sonunda durum değişmediyse "olmadı" say
+  var ACTION_WORKFLOW = 'action.yml';
+  var CONSUMABLE_PERCENT = 3;                 // Sarf kalemlerinde iade adedi: teslimin en fazla %3'ü
+  var CONSUMABLE_RE = /QV1\.38\b|battery\s+aa|QV1\.2S\b|earphone\s+3[.,]5\s*mm\s+new\s+style/i;
+  var STATUS_LABELS = {
+    reserved: 'Rezerve', confirmed: 'Onaylı', delivered: 'Teslim edildi',
+    returned: 'İade alındı', cancelled: 'İptal', lost: 'Kayıp'
+  };
+  var STATUS_RANK = { reserved: 1, confirmed: 2, delivered: 5, returned: 6 };
+  var ACTIONS = {
+    delivered: { field: 'prepared', label: 'Hazırlandı', quietvox: 'Delivered' },
+    returned:  { field: 'done',     label: 'Teslim Alındı', quietvox: 'Returned' }
+  };
+
   var TAB_INFO = {
     deliveries: { kind: 'delivery', finalLabel: 'Teslim Edildi', noun: 'verilecek' },
     returns:    { kind: 'return',   finalLabel: 'Teslim Alındı', noun: 'alınacak' }
@@ -958,6 +1109,9 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
     tab: 'deliveries',
     filter: 'all',
     filterChosen: false,   // kullanıcı filtreyi elle seçti mi
+    date: '',              // filter === 'date' iken seçili gün (YYYY-AA-GG)
+    pending: {},           // { "delivery:2000…": { action, ts } }
+    token: '',             // GitHub erişim anahtarı
     marks: {},             // { "delivery:QV-1": { prepared, done, ts } }
     today: '',
     tomorrow: ''
@@ -1108,7 +1262,8 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
   function normalizeEquipment(list) {
     if (!Array.isArray(list)) return [];
     return list.filter(function (e) { return e && typeof e === 'object'; }).map(function (e) {
-      return { item: str(e.item), quantity: str(e.quantity), weight: str(e.weight) };
+      return { item: str(e.item), quantity: str(e.quantity), weight: str(e.weight),
+               return_quantity: str(e.return_quantity) };
     });
   }
 
@@ -1123,6 +1278,7 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
       cruise: o.cruise === true,
       title: str(o.title),
       location_name: str(o.location_name),
+      status: str(o.status),
       waybill: {
         tour_manager_name: str(w.tour_manager_name),
         tour_manager_phone: str(w.tour_manager_phone),
@@ -1231,10 +1387,35 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
     return ordersOf(tab).filter(function (o) { return o.date === dateStr; });
   }
 
+  // Seçili görünümün günü; "Tümü"nde boş döner
+  function viewDate() {
+    if (state.filter === 'today') return state.today;
+    if (state.filter === 'tomorrow') return state.tomorrow;
+    if (state.filter === 'date') return state.date;
+    return '';
+  }
+
+  // "Tümü" = bugünden itibaren; geçmiş günlere tarih çubuğundan gidilir
+  function upcomingOrders(tab) {
+    return ordersOf(tab).filter(function (o) { return o.date >= state.today; });
+  }
+
+  function filteredOrdersFor(tab) {
+    var day = viewDate();
+    return day ? ordersOn(tab, day) : upcomingOrders(tab);
+  }
+
   function filteredOrders() {
-    if (state.filter === 'today') return ordersOn(state.tab, state.today);
-    if (state.filter === 'tomorrow') return ordersOn(state.tab, state.tomorrow);
-    return ordersOf(state.tab);
+    return filteredOrdersFor(state.tab);
+  }
+
+  // Sipariş Quietvox'ta hedef duruma (ya da ötesine) ulaştı mı?
+  function reached(order, action) {
+    return (STATUS_RANK[order.status] || 0) >= STATUS_RANK[action];
+  }
+
+  function isDone(order, tab) {
+    return reached(order, tab === 'returns' ? 'returned' : 'delivered');
   }
 
   // Varsayılan filtre: bugün kayıt varsa "Bugün", yoksa "Tümü"
@@ -1353,14 +1534,14 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
       var selected = state.tab === tab;
       btn.setAttribute('aria-selected', selected ? 'true' : 'false');
       btn.tabIndex = selected ? 0 : -1;
-      $('#badge-' + tab).textContent = ordersOf(tab).length;
+      $('#badge-' + tab).textContent = filteredOrdersFor(tab).length;
     });
     $('#list').setAttribute('aria-labelledby', 'tab-' + state.tab);
 
     var counts = {
       today: ordersOn(state.tab, state.today).length,
       tomorrow: ordersOn(state.tab, state.tomorrow).length,
-      all: ordersOf(state.tab).length
+      all: upcomingOrders(state.tab).length
     };
     var labels = { today: 'Bugün', tomorrow: 'Yarın', all: 'Tümü' };
     document.querySelectorAll('.filter').forEach(function (btn) {
@@ -1368,6 +1549,29 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
       btn.setAttribute('aria-pressed', state.filter === f ? 'true' : 'false');
       btn.textContent = labels[f] + ' (' + counts[f] + ')';
     });
+
+    var picked = state.filter === 'date';
+    $('#date-pick').classList.toggle('active', picked);
+    $('#date-label').textContent = picked ? '📅 ' + longDate(state.date) : '📅 Tarih seç';
+    $('#date-input').value = viewDate() || state.today;
+  }
+
+  // Bugünün paneli: kaç iş var, kaçı Quietvox'ta tamamlanmış
+  function renderDayPanel() {
+    Object.keys(TAB_INFO).forEach(function (tab) {
+      var orders = ordersOn(tab, state.today);
+      var done = orders.filter(function (o) { return isDone(o, tab); }).length;
+      $('#tile-n-' + tab).textContent = orders.length;
+      $('#tile-s-' + tab).textContent = orders.length ? done + ' tamam · ' + (orders.length - done) + ' bekliyor' : 'iş yok';
+    });
+    $('#day-h').textContent = 'Bugün · ' + longDate(state.today);
+  }
+
+  function goToDate(dateStr) {
+    if (!ISO_DATE.test(dateStr)) return;
+    var filter = dateStr === state.today ? 'today' : (dateStr === state.tomorrow ? 'tomorrow' : 'date');
+    setState({ filter: filter, date: dateStr, filterChosen: true });
+    render(true);
   }
 
   /* ========================================================================
@@ -1388,6 +1592,9 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
     var when = shortDate(order.date) || 'Tarih yok';
     append(chips, el('span', 'chip', '📅 ' + when + (order.time ? ' · ' + order.time : '')));
     if (order.cruise) append(chips, el('span', 'chip cruise', '🚢 Cruise'));
+    if (order.status) {
+      append(chips, el('span', 'chip st st-' + order.status, STATUS_LABELS[order.status] || order.status));
+    }
     var qv = order.waybill.qv_id || order.id;
     if (qv) append(chips, el('span', 'chip qv', 'QV ID: ' + qv));
     return chips;
@@ -1437,6 +1644,38 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
       btn.setAttribute('aria-pressed', next[field] ? 'true' : 'false');
       card.classList.toggle('done', next.done === true);
       if (!saved) showToast('İşaret bu cihaza kaydedilemedi');
+    });
+    return btn;
+  }
+
+  function setMark(key, field, value) {
+    var next = Object.assign({}, markOf(key), { ts: Date.now() });
+    next[field] = value;
+    var marks = Object.assign({}, state.marks);
+    if (!next.prepared && !next.done) delete marks[key];
+    else marks[key] = next;
+    setState({ marks: marks });
+    if (!lsWrite(LS_MARKS, marks)) showToast('İşaret bu cihaza kaydedilemedi');
+  }
+
+  // Quietvox'a yazan buton ("Hazırlandı" → Delivered, "Teslim Alındı" → Returned)
+  function remoteButton(order, key, action) {
+    var info = ACTIONS[action];
+    var done = reached(order, action);
+    var pending = state.pending[key] && state.pending[key].action === action;
+    var marked = markOf(key)[info.field] === true;
+    var btn = el('button', 'check');
+    btn.type = 'button';
+    btn.setAttribute('aria-pressed', done || marked ? 'true' : 'false');
+    var text = el('span', '');
+    var sub = done ? 'Quietvox: ' + info.quietvox : (pending ? 'Quietvox\'a gönderildi…' : 'Quietvox\'a yazar');
+    append(text, document.createTextNode(info.label), el('span', 'sub', sub));
+    append(btn, el('span', 'box', '✓'), text);
+    btn.querySelector('.box').setAttribute('aria-hidden', 'true');
+    btn.addEventListener('click', function () {
+      if (done) { showToast('Quietvox\'ta zaten ' + info.quietvox); return; }
+      if (marked && !pending) { setMark(key, info.field, false); render(true); return; }
+      openActionDialog(order, key, action);
     });
     return btn;
   }
@@ -1514,7 +1753,8 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
     var info = TAB_INFO[tab];
     var key = orderKey(order, info.kind);
     var w = order.waybill;
-    var card = el('article', 'glass card' + (markOf(key).done ? ' done' : ''));
+    var finished = isDone(order, tab) || markOf(key).done;
+    var card = el('article', 'glass card' + (finished ? ' done' : ''));
     var hotelName = order.location_name || order.title || 'Adı belirtilmemiş';
 
     var main = el('div', 'card-main');
@@ -1534,18 +1774,33 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
     if (hotelTel) append(quick, linkButton('btn-ghost', '📞 Oteli Ara', 'tel:+' + hotelTel, false));
 
     var checks = el('div', 'checks');
-    append(checks,
-      checkButton(key, 'prepared', 'Hazırlandı', card),
-      checkButton(key, 'done', info.finalLabel, card));
+    if (tab === 'deliveries') {
+      append(checks, remoteButton(order, key, 'delivered'), checkButton(key, 'done', info.finalLabel, card));
+    } else {
+      checks.classList.add('single');
+      append(checks, remoteButton(order, key, 'returned'));
+    }
+    var pending = state.pending[key];
+    if (pending) {
+      var late = Date.now() - pending.ts > PENDING_FAIL_MS;
+      append(main.querySelector('.chips'), el('span', 'chip pending',
+        late ? '⚠️ Quietvox\'ta değişmedi' : '⏳ Quietvox\'a gönderildi'));
+    }
 
+    // Etiketler ayrı ayrı yazdırılır: WayBill A5, D&R Formu A4
     var printRow = el('div', 'print-row');
-    var printBtn = el('button', 'btn btn-print', '🖨️ Etiketleri Yazdır (2 Sayfa)');
-    printBtn.type = 'button';
-    printBtn.addEventListener('click', function () { printOrder(order); });
-    var previewBtn = el('button', 'btn btn-link', 'Önizleme (yazdırmadan önce bak)');
-    previewBtn.type = 'button';
-    previewBtn.addEventListener('click', function () { openPreview(order, previewBtn); });
-    append(printRow, printBtn, previewBtn);
+    var printGrid = el('div', 'print-grid');
+    [['waybill', '🖨️ WayBill (A5)'], ['form', '🖨️ D&R Formu (A4)']].forEach(function (pair) {
+      var col = el('div', 'print-col');
+      var printBtn = el('button', 'btn btn-print', pair[1]);
+      printBtn.type = 'button';
+      printBtn.addEventListener('click', function () { printOrder(order, pair[0]); });
+      var previewBtn = el('button', 'btn btn-link', 'Önizle');
+      previewBtn.type = 'button';
+      previewBtn.addEventListener('click', function () { openPreview(order, previewBtn, pair[0]); });
+      append(printGrid, append(col, printBtn, previewBtn));
+    });
+    append(printRow, printGrid);
 
     return append(card,
       el('div', 'done-flag', '✓ ' + info.finalLabel),
@@ -1562,6 +1817,7 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
     var noun = TAB_INFO[state.tab].noun;
     if (state.filter === 'today') return 'Bugün ' + noun + ' sipariş yok.';
     if (state.filter === 'tomorrow') return 'Yarın ' + noun + ' sipariş yok.';
+    if (state.filter === 'date') return longDate(state.date) + ' için ' + noun + ' sipariş yok.';
     return 'Önümüzdeki günlerde ' + noun + ' sipariş görünmüyor.';
   }
 
@@ -1575,7 +1831,7 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
     if (orders.length === 0) {
       var empty = el('div', 'glass empty');
       append(empty, el('p', '', emptyMessage()));
-      if (state.filter !== 'all' && ordersOf(state.tab).length > 0) {
+      if (state.filter !== 'all' && upcomingOrders(state.tab).length > 0) {
         var all = el('button', 'btn btn-ghost', 'Tümünü göster');
         all.type = 'button';
         all.addEventListener('click', function () {
@@ -1611,11 +1867,14 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
     if (state.data && !state.filterChosen) {
       setState({ filter: defaultFilter(state.tab) });
     }
+    prunePending();
     renderUpdated();
     renderBanners();
     renderTabsAndFilters();
+    renderDayPanel();
 
-    var signature = JSON.stringify([state.data, state.tab, state.filter, state.today, state.loadError]);
+    var signature = JSON.stringify([state.data, state.tab, state.filter, state.date, state.today,
+      state.loadError, state.pending, state.token !== '']);
     if (force || signature !== lastSignature) {
       lastSignature = signature;
       renderReminder();
@@ -1741,15 +2000,19 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
 
   // Tek ekipman tablosu; totalWeight null ise toplam satırı eklenmez
   function buildEquipmentPrintTable(rows, totalWeight) {
-    var table = el('table', 'dr-eq');
+    // Quietvox kalem başına ağırlık vermiyorsa o sütun hiç basılmaz
+    var hasWeight = rows.some(function (e) { return e.weight; });
+    var table = el('table', 'dr-eq' + (hasWeight ? '' : ' no-weight'));
     var head = el('tr');
     append(head,
-      el('th', 'c-item', 'Item'), el('th', 'c-qty', 'Quantity'), el('th', 'c-wgt', 'Weight'),
+      el('th', 'c-item', 'Item'), el('th', 'c-qty', 'Quantity'),
+      hasWeight ? el('th', 'c-wgt', 'Weight') : null,
       tickHeader('Delivered'), tickHeader('Returned'));
     var tbody = el('tbody');
     rows.forEach(function (e) {
       append(tbody, append(el('tr'),
-        el('td', 'c-item', orDash(e.item)), el('td', 'c-qty', orDash(e.quantity)), el('td', 'c-wgt', orDash(e.weight)),
+        el('td', 'c-item', orDash(e.item)), el('td', 'c-qty', orDash(e.quantity)),
+        hasWeight ? el('td', 'c-wgt', orDash(e.weight)) : null,
         tickCell(), tickCell()));
     });
     append(table, append(el('thead'), head), tbody);
@@ -1758,7 +2021,7 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
       // Toplam ağırlık uzun olabilir ("4.51 Kg / 9.94 Pounds"): kalan dört sütuna yayılır
       var label = el('td', '', 'Total weight');
       var total = el('td', 'c-total', orDash(totalWeight));
-      total.colSpan = 4;
+      total.colSpan = hasWeight ? 4 : 3;
       append(foot, label, total);
       append(table, append(el('tfoot'), foot));
     }
@@ -1865,9 +2128,30 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
     }
   }
 
-  function fillPrintArea(order) {
+  // which: 'waybill' (A5) ya da 'form' (A4). Sayfa boyutu yazdırmadan önce ayarlanır.
+  function setPageSize(which) {
+    var style = document.getElementById('page-size');
+    if (!style) {
+      style = document.createElement('style');
+      style.id = 'page-size';
+      document.head.appendChild(style);
+    }
+    style.textContent = which === 'waybill'
+      ? '@page { size: A5; margin: 6mm; }'
+      : '@page { size: A4; margin: 8mm; }';
+  }
+
+  function fillPrintArea(order, which) {
     var sheets = $('#print-sheets');
-    sheets.replaceChildren(buildWaybillSheet(order), buildFormSheet(order));
+    var sheet;
+    if (which === 'waybill') {
+      sheet = buildWaybillSheet(order);
+      sheet.classList.add('a5');
+    } else {
+      sheet = buildFormSheet(order);
+    }
+    sheets.replaceChildren(sheet);
+    setPageSize(which);
     document.body.classList.add('has-print');
     fitPrintSheets(sheets);
   }
@@ -1878,8 +2162,8 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
   }
 
   // Kart üzerindeki buton: alanı doldur (QR dahil, senkron) ve hemen yazdır
-  function printOrder(order) {
-    fillPrintArea(order);
+  function printOrder(order, which) {
+    fillPrintArea(order, which);
     window.print();
   }
 
@@ -1889,12 +2173,13 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
     var sheet = document.querySelector('#print-sheets .sheet');
     if (!sheet) return;
     var available = window.innerWidth - 24;
-    var scale = Math.min(1, available / sheet.offsetWidth);
+    var paper = sheet.parentElement.classList.contains('a5') ? 0.7 : 1;
+    var scale = Math.min(1, available / (sheet.offsetWidth * paper));
     $('#print-root').style.setProperty('--pv-scale', String(scale));
   }
 
-  function openPreview(order, opener) {
-    fillPrintArea(order);
+  function openPreview(order, opener, which) {
+    fillPrintArea(order, which);
     previewReturnFocus = opener || null;
     var root = $('#print-root');
     document.body.classList.add('pv-open');
@@ -1902,7 +2187,8 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
     root.setAttribute('role', 'dialog');
     root.setAttribute('aria-modal', 'true');
     root.setAttribute('aria-labelledby', 'pv-title');
-    $('#pv-title').textContent = 'Önizleme · ' + (order.location_name || order.id || '');
+    $('#pv-title').textContent = (which === 'waybill' ? 'WayBill (A5) · ' : 'D&R Formu (A4) · ') +
+      (order.location_name || order.id || '');
     updatePreviewScale();
     root.scrollTop = 0;
     $('#pv-close').focus();
@@ -1919,6 +2205,174 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
     clearPrintArea();
     if (previewReturnFocus && document.contains(previewReturnFocus)) previewReturnFocus.focus();
     previewReturnFocus = null;
+  }
+
+  /* ========================================================================
+     QUIETVOX'A YAZMA
+     Buton, GitHub'daki "Quietvox İşlem" iş akışını tetikler; iş akışı Quietvox'ta
+     siparişi günceller. Bunun için bu cihazda bir kez GitHub erişim anahtarı girilir.
+     ======================================================================== */
+  // GitHub Pages adresinden "sahip/repo" çıkarılır (ör. kullanici.github.io/repo/)
+  function repoSlug() {
+    var host = /^([^.]+)\.github\.io$/.exec(window.location.hostname);
+    var first = window.location.pathname.split('/').filter(Boolean)[0];
+    return host && first ? host[1] + '/' + first : '';
+  }
+
+  function githubRequest(path, options) {
+    var headers = { 'Accept': 'application/vnd.github+json', 'Authorization': 'Bearer ' + state.token };
+    return fetch('https://api.github.com/repos/' + repoSlug() + path,
+      Object.assign({ headers: headers }, options || {}));
+  }
+
+  // İade adedi kuralı: sarf kalemleri teslimin en fazla %3'ü (yukarı yuvarlanır), diğerleri aynı
+  function plannedReturn(item) {
+    if (!/^\d+$/.test(item.quantity)) return '';
+    var count = parseInt(item.quantity, 10);
+    return String(CONSUMABLE_RE.test(item.item) ? Math.ceil(count * CONSUMABLE_PERCENT / 100) : count);
+  }
+
+  function closeDialog() {
+    var dialog = $('#dlg');
+    if (dialog.open) dialog.close();
+  }
+
+  function dialogButton(className, text, handler) {
+    var btn = el('button', 'btn ' + className, text);
+    btn.type = 'button';
+    btn.addEventListener('click', handler);
+    return btn;
+  }
+
+  function showDialog(nodes) {
+    var body = $('#dlg-body');
+    body.replaceChildren.apply(body, nodes.filter(Boolean));
+    var dialog = $('#dlg');
+    if (!dialog.open) dialog.showModal();
+  }
+
+  function savePending(pending) {
+    setState({ pending: pending });
+    lsWrite(LS_PENDING, pending);
+  }
+
+  // Durumu Quietvox'ta değişmiş işlemleri bekleyenler listesinden çıkar
+  function prunePending() {
+    if (!state.data) return;
+    var keys = Object.keys(state.pending);
+    if (!keys.length) return;
+    var next = {};
+    keys.forEach(function (key) {
+      var entry = state.pending[key];
+      var tab = entry.action === 'returned' ? 'returns' : 'deliveries';
+      var order = ordersOf(tab).filter(function (o) { return orderKey(o, TAB_INFO[tab].kind) === key; })[0];
+      var stale = Date.now() - entry.ts > 24 * 60 * 60 * 1000;
+      if (order && !reached(order, entry.action) && !stale) next[key] = entry;
+    });
+    if (Object.keys(next).length !== keys.length) savePending(next);
+  }
+
+  function sendAction(order, key, action) {
+    var info = ACTIONS[action];
+    var id = order.dr_form.qv_booking_id || order.id.split('_')[0];
+    var body = JSON.stringify({ ref: 'main', inputs: { action: action, order_id: id, order_date: order.date } });
+    closeDialog();
+    showToast('Quietvox\'a gönderiliyor…');
+    githubRequest('/actions/workflows/' + ACTION_WORKFLOW + '/dispatches', { method: 'POST', body: body })
+      .then(function (res) {
+        if (res.status === 401 || res.status === 403 || res.status === 404) throw new Error('auth');
+        if (!res.ok) throw new Error('http');
+        var pending = Object.assign({}, state.pending);
+        pending[key] = { action: action, ts: Date.now() };
+        savePending(pending);
+        setMark(key, info.field, true);
+        showToast('Gönderildi. Quietvox\'ta 2–3 dakika içinde ' + info.quietvox + ' olacak.');
+        render(true);
+        [120000, 210000, 330000].forEach(function (ms) {
+          window.setTimeout(function () { loadData(false); }, ms);
+        });
+      })
+      .catch(function (err) {
+        showToast(err.message === 'auth'
+          ? 'Gönderilemedi: erişim anahtarı geçersiz ya da yetkisiz (⚙ Ayarlar)'
+          : 'Gönderilemedi: bağlantıyı kontrol edip tekrar deneyin');
+      });
+  }
+
+  function returnPreviewList(order) {
+    var list = el('ul', 'dlg-list');
+    order.dr_form.equipment.forEach(function (item) {
+      var planned = plannedReturn(item);
+      if (planned === '') return;
+      var row = el('li');
+      append(row, el('span', '', item.item), el('b', '', item.quantity + ' → ' + planned));
+      append(list, row);
+    });
+    return list.childNodes.length ? list : null;
+  }
+
+  function openActionDialog(order, key, action) {
+    var info = ACTIONS[action];
+    var title = el('h2', '', info.label + ' → Quietvox: ' + info.quietvox);
+    title.id = 'dlg-title';
+    var who = el('p', '', (order.location_name || order.title) + ' · ' + (order.dr_form.qv_booking_id || order.id));
+    var canSend = state.token && repoSlug();
+    var markOnly = dialogButton('btn-ghost', 'Yalnızca burada işaretle', function () {
+      setMark(key, info.field, true);
+      closeDialog();
+      render(true);
+    });
+    var nodes = [title, who];
+    if (action === 'returned') {
+      nodes.push(el('p', 'dlg-note', 'İade adetleri şöyle yazılacak (teslim → iade):'), returnPreviewList(order));
+    } else {
+      nodes.push(el('p', 'dlg-note', 'Durum Delivered yapılacak; Self Delivery ve Self Return işaretlenecek.'));
+    }
+    if (canSend) {
+      var buttons = el('div', 'dlg-btns');
+      append(buttons, dialogButton('btn-ghost', 'Vazgeç', closeDialog),
+        dialogButton('btn-print', 'Onayla ve gönder', function () { sendAction(order, key, action); }));
+      nodes.push(buttons, markOnly);
+    } else {
+      nodes.push(el('p', '', 'Quietvox\'a yazmak için önce ⚙ Ayarlar\'dan erişim anahtarını girin.'));
+      var fallback = el('div', 'dlg-btns');
+      append(fallback, markOnly, dialogButton('btn-print', '⚙ Ayarlar', openSettings));
+      nodes.push(fallback, dialogButton('btn-link', 'Vazgeç', closeDialog));
+    }
+    showDialog(nodes);
+  }
+
+  function openSettings() {
+    var title = el('h2', '', '⚙ Ayarlar');
+    title.id = 'dlg-title';
+    var slug = repoSlug();
+    var input = el('input', 'dlg-input');
+    input.type = 'password';
+    input.autocomplete = 'off';
+    input.placeholder = 'github_pat_…';
+    input.value = state.token;
+    input.setAttribute('aria-label', 'GitHub erişim anahtarı');
+    var buttons = el('div', 'dlg-btns');
+    append(buttons,
+      dialogButton('btn-ghost', 'Kapat', closeDialog),
+      dialogButton('btn-print', 'Kaydet ve dene', function () {
+        var token = input.value.trim();
+        setState({ token: token });
+        lsWrite(LS_GITHUB, { token: token });
+        if (!token) { showToast('Anahtar silindi'); closeDialog(); render(true); return; }
+        githubRequest('/actions/workflows/' + ACTION_WORKFLOW).then(function (res) {
+          showToast(res.ok ? 'Anahtar çalışıyor ✓' : 'Anahtar kabul edilmedi (' + res.status + ')');
+          if (res.ok) closeDialog();
+          render(true);
+        }).catch(function () { showToast('Denenemedi: bağlantı yok'); });
+      }));
+    showDialog([
+      title,
+      el('p', '', 'Quietvox\'a yazabilmek için GitHub erişim anahtarı (yalnızca bu cihazda saklanır):'),
+      input,
+      el('p', 'dlg-note', slug ? 'Repo: ' + slug : 'Bu adres GitHub Pages olmadığı için Quietvox\'a yazma kapalı.'),
+      buttons
+    ]);
   }
 
   /* ========================================================================
@@ -1950,6 +2404,24 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
     });
 
     $('#btn-refresh').addEventListener('click', function () { loadData(true); });
+    $('#btn-settings').addEventListener('click', openSettings);
+
+    // Tarih çubuğu
+    $('#date-input').addEventListener('change', function (ev) { goToDate(ev.target.value); });
+    $('#date-prev').addEventListener('click', function () { goToDate(addDays(viewDate() || state.today, -1)); });
+    $('#date-next').addEventListener('click', function () { goToDate(addDays(viewDate() || state.today, 1)); });
+
+    // Bugünün paneli: ilgili sekmeyi bugüne getir
+    document.querySelectorAll('.tile').forEach(function (tile) {
+      tile.addEventListener('click', function () {
+        setState({ tab: tile.getAttribute('data-tab'), filter: 'today', filterChosen: true });
+        render(true);
+        $('#list').scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'start' });
+      });
+    });
+
+    // Pencere dışına dokununca kapat
+    $('#dlg').addEventListener('click', function (ev) { if (ev.target === ev.currentTarget) closeDialog(); });
 
     $('#pv-close').addEventListener('click', closePreview);
     $('#pv-print').addEventListener('click', function () { window.print(); });
@@ -1994,7 +2466,13 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
      ======================================================================== */
   function init() {
     var today = istanbulDate(new Date());
-    setState({ today: today, tomorrow: addDays(today, 1), marks: loadMarks() });
+    var github = lsRead(LS_GITHUB);
+    var pending = lsRead(LS_PENDING);
+    setState({
+      today: today, tomorrow: addDays(today, 1), marks: loadMarks(),
+      token: github && typeof github.token === 'string' ? github.token : '',
+      pending: pending && typeof pending === 'object' && !Array.isArray(pending) ? pending : {}
+    });
     bindEvents();
     render(true);
     loadData(false);

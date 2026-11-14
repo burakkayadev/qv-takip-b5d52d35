@@ -1,0 +1,86 @@
+name: Quietvox İşlem
+
+# Uygulamadaki "Hazırlandı" / "Teslim Alındı" butonları bu iş akışını tetikler.
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'delivered = Hazırlandı, returned = Teslim Alındı'
+        type: choice
+        required: true
+        options: ['delivered', 'returned']
+      order_id:
+        description: 'QV Booking ID'
+        required: true
+      order_date:
+        description: 'Siparişin takvimdeki günü (YYYY-AA-GG)'
+        required: true
+      dry_run:
+        description: 'Deneme: formu doldur ama KAYDETME'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+# Senkronla aynı grup: aynı anda iki iş Quietvox'a ya da data.json'a yazmasın
+concurrency:
+  group: quietvox-sync
+  cancel-in-progress: false
+
+jobs:
+  action:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      QV_USER: ${{ secrets.QV_USER }}
+      QV_PASS: ${{ secrets.QV_PASS }}
+      QV_HTTP_USER: ${{ secrets.QV_HTTP_USER }}
+      QV_HTTP_PASS: ${{ secrets.QV_HTTP_PASS }}
+      NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+    steps:
+      - name: Depoyu al
+        uses: actions/checkout@v4
+
+      - name: Python 3.12 kur
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Bağımlılıkları kur
+        run: pip install -r requirements.txt
+
+      - name: Playwright Chromium kur
+        run: python -m playwright install --with-deps chromium
+
+      # Girdiler komut satırına gömülmez, ortam değişkeni olarak verilir (enjeksiyona karşı)
+      - name: Siparişi Quietvox'ta güncelle
+        env:
+          QV_ACTION: ${{ inputs.action }}
+          QV_ORDER_ID: ${{ inputs.order_id }}
+          QV_ORDER_DATE: ${{ inputs.order_date }}
+          DRY_RUN: ${{ inputs.dry_run && '1' || '0' }}
+        run: python qv_action.py
+
+      # İşlemden sonra veriyi tazele ki uygulama yeni durumu hemen görsün
+      - name: Veriyi yeniden senkronla
+        if: always()
+        env:
+          QV_PAST_DAYS: '31'
+          QV_WINDOW_DAYS: '32'
+        run: python scraper.py
+
+      - name: data.json değiştiyse commit et ve gönder
+        if: always()
+        run: |
+          git add data.json 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "data.json değişmedi; commit atlanıyor."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "chore: data.json güncellendi"
+          git pull --rebase --autostash origin "${GITHUB_REF_NAME}"
+          git push origin "HEAD:${GITHUB_REF_NAME}"

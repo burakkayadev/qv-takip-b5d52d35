@@ -66,10 +66,15 @@ ve arayüzdeki "Örnek veri gösteriliyor" bandı kaybolur.
 4. Aynı adı `NTFY_TOPIC` secret'ı olarak kaydedin.
 
 Gelen bildirimler:
+- **Her sabah 08:00 ve öğlen 13:00 (TR):** bugün hâlâ bekleyen işler, ör. `📦 Bugün 5 Teslimat (Conrad, …) bekliyor.`
+  Quietvox'ta tamamlanmış (Delivered / Returned) siparişler sayılmaz; bekleyen yoksa bildirim gelmez.
+- **Her sabah 08:00:** günü geçtiği hâlde alınmamış iadeler, ör. `⚠️ Almayı unuttun: 2 iade hâlâ alınmadı (Conrad).`
+  Son 7 gün içinde iade günü geçmiş ve Quietvox'ta hâlâ "Delivered" duran siparişler için gelir.
 - **Her akşam 18:00 (TR):** `📦 Yarın 3 Teslimat (Conrad, Four Seasons) ve 🔄 2 İade Alımı var.`
+- **Uygulamadan yapılan işlem sonucu:** `✅ Sipariş 2000… Quietvox'ta Delivered yapıldı.` ya da `❌ … yapılamadı: neden`.
 - **Giriş başarısız olursa:** `⚠️ Quietvox oturumu açılamadı, şifreyi kontrol edin` (sorun sürdükçe tekrar tekrar gönderilmez).
 
-Hatırlatmayı denemek için: **Actions → Run workflow → `send_reminder` kutusunu işaretleyin.**
+Hatırlatmayı denemek için: **Actions → Quietvox Senkronizasyon → Run workflow → `reminder` alanından tür seçin.**
 
 ---
 
@@ -82,12 +87,31 @@ Hatırlatmayı denemek için: **Actions → Run workflow → `send_reminder` kut
 Artık ana ekrandaki **Quietvox** simgesi tam ekran uygulama gibi açılır.
 
 ### Kullanım
-- En üstte **Yarın Hatırlatıcısı**: yarın verilecek ve alınacak siparişlerin özeti.
+- En üstte **Bugün paneli** (kaç iş var, kaçı tamam) ve **Yarın Hatırlatıcısı**.
 - **📦 Verilecekler / 🔄 Alınacaklar** sekmeleri, **Bugün / Yarın / Tümü** filtreleri.
+- **Tarih çubuğu:** `‹` `›` ile gün gün gezin ya da ortadaki tarihe dokunup istediğiniz günü seçin.
+  Son 31 gün ve önümüzdeki 31 gün görüntülenebilir.
+- Her kartta Quietvox'taki durum rozeti görünür (Onaylı, Teslim edildi, İade alındı…).
 - Kartta **📞 Ara** ve **WhatsApp** ile rehbere tek dokunuşla ulaşın.
-- **Hazırlandı / Teslim Edildi** işaretleri o telefonda kalıcıdır (başka telefonla paylaşılmaz).
-- **🖨️ Etiketleri Yazdır (2 Sayfa)**: 1. sayfa çanta üstü WayBill, 2. sayfa çanta içi D&R Formu (QR kodlu).
-  Telefonun yazdırma ekranında kâğıt **A4**, ölçek **%100**, "üstbilgi/altbilgi" **kapalı** olmalıdır.
+- **🖨️ WayBill (A5)** ve **🖨️ D&R Formu (A4)** ayrı ayrı yazdırılır; her birinin altında **Önizle** vardır.
+  Yazdırma ekranında ölçek **%100**, "üstbilgi/altbilgi" **kapalı** olmalıdır. Yazıcıda A5 kâğıt yoksa
+  WayBill A4 kâğıdın köşesine A5 boyutunda basılır.
+
+### Quietvox'a yazma (Hazırlandı / Teslim Alındı)
+- **Hazırlandı** (Verilecekler): Quietvox'ta durumu **Delivered** yapar, **Self Delivery** ve **Self Return** işaretler.
+- **Teslim Alındı** (Alınacaklar): durumu **Returned** yapar, **Self Return** işaretler ve iade adetlerini doldurur:
+  Battery AA ve Earphone 3.5mm New Style için teslim adedinin %3'ü (yukarı yuvarlanır), diğer tüm kalemler teslim adediyle aynı.
+- Butona basınca önce ne yazılacağını gösteren bir onay penceresi açılır. Onaydan sonra işlem 2–3 dakikada
+  tamamlanır; kartta "⏳ Quietvox'a gönderildi" görünür, sonuç ntfy bildirimi olarak da gelir.
+- Quietvox beklenmedik bir soru sorarsa ya da hata verirse işlem **kaydedilmez** ve nedenini bildirir.
+
+Bunun için telefonda **bir kez** erişim anahtarı girilir:
+1. GitHub → sağ üst profil → **Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token**.
+2. **Repository access:** *Only select repositories* → bu repo. **Permissions → Repository permissions → Actions: Read and write**.
+3. Oluşan `github_pat_…` anahtarını kopyalayın; uygulamada **⚙ → anahtarı yapıştırın → Kaydet ve dene**.
+
+Anahtar yalnızca o telefonda saklanır ve yalnızca bu repodaki iş akışlarını başlatabilir. Anahtar girilmezse
+butonlar yalnızca uygulama içinde işaret koyar ("Yalnızca burada işaretle").
 
 ---
 

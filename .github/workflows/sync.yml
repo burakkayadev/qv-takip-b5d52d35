@@ -7,12 +7,21 @@ on:
     - cron: '5,35 * * * *'
     # Her gün 15:00 UTC = 18:00 Türkiye saati: yarının hatırlatma bildirimi
     - cron: '0 15 * * *'
+    # 05:00 UTC = 08:00 TR: bugün bekleyenler + alınmayı unutulan iadeler
+    - cron: '0 5 * * *'
+    # 10:00 UTC = 13:00 TR: bugün hâlâ bekleyenler (günün ikinci hatırlatması)
+    - cron: '0 10 * * *'
   workflow_dispatch:
     inputs:
       send_reminder:
         description: 'Yarının teslimat/iade hatırlatmasını ntfy ile gönder'
         type: boolean
         default: false
+      reminder:
+        description: 'Denemek için hatırlatma türü'
+        type: choice
+        default: 'yok'
+        options: ['yok', 'morning', 'noon', 'evening']
 
 # data.json'ı commit edebilmek için yazma izni
 permissions:
@@ -51,8 +60,11 @@ jobs:
           QV_HTTP_USER: ${{ secrets.QV_HTTP_USER }}
           QV_HTTP_PASS: ${{ secrets.QV_HTTP_PASS }}
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
-          # Hatırlatma yalnızca 18:00 TR zamanlamasında ya da elle istenince gönderilir
-          SEND_REMINDER: ${{ (github.event.schedule == '0 15 * * *' || inputs.send_reminder == true) && '1' || '0' }}
+          # Hatırlatma türü zamanlamaya göre seçilir; elle çalıştırmada girdiden alınır
+          REMINDER: ${{ github.event.schedule == '0 15 * * *' && 'evening' || github.event.schedule == '0 5 * * *' && 'morning' || github.event.schedule == '0 10 * * *' && 'noon' || inputs.send_reminder == true && 'evening' || inputs.reminder != 'yok' && inputs.reminder || '' }}
+          # Geçmişe ve ileriye bakılacak gün sayısı (uygulamadaki tarih seçici için)
+          QV_PAST_DAYS: '31'
+          QV_WINDOW_DAYS: '32'
         run: python scraper.py
 
       # Giriş başarısız olsa bile (login_failed durumu) data.json commit edilebilmeli
