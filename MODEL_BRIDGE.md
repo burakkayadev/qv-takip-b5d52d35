@@ -1,7 +1,7 @@
 # MODEL_BRIDGE — Uygulamalar Arası Ortak Hafıza
 
 > **Son Aktif Uygulama:** Claude Masaüstü  
-> **Son Güncelleme:** 15 Kasım 2026 (UTC+3) — **Şifre koruması + alarm e-postası + yedekleme, ve önceki 3'lü yazdırma işi: ikisi de GitHub'a henüz gönderilmedi** (kullanıcı "push" yazınca tek seferde gönderilecek)
+> **Son Güncelleme:** 15 Kasım 2026 (UTC+3) — **GitHub'a gönderildi** (commit `8a25597`: şifre koruması + alarm e-postası + yedekleme ve 3'lü yazdırma birlikte; version.yml build 5'i üç dosyaya yazdı, Pages yayını ve canlıda build 5 doğrulandı; `backup.yml` ve `notify.yml` GitHub'da aktif). **Eksik Secret'lar:** `MAIL_TO`, `SMTP_USER`, `SMTP_PASS` henüz yok → girilene kadar hiçbir e-posta gitmez; `QV_PASS_BACKUP` ve `RCLONE_CONFIG` de yok (isteğe bağlı).
 
 ---
 
