@@ -2682,11 +2682,10 @@ dialog.dlg::backdrop { background: rgba(27, 32, 48, 0.55); }
 
     // Yazdırma bitince alanı temizle (önizleme açıksa açık kalsın).
     // Küçük gecikme: bazı mobil tarayıcılar olayı erken tetikler.
-    window.addEventListener('afterprint', function () {
-      window.setTimeout(function () {
-        if (!document.body.classList.contains('pv-open')) clearPrintArea();
-      }, 800);
-    });
+    // ÖNEMLİ: etiket alanı yazdırmadan sonra TEMİZLENMEZ. Android'de "afterprint" olayı
+    // yazdırma ekranı açılır açılmaz gelir; yazıcı ya da kâğıt seçilince sayfa yeniden
+    // çizilir. Alan o sırada boşaltılmış olursa etiket yerine uygulama ekranı basılır.
+    // Alan ekranda zaten görünmez; bir sonraki yazdırmada ya da önizleme kapanınca yenilenir.
 
     // Sekme/uygulama yeniden görünür olunca yenile
     document.addEventListener('visibilitychange', function () {
