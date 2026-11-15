@@ -12,7 +12,7 @@
 'use strict';
 
 // Kabukta değişiklik yapınca bu sürümü artırın: eski önbellekler silinir.
-const VERSION = 'v7';
+const VERSION = 'v8';
 const SHELL_CACHE = 'qv-shell-' + VERSION;
 const DATA_CACHE = 'qv-data-' + VERSION;
 const CDN_CACHE = 'qv-cdn-' + VERSION;
@@ -54,6 +54,12 @@ self.addEventListener('activate', (event) => {
       ))
       .then(() => self.clients.claim())
   );
+});
+
+self.addEventListener('message', (event) => {
+  if (event.data && (event.data.action === 'skipWaiting' || event.data === 'skipWaiting')) {
+    self.skipWaiting();
+  }
 });
 
 // Yanıt önbelleğe yazılabilir mi? (başarılı ya da CDN'den gelen opak yanıt)
@@ -137,6 +143,10 @@ self.addEventListener('fetch', (event) => {
   const inScope = sameOrigin && request.url.startsWith(self.registration.scope);
 
   if (inScope) {
+    // version.json her zaman doğrudan ağdan alınır (önbelleğe alınmaz)
+    if (url.pathname.endsWith('/version.json')) {
+      return;
+    }
     if (url.origin + url.pathname === DATA_KEY) {
       event.respondWith(networkFirstData(request));
       return;

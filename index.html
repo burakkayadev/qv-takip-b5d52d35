@@ -2217,8 +2217,8 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     background-image: none !important;
     color: #000 !important;
   }
-  /* Açılış ekranı, sesli asistan butonu ve arka plan ışık küreleri baskıda kesinlikle görünmez */
-  #qv-splash, .qv-splash, .ambient-orbs, .btn-voice-fab, .voice-overlay { display: none !important; visibility: hidden !important; }
+  /* Açılış ekranı, sesli asistan butonu, takvim, fotoğraf ve arka plan ışık küreleri baskıda kesinlikle görünmez */
+  #qv-splash, .qv-splash, .ambient-orbs, .btn-voice-fab, .voice-overlay, #photo-lightbox, #qv-calendar-modal, #update-banner { display: none !important; visibility: hidden !important; }
   /* Yazdırma alanı doluysa uygulama arayüzünü tümüyle gizle */
   body.has-print > *:not(#print-root) { display: none !important; }
   body.has-print #print-root {
@@ -2264,6 +2264,400 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     box-shadow: none !important;
   }
 }
+
+/* ==========================================================================
+   8h) UYGULAMA İÇİ GÜNCELLEME, KANIT FOTOĞRAFI & TAKVİM PANELLERİ
+   ========================================================================== */
+/* Uygulama İçi Otomatik Güncelleme Bildirimi */
+.update-banner {
+  margin: 10px 16px 6px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(30, 58, 138, 0.75), rgba(16, 185, 129, 0.65));
+  border: 1px solid rgba(147, 197, 253, 0.45);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  backdrop-filter: blur(28px) saturate(190%);
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  animation: qvSplashRise 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.update-banner[hidden] { display: none !important; }
+.upd-content { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 13.5px; }
+.btn-update-now {
+  min-height: 36px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1.5px solid #FDE68A;
+  background: #D4AF37;
+  color: #0B1120;
+  font-weight: 800;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+/* Kanıt Fotoğrafı Çekimi & Kart Önizlemesi */
+.card-photo-sec {
+  margin: 8px 0 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.btn-card-photo {
+  min-height: 36px;
+  border-radius: 12px;
+  border: 1px dashed rgba(212, 175, 55, 0.55);
+  background: rgba(15, 23, 42, 0.28);
+  color: #FDE68A;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 12px;
+  width: fit-content;
+  transition: background 0.16s ease, border-color 0.16s ease;
+}
+.btn-card-photo:active { background: rgba(212, 175, 55, 0.18); }
+.photo-thumb-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(15, 23, 42, 0.40);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 14px;
+  padding: 8px 10px;
+  max-width: 320px;
+}
+.photo-thumb-img {
+  width: 58px;
+  height: 58px;
+  border-radius: 10px;
+  object-fit: cover;
+  border: 1.5px solid rgba(212, 175, 55, 0.65);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: transform 0.16s ease;
+}
+.photo-thumb-img:active { transform: scale(0.95); }
+.photo-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+}
+.photo-time {
+  font-size: 12px;
+  font-weight: 700;
+  color: #F8FAFC;
+}
+.btn-photo-del {
+  font-size: 11px;
+  color: #F87171;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  padding: 0;
+  font-weight: 700;
+}
+
+/* Kanıt Fotoğrafı Büyütme (Lightbox) */
+.photo-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 99;
+  background: rgba(5, 8, 18, 0.92);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.photo-lightbox[hidden] { display: none !important; }
+.lightbox-content {
+  position: relative;
+  max-width: min(94vw, 680px);
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.lightbox-close {
+  position: absolute;
+  top: -14px;
+  right: -14px;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 255, 255, 0.35);
+  background: rgba(15, 23, 42, 0.85);
+  color: #FFFFFF;
+  font-size: 18px;
+  font-weight: 800;
+  cursor: pointer;
+  z-index: 2;
+}
+.lightbox-content img {
+  max-width: 100%;
+  max-height: 78vh;
+  border-radius: 16px;
+  border: 2px solid rgba(212, 175, 55, 0.55);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85);
+  object-fit: contain;
+}
+.lightbox-caption {
+  color: #FDE68A;
+  font-size: 13.5px;
+  font-weight: 700;
+  text-align: center;
+  background: rgba(15, 23, 42, 0.75);
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+/* Quietvox Web Birebir Takvim Görünümü */
+.qv-cal-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 92;
+  background: rgba(6, 10, 20, 0.75);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+}
+.qv-cal-modal[hidden] { display: none !important; }
+.qv-cal-container {
+  width: min(98vw, 1100px);
+  max-height: 94vh;
+  background: #FFFFFF;
+  color: #1E293B;
+  border-radius: 16px;
+  border: 2px solid #CBD5E1;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: qvSplashRise 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.qv-cal-head {
+  background: #0B1120;
+  color: #FFFFFF;
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  border-bottom: 3px solid #D4AF37;
+}
+.qv-cal-nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.qv-cal-nav h2 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 800;
+  color: #FDE68A;
+  min-width: 140px;
+  text-align: center;
+}
+.qv-cal-btn {
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.12);
+  color: #FFFFFF;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+}
+.qv-cal-today-btn {
+  background: #D4AF37;
+  color: #0B1120;
+  border-color: #FDE68A;
+  font-weight: 800;
+}
+.qv-cal-views {
+  display: flex;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.10);
+  padding: 3px;
+  border-radius: 8px;
+}
+.qv-cal-vbtn {
+  padding: 4px 12px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: #CBD5E1;
+  font-weight: 700;
+  font-size: 12px;
+  cursor: pointer;
+}
+.qv-cal-vbtn.active {
+  background: #D4AF37;
+  color: #0B1120;
+}
+.qv-cal-close {
+  background: transparent;
+  border: none;
+  color: #FFFFFF;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px 8px;
+  font-weight: 800;
+}
+.qv-cal-legend {
+  background: #F8FAFC;
+  border-bottom: 1px solid #E2E8F0;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 12px;
+  font-weight: 700;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+.legend-title { color: #64748B; font-weight: 800; }
+.legend-item { display: inline-flex; align-items: center; gap: 5px; color: #334155; }
+.legend-color {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+}
+.st-reserved { background: #FFCC00; border-color: #CA8A04; }
+.st-confirmed { background: #3399FF; border-color: #0284C7; }
+.st-delivered { background: #FF9900; border-color: #EA580C; }
+.st-returned { background: #33CC33; border-color: #16A34A; }
+.st-cancelled { background: #FF3333; border-color: #DC2626; }
+
+.qv-cal-grid-wrap {
+  flex: 1 1 auto;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+}
+.qv-cal-grid-header {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(110px, 1fr));
+  background: #F1F5F9;
+  border-bottom: 1px solid #CBD5E1;
+  font-weight: 800;
+  font-size: 12px;
+  text-align: center;
+  color: #475569;
+}
+.qv-cal-grid-header > div {
+  padding: 6px 4px;
+  border-right: 1px solid #E2E8F0;
+}
+.qv-cal-grid-header > div:last-child { border-right: none; }
+.qv-cal-days {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(110px, 1fr));
+  grid-auto-rows: minmax(105px, 1fr);
+  background: #FFFFFF;
+}
+.cal-day-cell {
+  border-right: 1px solid #E2E8F0;
+  border-bottom: 1px solid #E2E8F0;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  background: #FFFFFF;
+}
+.cal-day-cell.other-month { background: #F8FAFC; opacity: 0.55; }
+.cal-day-cell.today { background: #FEF9C3; }
+.cal-day-num {
+  font-size: 11px;
+  font-weight: 800;
+  text-align: right;
+  color: #334155;
+  padding: 1px 4px;
+}
+.cal-day-cell.today .cal-day-num {
+  color: #B45309;
+  font-weight: 900;
+}
+.cal-orders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  overflow-y: auto;
+  max-height: 120px;
+}
+.cal-order-chip {
+  border-radius: 4px;
+  padding: 3px 5px;
+  font-size: 10.5px;
+  line-height: 1.25;
+  cursor: pointer;
+  border-left: 3.5px solid;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  overflow: hidden;
+}
+.cal-company {
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cal-hotel {
+  font-weight: 500;
+  font-size: 9.5px;
+  opacity: 0.92;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cal-order-chip:active { transform: scale(0.97); }
+.cal-order-chip.st-reserved { background: #FEF9C3; border-left-color: #EAB308; color: #713F12; }
+.cal-order-chip.st-confirmed { background: #E0F2FE; border-left-color: #0284C7; color: #075985; }
+.cal-order-chip.st-delivered { background: #FFEDD5; border-left-color: #EA580C; color: #9A3412; }
+.cal-order-chip.st-returned { background: #DCFCE7; border-left-color: #16A34A; color: #14532D; }
+.cal-order-chip.st-cancelled { background: #FEE2E2; border-left-color: #DC2626; color: #991B1B; }
+.cal-order-client { font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cal-order-hotel { font-weight: 600; font-size: 9.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; opacity: 0.9; }
+
+/* Baskı ve Önizleme Eşitlemesi & Güvenli Metin Kırılmaları */
+.sheet-wrap,
+.sheet-wrap *,
+.sheet,
+.sheet *,
+.wb-sheet,
+.wb-sheet *,
+.dr-sheet,
+.dr-sheet *,
+.sum-sheet,
+.sum-sheet * {
+  box-sizing: border-box !important;
+  overflow-wrap: break-word !important;
+  word-break: break-word !important;
+}
+
 </style>
 </head>
 <body>
@@ -2313,8 +2707,10 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
   <div class="drawer-sec">Siparişler</div>
   <button type="button" class="nav-item" id="nav-deliveries" data-nav-tab="deliveries">📦 Verilecekler <b id="nav-n-deliveries">0</b></button>
   <button type="button" class="nav-item" id="nav-returns" data-nav-tab="returns">🔄 Alınacaklar <b id="nav-n-returns">0</b></button>
+  <button type="button" class="nav-item" id="nav-archive" data-nav-tab="archive">📁 Önceden Alınanlar <b id="nav-n-archive">0</b></button>
   <button type="button" class="nav-item warn" id="nav-overdue" hidden>⚠️ Geciken iadeler <b id="nav-n-overdue">0</b></button>
   <button type="button" class="nav-item" id="btn-drawer-prep">🎒 Çanta Hazırlık Modu</button>
+  <button type="button" class="nav-item" id="btn-drawer-calendar">📅 Quietvox Takvim Görünümü</button>
   <div class="drawer-sec">Gün</div>
   <div class="nav-days">
     <button type="button" class="filter" data-nav-filter="today">Bugün</button>
@@ -2336,6 +2732,15 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
 </nav>
 
 <main id="app">
+  <!-- Uygulama İçi Otomatik Güncelleme Bildirimi -->
+  <div class="update-banner" id="update-banner" hidden role="alert">
+    <div class="upd-content">
+      <span class="upd-icon" aria-hidden="true">✨</span>
+      <span class="upd-text" id="upd-text">Yeni bir Quietvox güncellemesi mevcut!</span>
+    </div>
+    <button type="button" class="btn-update-now" id="btn-update-now">Şimdi Güncelle</button>
+  </div>
+
   <!-- Uyarı bantları (örnek veri, oturum hatası, eski veri, çevrimdışı) -->
   <div class="banners" id="banners" role="status" aria-live="polite"></div>
 
@@ -2448,6 +2853,55 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
   </div>
 </div>
 
+<!-- KANIT FOTOĞRAFI BÜYÜTME (LIGHTBOX) -->
+<div id="photo-lightbox" class="photo-lightbox" hidden role="dialog" aria-modal="true" aria-label="Kanıt Fotoğrafı">
+  <div class="lightbox-content">
+    <button type="button" class="lightbox-close" id="lightbox-close" aria-label="Fotoğrafı kapat">✕</button>
+    <img id="lightbox-img" src="" alt="Büyütülmüş Kanıt Fotoğrafı">
+    <div id="lightbox-caption" class="lightbox-caption"></div>
+  </div>
+</div>
+
+<!-- BİREBİR QUIETVOX AYLIK/HAFTALIK/GÜNLÜK TAKVİM GÖRÜNÜMÜ -->
+<div id="qv-calendar-modal" class="qv-cal-modal" hidden role="dialog" aria-modal="true" aria-labelledby="qv-cal-title">
+  <div class="qv-cal-container">
+    <div class="qv-cal-head">
+      <div class="qv-cal-nav">
+        <button type="button" class="qv-cal-btn" id="cal-prev" title="Önceki Ay">◀</button>
+        <h2 id="qv-cal-title">Kasım 2026</h2>
+        <button type="button" class="qv-cal-btn" id="cal-next" title="Sonraki Ay">▶</button>
+        <button type="button" class="qv-cal-btn qv-cal-today-btn" id="cal-today">Bugün</button>
+      </div>
+      <div class="qv-cal-views">
+        <button type="button" class="qv-cal-vbtn active" data-cal-view="month">Ay</button>
+        <button type="button" class="qv-cal-vbtn" data-cal-view="week">Hafta</button>
+        <button type="button" class="qv-cal-vbtn" data-cal-view="day">Gün</button>
+      </div>
+      <button type="button" class="qv-cal-close" id="cal-close" aria-label="Takvimi Kapat">✕</button>
+    </div>
+
+    <!-- Status Color Legend -->
+    <div class="qv-cal-legend">
+      <span class="legend-title">Status color:</span>
+      <span class="legend-item"><span class="legend-color st-reserved"></span> Reserved</span>
+      <span class="legend-item"><span class="legend-color st-confirmed"></span> Confirmed</span>
+      <span class="legend-item"><span class="legend-color st-delivered"></span> Delivered</span>
+      <span class="legend-item"><span class="legend-color st-returned"></span> Returned</span>
+      <span class="legend-item"><span class="legend-color st-cancelled"></span> Cancelled</span>
+    </div>
+
+    <!-- 7-Column Weekly Grid (Sunday - Saturday) -->
+    <div class="qv-cal-grid-wrap">
+      <div class="qv-cal-grid-header">
+        <div>Sunday</div><div>Monday</div><div>Tuesday</div><div>Wednesday</div><div>Thursday</div><div>Friday</div><div>Saturday</div>
+      </div>
+      <div class="qv-cal-days" id="qv-cal-days">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Toplu seçim çubuğu -->
 <div class="bulkbar" id="bulkbar" hidden>
   <div class="bulk-head"><span id="bulk-n">0 seçildi</span>
@@ -2531,7 +2985,8 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
 
   var TAB_INFO = {
     deliveries: { kind: 'delivery', finalLabel: 'Teslim Edildi', noun: 'verilecek' },
-    returns:    { kind: 'return',   finalLabel: 'Teslim Alındı', noun: 'alınacak' }
+    returns:    { kind: 'return',   finalLabel: 'Teslim Alındı', noun: 'alınacak' },
+    archive:    { kind: 'archive',  finalLabel: 'Tamamlandı',    noun: 'önceden alınan' }
   };
 
   /* ========================================================================
@@ -2555,6 +3010,7 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     queue: {},             // { "delivery:2000…": { action, order_id, order_date, title, ts } }
     token: '',             // GitHub erişim anahtarı
     marks: {},             // { "delivery:QV-1": { prepared, done, note, items, ts } }
+    photos: {},            // { "delivery:QV-1": { orderKey, dataUrl, timeStr, hotel, qvId, ts } }
     today: '',
     tomorrow: ''
   };
@@ -2842,8 +3298,60 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
   /* ========================================================================
      SEÇİCİLER
      ======================================================================== */
+  function isOrderCompleted(o, tab) {
+    if (!o) return false;
+    var k = orderKey(o, tab === 'returns' ? 'return' : 'delivery');
+    var m = markOf(k);
+    var p = state.pending[k];
+    if (tab === 'returns') {
+      if (isPickedUp(o)) return true;
+      if (o.status === 'returned') return true;
+      if (m && m.done) return true;
+      if (p && p.action === 'returned') return true;
+      return false;
+    }
+    // deliveries
+    if (isDone(o, 'deliveries')) return true;
+    if (o.status === 'delivered' || o.status === 'returned' || o.qv_done === true) return true;
+    if (m && (m.done || m.prepared)) return true;
+    if (p && (p.action === 'delivered' || p.action === 'prepared')) return true;
+    return false;
+  }
+
+  function allCompletedOrders() {
+    if (!state.data) return [];
+    var delDone = (state.data.deliveries || []).filter(function (o) { return isOrderCompleted(o, 'deliveries'); });
+    var retDone = (state.data.returns || []).filter(function (o) { return isOrderCompleted(o, 'returns'); });
+    var seen = {};
+    var res = [];
+    retDone.concat(delDone).forEach(function (o) {
+      var k = (o.id || (o.waybill && o.waybill.qv_id) || (o.date + o.title));
+      if (!seen[k]) {
+        seen[k] = true;
+        res.push(o);
+      }
+    });
+    res.sort(function (a, b) {
+      return (b.date || '').localeCompare(a.date || '') || (b.title || '').localeCompare(a.title || '');
+    });
+    return res;
+  }
+
+  function rawOrdersOf(tab) {
+    if (!state.data) return [];
+    if (tab === 'archive') return allCompletedOrders();
+    return state.data[tab] || [];
+  }
+
+  function rawOrdersOn(tab, dateStr) {
+    return rawOrdersOf(tab).filter(function (o) { return o.date === dateStr; });
+  }
+
   function ordersOf(tab) {
-    return state.data ? state.data[tab] : [];
+    if (!state.data) return [];
+    if (tab === 'archive') return allCompletedOrders();
+    var list = state.data[tab] || [];
+    return list.filter(function (o) { return !isOrderCompleted(o, tab); });
   }
 
   function ordersOn(tab, dateStr) {
@@ -2860,6 +3368,7 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
 
   // "Tümü" = bugünden itibaren; geçmiş günlere tarih çubuğundan gidilir
   function upcomingOrders(tab) {
+    if (tab === 'archive') return ordersOf('archive');
     return ordersOf(tab).filter(function (o) { return o.date >= state.today; });
   }
 
@@ -2876,13 +3385,17 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
 
   // Günü geçtiği hâlde Quietvox'ta hâlâ "Delivered" duran (tamamlanmamış) iadeler
   function overdueReturns() {
-    return ordersOf('returns').filter(function (o) {
-      return o.date < state.today && o.status === 'delivered' && !isPickedUp(o);
+    return rawOrdersOf('returns').filter(function (o) {
+      return o.date < state.today && o.status === 'delivered' && !isPickedUp(o) && !isOrderCompleted(o, 'returns');
     });
   }
 
   // Tarih filtresinden geçen siparişler (otel filtresi uygulanmadan)
   function dateOrdersFor(tab) {
+    if (tab === 'archive') {
+      var day = viewDate();
+      return day ? ordersOn('archive', day) : upcomingOrders('archive');
+    }
     if (state.filter === 'overdue') return tab === 'returns' ? overdueReturns() : [];
     var day = viewDate();
     return day ? ordersOn(tab, day) : upcomingOrders(tab);
@@ -3056,10 +3569,13 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
   function renderTabsAndFilters() {
     Object.keys(TAB_INFO).forEach(function (tab) {
       var btn = $('#tab-' + tab);
-      var selected = state.tab === tab;
-      btn.setAttribute('aria-selected', selected ? 'true' : 'false');
-      btn.tabIndex = selected ? 0 : -1;
-      $('#badge-' + tab).textContent = filteredOrdersFor(tab).length;
+      if (btn) {
+        var selected = state.tab === tab;
+        btn.setAttribute('aria-selected', selected ? 'true' : 'false');
+        btn.tabIndex = selected ? 0 : -1;
+      }
+      var badge = $('#badge-' + tab);
+      if (badge) badge.textContent = filteredOrdersFor(tab).length;
     });
     $('#list').setAttribute('aria-labelledby', 'tab-' + state.tab);
 
@@ -3078,12 +3594,14 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     // Üst başlık ve yan menü: hangi liste açık, kaç sipariş var
     var dayLabels = { today: 'Bugün', tomorrow: 'Yarın', all: 'Tümü', overdue: 'Geciken',
       date: state.date ? shortDate(state.date) : '' };
-    var tabLabel = state.tab === 'returns' ? 'Alınacaklar' : 'Verilecekler';
+    var tabLabel = state.tab === 'returns' ? 'Alınacaklar' : (state.tab === 'archive' ? 'Önceden Alınanlar' : 'Verilecekler');
     $('#view-title').textContent = state.search ? 'Arama · ' + tabLabel
       : (state.onlyChanged ? 'Değişenler · ' + tabLabel : tabLabel + ' · ' + (dayLabels[state.filter] || ''));
     Object.keys(TAB_INFO).forEach(function (tab) {
-      $('#nav-n-' + tab).textContent = filteredOrdersFor(tab).length;
-      $('#nav-' + tab).setAttribute('aria-current', state.tab === tab && state.filter !== 'overdue' ? 'true' : 'false');
+      var navN = $('#nav-n-' + tab);
+      if (navN) navN.textContent = filteredOrdersFor(tab).length;
+      var nav = $('#nav-' + tab);
+      if (nav) nav.setAttribute('aria-current', state.tab === tab && state.filter !== 'overdue' ? 'true' : 'false');
     });
     var overdueCount = overdueReturns().length;
     $('#nav-overdue').hidden = overdueCount === 0;
@@ -3124,9 +3642,9 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
 
   // Bugünün paneli (Komuta Merkezi): kaç iş var, kaçı tamamlanmış + ilerleme çubuğu
   function renderDayPanel() {
-    Object.keys(TAB_INFO).forEach(function (tab) {
+    ['deliveries', 'returns'].forEach(function (tab) {
       // İptal ve kayıp siparişler yapılacak iş sayılmaz
-      var orders = ordersOn(tab, state.today).filter(function (o) { return !INACTIVE_STATUSES[o.status]; });
+      var orders = rawOrdersOn(tab, state.today).filter(function (o) { return !INACTIVE_STATUSES[o.status]; });
       var done = orders.filter(function (o) { return isDone(o, tab); }).length;
       $('#tile-n-' + tab).textContent = orders.length;
       $('#tile-s-' + tab).textContent = orders.length ? done + ' tamam · ' + (orders.length - done) + ' bekliyor' : 'iş yok';
@@ -3143,8 +3661,8 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
 
     // Yarının tek satırlık özeti (dokununca yarının listesi açılır)
     var active = function (o) { return !INACTIVE_STATUSES[o.status]; };
-    var tomorrowDeliveries = ordersOn('deliveries', state.tomorrow).filter(active).length;
-    var tomorrowReturns = ordersOn('returns', state.tomorrow).filter(active).length;
+    var tomorrowDeliveries = rawOrdersOn('deliveries', state.tomorrow).filter(active).length;
+    var tomorrowReturns = rawOrdersOn('returns', state.tomorrow).filter(active).length;
     $('#tomorrow-line').textContent = '🔔 Yarın: ' + tomorrowDeliveries + ' teslimat · ' + tomorrowReturns + ' iade';
   }
 
@@ -3598,14 +4116,16 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
   }
 
   function buildCard(order, tab) {
-    var info = TAB_INFO[tab];
-    var key = orderKey(order, info.kind);
+    var info = TAB_INFO[tab] || TAB_INFO.deliveries;
+    var actualKind = order.waybill && order.waybill.qv_id ? (order.status === 'returned' || isPickedUp(order) ? 'return' : 'delivery') : info.kind;
+    var cardKind = tab === 'archive' ? actualKind : info.kind;
+    var key = orderKey(order, cardKind);
     var w = order.waybill;
-    // Alınacaklarda kart yalnızca Quietvox'ta Returned olunca tamamlanmış görünür;
-    // Verileceklerde "Teslim Edildi" bu telefondaki el işaretidir.
-    var finished = isDone(order, tab) || (tab === 'deliveries' && markOf(key).done);
+    var finished = isDone(order, tab === 'archive' ? (cardKind === 'return' ? 'returns' : 'deliveries') : tab) ||
+                   (tab === 'deliveries' && markOf(key).done) ||
+                   (tab === 'archive');
     var isOverdueCard = tab === 'returns' && order.date < state.today && order.status === 'delivered' && !isPickedUp(order);
-    var stripeClass = isOverdueCard ? ' kind-overdue' : (tab === 'returns' ? ' kind-return' : ' kind-delivery');
+    var stripeClass = isOverdueCard ? ' kind-overdue' : (cardKind === 'return' ? ' kind-return' : ' kind-delivery');
     var card = el('article', 'glass card' + stripeClass + (finished ? ' done' : ''));
     var hotelName = order.location_name || order.title || 'Adı belirtilmemiş';
 
@@ -3613,9 +4133,9 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     append(main, cardChips(order), el('h3', 'hotel', hotelName), cardSummary(order));
     var queued = state.queue[key];
     var pending = state.pending[key];
-    if (queued && !isDone(order, tab)) {
+    if (queued && !finished) {
       append(main.querySelector('.chips'), el('span', 'chip queued', '📡 İnternet bekleniyor (Kuyrukta)'));
-    } else if (pending && !isDone(order, tab)) {
+    } else if (pending && !finished) {
       var late = Date.now() - pending.ts > PENDING_FAIL_MS;
       append(main.querySelector('.chips'), el('span', 'chip pending' + (late ? ' late' : ''),
         late ? '⚠️ Quietvox\'a düşmedi' : '⏳ Quietvox\'a gönderildi'));
@@ -3632,16 +4152,71 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
       append(noteBar, el('span', '', '📝 Teslim Notu: ' + savedNote), editBtn);
     }
 
-    // Ana işlem: Quietvox'a yazan tek büyük düğme
+    // Saha Özelliği 2: Kanıt Fotoğrafı Çekimi & Kart Önizlemesi
+    var photoSec = el('div', 'card-photo-sec');
+    var photoInput = el('input');
+    photoInput.type = 'file';
+    photoInput.accept = 'image/*';
+    photoInput.setAttribute('capture', 'environment');
+    photoInput.style.display = 'none';
+    photoInput.addEventListener('change', function (ev) {
+      if (ev.target.files && ev.target.files[0]) {
+        processEvidencePhoto(ev.target.files[0], order, tab);
+      }
+    });
+
+    var existingPhoto = state.photos && state.photos[key];
+    if (existingPhoto) {
+      var thumbWrap = el('div', 'photo-thumb-wrap');
+      var thumbImg = el('img', 'photo-thumb-img');
+      thumbImg.src = existingPhoto.dataUrl;
+      thumbImg.alt = 'Kanıt Fotoğrafı';
+      thumbImg.title = 'Büyütmek için dokunun';
+      thumbImg.addEventListener('click', function () { openPhotoLightbox(existingPhoto); });
+
+      var photoMeta = el('div', 'photo-meta');
+      append(photoMeta,
+        el('span', 'photo-time', '📷 ' + (existingPhoto.timeStr || '')),
+        (function () {
+          var del = el('button', 'btn-photo-del', '🗑️ Sil');
+          del.type = 'button';
+          del.addEventListener('click', function (ev) {
+            ev.stopPropagation();
+            if (confirm('Kanıt fotoğrafını silmek istediğinize emin misiniz?')) {
+              deletePhotoRecord(key, function () {
+                showToast('Fotoğraf silindi');
+                render(true);
+              });
+            }
+          });
+          return del;
+        })()
+      );
+      append(thumbWrap, thumbImg, photoMeta);
+      append(photoSec, photoInput, thumbWrap);
+    } else {
+      var takePhotoBtn = el('button', 'btn-card-photo', '📷 Kanıt Fotoğrafı Çek');
+      takePhotoBtn.type = 'button';
+      takePhotoBtn.addEventListener('click', function () { photoInput.click(); });
+      append(photoSec, photoInput, takePhotoBtn);
+    }
+
+    // Ana işlem: Quietvox'a yazan tek büyük düğme (veya arşiv ise tamamlandı durumu)
     var primary = el('div', 'primary');
-    append(primary, remoteButton(order, key, tab === 'deliveries' ? 'delivered' : 'returned'));
+    if (tab === 'archive') {
+      var doneBadge = el('div', 'btn-done-status', '✓ Tamamlandı (' + (cardKind === 'return' ? 'İade Alındı' : 'Teslim Edildi') + ')');
+      doneBadge.style.cssText = 'padding: 10px 14px; text-align: center; font-weight: 700; font-size: 13.5px; color: #4ADE80; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(74, 222, 128, 0.3); border-radius: 12px;';
+      append(primary, doneBadge);
+    } else {
+      append(primary, remoteButton(order, key, tab === 'deliveries' ? 'delivered' : 'returned'));
+    }
 
     // Saha Özelliği 1: Çanta İçi Hızlı Kontrol (Checklist)
     var checklist = buildChecklist(order, key, card, tab);
 
     // Beş küçük düğme: Ara · WhatsApp · Harita · Yazdır · Hatırlatıcı
     var phone = normalizePhone(w.tour_manager_phone);
-    var address = tab === 'returns'
+    var address = cardKind === 'return'
       ? (w.return_location || w.delivery_location || order.location_name)
       : (w.delivery_location || w.return_location || order.location_name);
     var quick = el('div', 'quick');
@@ -3684,17 +4259,18 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
       selectBox.setAttribute('aria-label', 'Seç: ' + hotelName);
       selectBox.addEventListener('click', function () { toggleSelected(key); });
     }
-    return append(card, selectBox, el('div', 'done-flag', '✓ ' + info.finalLabel), main, noteBar, checklist, primary, quick, details);
+    return append(card, selectBox, el('div', 'done-flag', '✓ ' + info.finalLabel), main, noteBar, checklist, photoSec, primary, quick, details);
   }
 
   function emptyMessage() {
-    var noun = TAB_INFO[state.tab].noun;
+    var noun = (TAB_INFO[state.tab] || TAB_INFO.deliveries).noun;
     if (state.search) return '“' + state.search + '” için ' + noun + ' sipariş bulunamadı.';
     if (state.onlyChanged) return 'Son 3 günde değişen ' + noun + ' sipariş yok.';
     if (state.filter === 'today') return 'Bugün ' + noun + ' sipariş yok.';
     if (state.filter === 'tomorrow') return 'Yarın ' + noun + ' sipariş yok.';
     if (state.filter === 'date') return longDate(state.date) + ' için ' + noun + ' sipariş yok.';
     if (state.filter === 'overdue') return 'Geciken iade yok.';
+    if (state.tab === 'archive') return 'Henüz tamamlanan veya önceden alınan bir sipariş bulunmuyor.';
     return 'Önümüzdeki günlerde ' + noun + ' sipariş görünmüyor.';
   }
 
@@ -4317,16 +4893,21 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     printWhenReady();
   }
 
-  // Seçilen siparişler için peş peşe WayBill + D&R Form sayfalarını hazırlar (her belge ayrı A4 sayfasında)
+  // Seçilen siparişler için ÖNCE tüm Formları, ARDINDAN tüm WayBill sayfalarını hazırlar (her belge ayrı A4 sayfasında)
   function fillBulkBothPrintArea(orders) {
-    var sheets = [];
+    var formSheets = [];
+    var waybillSheets = [];
+    orders.forEach(function (o) {
+      var form = buildFormSheet(o);
+      form.classList.add('doc-break');
+      formSheets.push(form);
+    });
     orders.forEach(function (o) {
       var wb = buildWaybillSheet(o);
       wb.classList.add('pair-end', 'doc-break');
-      var form = buildFormSheet(o);
-      form.classList.add('doc-break');
-      sheets.push(wb, form);
+      waybillSheets.push(wb);
     });
+    var sheets = formSheets.concat(waybillSheets);
     var container = $('#print-sheets');
     container.replaceChildren.apply(container, sheets);
     setPageSize('form');
@@ -4343,7 +4924,7 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     root.setAttribute('role', 'dialog');
     root.setAttribute('aria-modal', 'true');
     root.setAttribute('aria-labelledby', 'pv-title');
-    $('#pv-title').textContent = 'Toplu Yazdır · ' + orders.length + ' sipariş · ' + (orders.length * 2) + ' sayfa';
+    $('#pv-title').textContent = 'Toplu Yazdır · ' + orders.length + ' sipariş (' + orders.length + ' Form + ' + orders.length + ' WayBill)';
     updatePreviewScale();
     root.scrollTop = 0;
     $('#pv-close').focus();
@@ -4357,7 +4938,7 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     var title = el('h2', '', '🖨️ Toplu Yazdır — ' + n + ' sipariş (' + totalPages + ' sayfa)');
     title.id = 'dlg-title';
     var summary = el('p', 'dlg-note',
-      n + ' WayBill + ' + n + ' Delivery & Return Form = toplam ' + totalPages + ' sayfa (A4). ' +
+      '📄 Yazdırma Sırası: Önce ' + n + ' adet Teslimat/İade Formu, ardından ' + n + ' adet Taşıma İrsaliyesi (WayBill) basılacaktır (Toplam ' + totalPages + ' sayfa A4). ' +
       'Sayfa düzeni: A4 · Ölçek: %100 · Üstbilgi/altbilgi: kapalı.');
     var list = el('ul', 'dlg-list');
     orders.forEach(function (o, idx) {
@@ -5605,6 +6186,403 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     if (focus) $('#tab-' + tab).focus();
   }
 
+
+  /* ========================================================================
+     KANIT FOTOĞRAFLARI (IndexedDB & Canvas Watermark)
+     ======================================================================== */
+  var photoDB = null;
+  function getPhotoDB(cb) {
+    if (photoDB) { cb(null, photoDB); return; }
+    if (!window.indexedDB) { cb(new Error('IndexedDB not supported')); return; }
+    var req = indexedDB.open('QuietvoxPhotosDB', 1);
+    req.onupgradeneeded = function (e) {
+      var db = e.target.result;
+      if (!db.objectStoreNames.contains('photos')) {
+        db.createObjectStore('photos', { keyPath: 'orderKey' });
+      }
+    };
+    req.onsuccess = function (e) {
+      photoDB = e.target.result;
+      cb(null, photoDB);
+    };
+    req.onerror = function (e) {
+      cb(e.target.error);
+    };
+  }
+
+  function loadAllPhotos(cb) {
+    getPhotoDB(function (err, db) {
+      if (err || !db) { if (cb) cb(); return; }
+      try {
+        var tx = db.transaction('photos', 'readonly');
+        var store = tx.objectStore('photos');
+        var req = store.getAll();
+        req.onsuccess = function () {
+          var list = req.result || [];
+          var photos = {};
+          list.forEach(function (item) {
+            photos[item.orderKey] = item;
+          });
+          setState({ photos: photos });
+          if (cb) cb();
+        };
+        req.onerror = function () { if (cb) cb(); };
+      } catch (ex) {
+        if (cb) cb();
+      }
+    });
+  }
+
+  function savePhotoRecord(record, cb) {
+    getPhotoDB(function (err, db) {
+      if (err || !db) { if (cb) cb(err); return; }
+      try {
+        var tx = db.transaction('photos', 'readwrite');
+        var store = tx.objectStore('photos');
+        store.put(record);
+        tx.oncomplete = function () {
+          var updated = Object.assign({}, state.photos);
+          updated[record.orderKey] = record;
+          setState({ photos: updated });
+          if (cb) cb(null);
+        };
+        tx.onerror = function (e) { if (cb) cb(e.target.error); };
+      } catch (ex) {
+        if (cb) cb(ex);
+      }
+    });
+  }
+
+  function deletePhotoRecord(orderKey, cb) {
+    getPhotoDB(function (err, db) {
+      if (err || !db) { if (cb) cb(err); return; }
+      try {
+        var tx = db.transaction('photos', 'readwrite');
+        var store = tx.objectStore('photos');
+        store.delete(orderKey);
+        tx.oncomplete = function () {
+          var updated = Object.assign({}, state.photos);
+          delete updated[orderKey];
+          setState({ photos: updated });
+          if (cb) cb(null);
+        };
+        tx.onerror = function (e) { if (cb) cb(e.target.error); };
+      } catch (ex) {
+        if (cb) cb(ex);
+      }
+    });
+  }
+
+  function processEvidencePhoto(file, order, tab, cb) {
+    if (!file || !file.type.match(/^image\//)) {
+      showToast('Lütfen geçerli bir görsel seçin');
+      return;
+    }
+    var reader = new FileReader();
+    reader.onload = function (e) {
+      var img = new Image();
+      img.onload = function () {
+        var maxDim = 1280;
+        var w = img.width;
+        var h = img.height;
+        if (w > maxDim || h > maxDim) {
+          if (w > h) {
+            h = Math.round((h * maxDim) / w);
+            w = maxDim;
+          } else {
+            w = Math.round((w * maxDim) / h);
+            h = maxDim;
+          }
+        }
+        var canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        var ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+
+        // Watermark: Tarih/saat damgası + QV ID + Otel Adı
+        var now = new Date();
+        var dateFormatted = ('0' + now.getDate()).slice(-2) + '.' +
+                            ('0' + (now.getMonth() + 1)).slice(-2) + '.' +
+                            now.getFullYear() + ' ' +
+                            ('0' + now.getHours()).slice(-2) + ':' +
+                            ('0' + now.getMinutes()).slice(-2);
+        var qvId = order.id || (order.waybill && order.waybill.qv_id) || (order.dr_form && order.dr_form.qv_booking_id) || 'QV';
+        var hotelName = hotelOf(order);
+        var stampText = dateFormatted + ' · QV ID: ' + qvId + ' · ' + hotelName;
+
+        var fontSize = Math.max(16, Math.round(w * 0.024));
+        ctx.font = 'bold ' + fontSize + 'px sans-serif';
+        var pad = Math.round(fontSize * 0.6);
+        var metrics = ctx.measureText(stampText);
+        var textW = metrics.width;
+        var boxW = textW + pad * 2;
+        var boxH = fontSize + pad * 1.5;
+        var boxX = w - boxW - pad;
+        var boxY = h - boxH - pad;
+
+        ctx.fillStyle = 'rgba(11, 17, 32, 0.78)';
+        ctx.beginPath();
+        if (ctx.roundRect) {
+          ctx.roundRect(boxX, boxY, boxW, boxH, 8);
+        } else {
+          ctx.rect(boxX, boxY, boxW, boxH);
+        }
+        ctx.fill();
+
+        ctx.fillStyle = '#FFFFFF';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(stampText, boxX + pad, boxY + boxH / 2);
+
+        var compressedDataUrl = canvas.toDataURL('image/jpeg', 0.70);
+        var cardKind = tab === 'archive' ? (order.status === 'returned' || isPickedUp(order) ? 'return' : 'delivery') : (tab === 'returns' ? 'return' : 'delivery');
+        var key = orderKey(order, cardKind);
+        var record = {
+          orderKey: key,
+          dataUrl: compressedDataUrl,
+          timeStr: dateFormatted,
+          hotel: hotelName,
+          qvId: qvId,
+          ts: Date.now()
+        };
+        savePhotoRecord(record, function (err) {
+          if (err) {
+            showToast('Fotoğraf kaydedilemedi');
+          } else {
+            showToast('📷 Kanıt fotoğrafı damgalandı ve kaydedildi ✓');
+            render(true);
+            if (cb) cb(record);
+          }
+        });
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function openPhotoLightbox(photo) {
+    if (!photo) return;
+    $('#lightbox-img').src = photo.dataUrl;
+    $('#lightbox-caption').textContent = (photo.hotel || '') + ' · ' + (photo.timeStr || '');
+    $('#photo-lightbox').hidden = false;
+  }
+
+  function closePhotoLightbox() {
+    $('#photo-lightbox').hidden = true;
+    $('#lightbox-img').src = '';
+  }
+
+  /* ========================================================================
+     QUIETVOX TAKVİM GÖRÜNÜMÜ (Birebir Web UI)
+     ======================================================================== */
+  var calState = {
+    view: 'month',
+    currentDate: null
+  };
+
+  var CAL_MONTH_NAMES = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+
+  function getCalDate() {
+    if (!calState.currentDate) {
+      calState.currentDate = state.today ? new Date(state.today + 'T00:00:00') : new Date();
+    }
+    return calState.currentDate;
+  }
+
+  function openQuietvoxCalendar(dateStr) {
+    if (dateStr && ISO_DATE.test(dateStr)) {
+      calState.currentDate = new Date(dateStr + 'T00:00:00');
+    } else {
+      calState.currentDate = state.today ? new Date(state.today + 'T00:00:00') : new Date();
+    }
+    $('#qv-calendar-modal').hidden = false;
+    document.body.style.overflow = 'hidden';
+    renderQuietvoxCalendar();
+  }
+
+  function closeQuietvoxCalendar() {
+    $('#qv-calendar-modal').hidden = true;
+    document.body.style.overflow = '';
+  }
+
+  function calNavigate(dir) {
+    var d = getCalDate();
+    if (calState.view === 'month') {
+      d.setMonth(d.getMonth() + dir);
+    } else if (calState.view === 'week') {
+      d.setDate(d.getDate() + (dir * 7));
+    } else {
+      d.setDate(d.getDate() + dir);
+    }
+    renderQuietvoxCalendar();
+  }
+
+  function calGoToday() {
+    calState.currentDate = state.today ? new Date(state.today + 'T00:00:00') : new Date();
+    renderQuietvoxCalendar();
+  }
+
+  function statusToCalClass(status) {
+    var s = (status || '').toLowerCase();
+    if (s === 'reserved') return 'st-reserved';
+    if (s === 'confirmed') return 'st-confirmed';
+    if (s === 'delivered') return 'st-delivered';
+    if (s === 'returned') return 'st-returned';
+    if (s === 'cancelled' || s === 'canceled') return 'st-cancelled';
+    return 'st-reserved';
+  }
+
+  function getOrdersForCalendarDate(dateStr) {
+    if (!state.data) return [];
+    var list = [];
+    var seen = {};
+    (state.data.deliveries || []).forEach(function (o) {
+      if (o.date === dateStr) {
+        var k = 'd:' + (o.id || (o.waybill && o.waybill.qv_id) || o.title);
+        if (!seen[k]) { seen[k] = true; list.push({ order: o, tab: 'deliveries' }); }
+      }
+    });
+    (state.data.returns || []).forEach(function (o) {
+      if (o.date === dateStr) {
+        var k = 'r:' + (o.id || (o.waybill && o.waybill.qv_id) || o.title);
+        if (!seen[k]) { seen[k] = true; list.push({ order: o, tab: 'returns' }); }
+      }
+    });
+    return list;
+  }
+
+  function renderQuietvoxCalendar() {
+    var d = getCalDate();
+    var year = d.getFullYear();
+    var month = d.getMonth();
+    $('#qv-cal-title').textContent = CAL_MONTH_NAMES[month] + ' ' + year;
+
+    var container = $('#qv-cal-days');
+    container.replaceChildren();
+
+    if (calState.view === 'month') {
+      var firstDay = new Date(year, month, 1).getDay(); // 0 is Sunday
+      var daysInMonth = new Date(year, month + 1, 0).getDate();
+      var prevMonthDays = new Date(year, month, 0).getDate();
+
+      // Leading days from previous month
+      for (var p = firstDay - 1; p >= 0; p--) {
+        var dayNum = prevMonthDays - p;
+        var pMonth = month === 0 ? 11 : month - 1;
+        var pYear = month === 0 ? year - 1 : year;
+        var pDateStr = pYear + '-' + ('0' + (pMonth + 1)).slice(-2) + '-' + ('0' + dayNum).slice(-2);
+        container.appendChild(buildCalCell(pDateStr, dayNum, true));
+      }
+
+      // Current month days
+      for (var day = 1; day <= daysInMonth; day++) {
+        var dateStr = year + '-' + ('0' + (month + 1)).slice(-2) + '-' + ('0' + day).slice(-2);
+        container.appendChild(buildCalCell(dateStr, day, false));
+      }
+
+      // Trailing days to fill the grid (multiples of 7)
+      var totalCells = firstDay + daysInMonth;
+      var remaining = (7 - (totalCells % 7)) % 7;
+      for (var t = 1; t <= remaining; t++) {
+        var nMonth = month === 11 ? 0 : month + 1;
+        var nYear = month === 11 ? year + 1 : year;
+        var nDateStr = nYear + '-' + ('0' + (nMonth + 1)).slice(-2) + '-' + ('0' + t).slice(-2);
+        container.appendChild(buildCalCell(nDateStr, t, true));
+      }
+    } else if (calState.view === 'week') {
+      var currentDayOfWeek = d.getDay();
+      var weekStart = new Date(d);
+      weekStart.setDate(d.getDate() - currentDayOfWeek);
+      for (var w = 0; w < 7; w++) {
+        var cur = new Date(weekStart);
+        cur.setDate(weekStart.getDate() + w);
+        var curDateStr = cur.getFullYear() + '-' + ('0' + (cur.getMonth() + 1)).slice(-2) + '-' + ('0' + cur.getDate()).slice(-2);
+        container.appendChild(buildCalCell(curDateStr, cur.getDate(), false));
+      }
+    } else {
+      // Day view
+      var dayDateStr = year + '-' + ('0' + (month + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
+      container.appendChild(buildCalCell(dayDateStr, d.getDate(), false, true));
+    }
+  }
+
+  function buildCalCell(dateStr, dayNum, isOtherMonth, isDayView) {
+    var cell = el('div', 'cal-day-cell qv-cal-day' + (isOtherMonth ? ' other-month' : '') + (dateStr === state.today ? ' today' : ''));
+    if (isDayView) cell.style.gridColumn = '1 / -1';
+    var numEl = el('span', 'cal-day-num qv-cal-day-num', String(dayNum));
+    cell.appendChild(numEl);
+
+    var eventsEl = el('div', 'cal-orders-list qv-cal-events');
+    var items = getOrdersForCalendarDate(dateStr);
+    items.forEach(function (item) {
+      var o = item.order;
+      var chip = el('div', 'cal-order-chip qv-cal-item ' + statusToCalClass(o.status));
+      var client = (o.waybill && o.waybill.client) || (o.dr_form && o.dr_form.customer) || o.title || 'Müşteri';
+      var hotel = o.location_name || o.title || 'Otel';
+      append(chip,
+        el('div', 'cal-company', client),
+        el('div', 'cal-hotel', hotel)
+      );
+      chip.addEventListener('click', function (ev) {
+        ev.stopPropagation();
+        closeQuietvoxCalendar();
+        goToDate(o.date);
+        selectTab(item.tab, false);
+      });
+      eventsEl.appendChild(chip);
+    });
+
+    cell.appendChild(eventsEl);
+    cell.addEventListener('click', function () {
+      closeQuietvoxCalendar();
+      goToDate(dateStr);
+    });
+    return cell;
+  }
+
+  /* ========================================================================
+     UYGULAMA İÇİ OTOMATİK GÜNCELLEME SİSTEMİ
+     ======================================================================== */
+  var CURRENT_BUILD = 2026111501;
+
+  function checkAppUpdate() {
+    fetch('./version.json?t=' + Date.now(), { cache: 'no-store' })
+      .then(function (res) {
+        if (!res.ok) throw new Error('version check failed');
+        return res.json();
+      })
+      .then(function (data) {
+        if (data && data.build && data.build > CURRENT_BUILD) {
+          var banner = $('#update-banner');
+          if (banner) {
+            $('#upd-text').textContent = '✨ Yeni bir Quietvox güncellemesi mevcut! (v' + (data.version || '3.0.0') + ')';
+            banner.hidden = false;
+          }
+        }
+      })
+      .catch(function () {
+        /* Güncelleme kontrolü sessizce atlanır */
+      });
+  }
+
+  function applyAppUpdate() {
+    showToast('Güncelleme yükleniyor, lütfen bekleyin…');
+    if ('caches' in window) {
+      caches.keys().then(function (names) {
+        return Promise.all(names.map(function (name) { return caches.delete(name); }));
+      }).catch(function () {}).then(function () {
+        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+          navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
+        }
+        setTimeout(function () {
+          window.location.reload(true);
+        }, 300);
+      });
+    } else {
+      window.location.reload(true);
+    }
+  }
+
   function bindEvents() {
     document.querySelectorAll('.tab[data-tab]').forEach(function (btn) {
       btn.addEventListener('click', function () { selectTab(btn.getAttribute('data-tab'), false); });
@@ -5629,6 +6607,26 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     $('#btn-settings').addEventListener('click', function () { closeDrawer(false); openSettings(); });
     $('#btn-report').addEventListener('click', function () { closeDrawer(false); openReport(); });
     $('#btn-drawer-prep').addEventListener('click', function () { closeDrawer(false); openPrepMode(state.tomorrow); });
+    $('#btn-drawer-calendar').addEventListener('click', function () { closeDrawer(false); openQuietvoxCalendar(); });
+    $('#btn-update-now').addEventListener('click', applyAppUpdate);
+
+    // Kanıt Fotoğrafı Lightbox
+    $('#lightbox-close').addEventListener('click', closePhotoLightbox);
+    $('#photo-lightbox').addEventListener('click', function (ev) { if (ev.target === ev.currentTarget) closePhotoLightbox(); });
+
+    // Quietvox Takvim Etkinlikleri
+    $('#cal-close').addEventListener('click', closeQuietvoxCalendar);
+    $('#cal-prev').addEventListener('click', function () { calNavigate(-1); });
+    $('#cal-next').addEventListener('click', function () { calNavigate(1); });
+    $('#cal-today').addEventListener('click', function () { calGoToday(); });
+    document.querySelectorAll('.qv-cal-vbtn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        document.querySelectorAll('.qv-cal-vbtn').forEach(function (b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        calState.view = btn.getAttribute('data-cal-view') || 'month';
+        renderQuietvoxCalendar();
+      });
+    });
     document.querySelectorAll('[data-font]').forEach(function (btn) {
       btn.addEventListener('click', function () { lsWrite(LS_FONT, btn.getAttribute('data-font')); applyFont(); });
     });
@@ -5736,9 +6734,12 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
 
     // Sekme/uygulama yeniden görünür olunca yenile
     document.addEventListener('visibilitychange', function () {
-      if (document.visibilityState === 'visible' && Date.now() - lastLoadAt > MIN_REFRESH_GAP_MS) {
-        loadData(false);
-        flushOfflineQueue();
+      if (document.visibilityState === 'visible') {
+        checkAppUpdate();
+        if (Date.now() - lastLoadAt > MIN_REFRESH_GAP_MS) {
+          loadData(false);
+          flushOfflineQueue();
+        }
       }
     });
     window.addEventListener('online', function () {
@@ -5784,6 +6785,8 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     applyUrlParams();
     bindEvents();
     render(true);
+    loadAllPhotos(function () { render(true); });
+    checkAppUpdate();
     loadData(false);
     flushOfflineQueue();
     registerServiceWorker();
