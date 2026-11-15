@@ -1,7 +1,7 @@
 {
-  "version": "4.0.0",
-  "build": 2,
-  "commit": "5c684e7",
-  "updated_at": "2026-11-15T16:13:41.501339+00:00",
-  "notes": "v4.0: G\u00f6r\u00fcn\u00fcm Modu (Klasik Kart vs Sade Liste), Takvim filtre sekmeleri ve esnek h\u00fccreler, Sesli Asistan yank\u0131 \u00f6nleme ve NLP geli\u015ftirmesi, Multi-URL kesintisiz veri hatt\u0131"
+  "version": "4.0.1",
+  "build": 3,
+  "commit": "head",
+  "updated_at": "2026-11-15T16:25:00.000000+00:00",
+  "notes": "v4.0.1: Takvim ezilme ve barkod gibi boş çizgi hataları düzeltildi, Verilecek [📤 VER] ve Alınacak [📥 AL] rozetleri ile yön filtre butonları eklendi, otel ismi bulunamayan siparişlerin boş görünmesi engellendi."
 }

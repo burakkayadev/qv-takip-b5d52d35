@@ -1,7 +1,7 @@
 # MODEL_BRIDGE / HANDOFF_TO_CLAUDE — Quietvox v4.0
 
 > **Son Aktif Uygulama:** Antigravity  
-> **Son Güncelleme:** 15 Kasım 2026, 19:12 (UTC+3)
+> **Son Güncelleme:** 15 Kasım 2026, 19:24 (UTC+3)
 
 ---
 
@@ -9,11 +9,11 @@
 
 | Başlık | Detay |
 |---|---|
-| **Tarih / Saat** | 15.11.2026 19:12 (İstanbul) |
+| **Tarih / Saat** | 15.11.2026 19:24 (İstanbul) |
 | **Son Aktif Uygulama** | Antigravity |
-| **Tamamlanan İşler** | 1. **Görünüm Modu (Klasik vs Sade Liste):** `buildMinimalCard` ve `.card-minimal` CSS tam olarak entegre edildi. Tek tıkla açılıp kapanan `⚙️ İşlemler ▾` çekmecesi ve tek odaklı onay butonu sorunsuz çalışıyor.<br>2. **LS_VIEW_MODE & Ağ Hatası Düzeltildi:** Başlangıçta tanımsız değişken hatası giderildi, `data.json` verisi ve tüm sayaçlar (Bugün 2 verilecek, 10 alınacak) eksiksiz ekrana yansıdı.<br>3. **Takvim & Filtre Sekmeleri:** Yoğun gün hücre sıkışması çözüldü, `Tümü \| 📤 Verilecekler \| 📥 Alınacaklar` sekmeleri aktif.<br>4. **Sesli Asistan Düzeltmesi:** Yankı engelleme ve 2. dokunuşta anında susturma devrede.<br>5. **Canlı Test:** Yerel sunucu üzerinde her iki mod, takvim ve ayarlar ekran görüntüleriyle %100 doğrulandı.<br>6. **Kullanım Kılavuzu PDF:** `Quietvox_Kullanim_Kilavuzu.pdf` tam 2 sayfa olarak güncellendi. |
-| **Değişen Dosyalar** | `index.html`, `sw.js`, `.gitignore`, `Quietvox_Kullanim_Kilavuzu.pdf`, `MODEL_BRIDGE.md`, `CLAUDE.md`, `.agent/rules/bridge.md` |
-| **Bir Sonraki Uygulamanın Yapacağı İş** | Kullanıcı "push" onayını verdiği anda tüm değişiklikleri GitHub'a göndermek ve APK derlemesini tetiklemek. |
+| **Tamamlanan İşler** | 1. **Takvim Ezilme & Barkod Boş Çizgi Düzeltmesi:** `.cal-order-chip` için `flex-shrink: 0 !important; min-height: 38px !important;`, `.cal-day-cell` için `min-height: 140px; height: auto;` ve `.qv-cal-days` için `minmax(140px, auto)` uygulanarak 12 Kasım gibi 16+ siparişli günlerde çiplerin 2px boş çizgiye küçülmesi tamamen engellendi.<br>2. **Verilecek / Alınacak Yön Ayrımı & Rozetleri:** Her takvim çipinin başına `[📤 VER]` (zümrüt yeşili) veya `[📥 AL]` (mavi) rozeti eklendi. Çift satırlı temiz yapı (Müşteri + Otel/Pax) korundu.<br>3. **Takvim Üst Filtre Butonları:** `[ 🌐 Tümü ] [ 📤 Sadece Verilecekler ] [ 📥 Sadece Alınacaklar ]` butonları dinamik olarak `calState.filter` üzerinden takvimi anında süzüyor.<br>4. **Otel İsmi Olmayan (N/A) Siparişler:** `waybill.delivery_location` / `return_location` ilk satırına otomatik dönüştürüldü; adres de yoksa `'Otel Belirtilmemiş (ID: ...)'` yazılarak boş görünüm tamamen giderildi.<br>5. **Canlı Test & Doğrulama:** 1280px masaüstü ve 390px Fold/mobil cihaz görünümleri Playwright ile test edildi, ekran görüntüleriyle doğrulandı.<br>6. **Sürümleme:** `version.json` v4.0.1 (Build 2) olarak güncellendi. |
+| **Değişen Dosyalar** | `index.html`, `version.json`, `MODEL_BRIDGE.md`, `HANDOFF_TO_CLAUDE.md` |
+| **Bir Sonraki Uygulamanın Yapacağı İş** | Kullanıcı onayından sonra GitHub push ve Android APK release adımlarını takip etmek. |
 
 ---
 
