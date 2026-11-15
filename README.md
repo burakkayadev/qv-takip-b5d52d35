@@ -103,18 +103,24 @@ Telefonda şu adresi açıp dosyayı indirin ve kurun (ilk kurulumda "bilinmeyen
 - Adres çubuğunun gizlenmesi için `burakkayadev.github.io` reposundaki `.well-known/assetlinks.json` dosyası gerekir; silmeyin.
 
 ### Kullanım
-- En üstte **Bugün paneli** (kaç iş var, kaçı tamam) ve **Yarın Hatırlatıcısı**.
-  Günü geçtiği hâlde alınmamış iade varsa kırmızı **Geciken iade** paneli çıkar; dokununca listelenir.
-- Sekmeler ekranın altındaki çubuktadır. Sağ üstteki **🌙 / ☀️** koyu ve açık mod arasında geçiş yapar.
-- **📦 Verilecekler / 🔄 Alınacaklar** sekmeleri, **Bugün / Yarın / Tümü** filtreleri.
-- **Tarih çubuğu:** `‹` `›` ile gün gün gezin ya da ortadaki tarihe dokunup istediğiniz günü seçin.
-  Son 31 gün ve önümüzdeki 31 gün görüntülenebilir.
-- Her kartta Quietvox'taki durum rozeti görünür (Onaylı, Teslim edildi, İade alındı…).
-- Kartta **📞 Ara** ve **WhatsApp** ile rehbere tek dokunuşla ulaşın.
-- **🖨️ WayBill (yarım A4)** ve **🖨️ D&R Formu (A4)** ayrı ayrı yazdırılır; her birinin altında **Önizle** vardır.
-  Yazdırma ekranında kâğıt **A4**, ölçek **%100**, "üstbilgi/altbilgi" **kapalı** olmalıdır. WayBill yatay ve sıkıştırılmış
-  olarak A4 kâğıdın üst yarısına basılır; kesikli çizgiden katlayın ya da kesin.
-- **Otel filtresi:** tarih çubuğunun altındaki otel adına dokununca yalnızca o otelin siparişleri görünür.
+- **☰ Yan menü:** Verilecekler, Alınacaklar, Geciken iadeler; gün (Bugün / Yarın / Tümü); koyu mod;
+  **yazı boyutu** (normal, büyük, çok büyük); **aylık rapor**; Quietvox bağlantısı.
+- **Bugün paneli:** kaç iş var, kaçı tamam; yarının tek satır özeti; alınmamış iade varsa kırmızı **Geciken iade**.
+- **Tarih çubuğu:** `‹` `›` ile gün gün gezin ya da tarihe dokunup gün seçin (son 62 gün, önümüzdeki 31 gün).
+- **🔍 Arama:** otel, QV ID, müşteri, rehber adı ya da telefonu yazın; tüm tarihlerde aranır.
+- **Otel filtresi:** otel adına dokununca yalnızca o otelin siparişleri görünür.
+- **📊 Özet:** görünümdeki siparişlerin ekipman toplamı (toplam RX, TX, pil…) ve otel bazında sipariş/kişi/RX;
+  tek sayfa A4 olarak yazdırılabilir.
+- **🗺️ Rota:** görünümdeki otelleri (en fazla 10) Google Haritalar'da tek rota olarak açar.
+- **☑ Seç:** birden çok siparişi seçip tek seferde **Quietvox'a gönderin** ya da WayBill'lerini **bir A4'e ikişer** yazdırın.
+- **Kart:** durum rozeti, ⚠️ eksik veri uyarıları (ekipman boş, RX kişi sayısından az, rehber telefonu yok),
+  🔁 **Değişti** rozeti (etiket basıldıktan sonra Quietvox'ta kişi/ekipman/tarih değiştiyse; ayrıntısı "Ayrıntılar"da).
+- **Ara / WhatsApp / Harita / Yazdır:** WhatsApp, rehberin anlatım diline göre (Almanca, İngilizce, Fransızca,
+  İspanyolca, İtalyanca, Türkçe) hazır bir mesajla açılır; göndermeden önce düzenleyebilirsiniz.
+- **Yazdır:** WayBill (yarım A4, yatay) ya da D&R Formu (A4); her ikisinde Önizle var. Yazdırma ekranında kâğıt **A4**,
+  ölçek **%100**, "üstbilgi/altbilgi" **kapalı** olmalıdır. WayBill'i kesikli çizgiden kesin.
+- **Kısayollar:** uygulama simgesine uzun basınca "Bugün verilecekler / alınacaklar / Geciken iadeler".
+- **Aylık rapor:** seçilen ayın teslimat ve iadeleri ile otel bazında özet; Excel'de açılan dosya (CSV) olarak iner.
 
 ### Quietvox'a yazma (Hazırlandı / Teslim Alındı)
 - **Hazırlandı** (Verilecekler): Quietvox'ta durumu **Delivered** yapar, **Self Delivery** ve **Self Return** işaretler.
