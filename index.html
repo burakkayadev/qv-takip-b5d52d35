@@ -961,6 +961,96 @@ dialog.dlg::backdrop { background: rgba(27, 32, 48, 0.55); }
    9) KÂĞIT ÇIKTISI
    Varsayılan A4; WayBill yazdırılırken sayfa boyutu betikle A5'e çevrilir.
    ========================================================================== */
+/* ---- Alt gezinme çubuğu: sekmeler uygulamalardaki gibi ekranın altında durur ---- */
+.tabs {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 40;
+  max-width: 720px;
+  margin: 0 auto;
+  border-radius: 22px 22px 0 0;
+  padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
+}
+#app { padding-bottom: calc(104px + env(safe-area-inset-bottom)); }
+.toast { bottom: calc(104px + env(safe-area-inset-bottom)); }
+@media (max-width: 430px) {
+  #btn-refresh > span:last-child { display: none; } /* dar ekranda yalnızca simge */
+  #btn-refresh { min-width: var(--tap); padding: 0 12px; justify-content: center; }
+}
+
+/* ---- Geciken iadeler paneli ---- */
+.tile.warn {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--err-bg);
+  color: var(--err-ink);
+  border: 2px solid var(--err-ink);
+}
+.tile.warn[hidden] { display: none; }
+.tile.warn .n { font-size: 30px; }
+.tile.warn .t { margin-top: 0; font-size: 16px; }
+
+/* ==========================================================================
+   8c) KOYU MOD
+   Renk değişkenleri koyu zemine göre yeniden tanımlanır. "navy" açık temada hem
+   metin hem koyu yüzey rengidir; koyu temada metin açık olur, koyu yüzeyler ayrıca boyanır.
+   ========================================================================== */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --cream: #11141D;
+  --navy: #ECE8DE;
+  --gold: #B8935A;
+  --gold-deep: #DDBB84;
+  --ink-soft: #A9AFC0;
+  --glass: rgba(34, 39, 56, 0.74);
+  --glass-strong: rgba(42, 48, 68, 0.94);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --hairline: rgba(255, 255, 255, 0.14);
+  --shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+  --ok: #7FD6A0;
+  --ok-bg: #16382A;
+  --warn-bg: #4A3B0C;
+  --warn-ink: #FFE08A;
+  --err-bg: #4A1B18;
+  --err-ink: #FFB4AC;
+  --info-bg: #232B45;
+  --info-ink: #C9D4F5;
+}
+[data-theme="dark"] body {
+  background-image:
+    radial-gradient(60vmax 40vmax at 100% 0%, rgba(156, 122, 75, 0.16), transparent 60%),
+    radial-gradient(60vmax 45vmax at 0% 100%, rgba(80, 96, 160, 0.12), transparent 60%);
+}
+[data-theme="dark"] .topbar,
+[data-theme="dark"] .toast,
+[data-theme="dark"] body.pv-open .pv-bar { background: #0B0E16; color: #FFFFFF; }
+[data-theme="dark"] .tab[aria-selected="true"],
+[data-theme="dark"] .btn-call,
+[data-theme="dark"] .tile,
+[data-theme="dark"] .rem-count,
+[data-theme="dark"] .chip.cruise,
+[data-theme="dark"] .hotel-chip[aria-pressed="true"] { background: #3B4670; border-color: #3B4670; color: #FFFFFF; }
+[data-theme="dark"] .tile.alt,
+[data-theme="dark"] .btn-print,
+[data-theme="dark"] .filter[aria-pressed="true"],
+[data-theme="dark"] .date-pick.active { background: #8C6A35; border-color: #8C6A35; color: #FFFFFF; }
+[data-theme="dark"] .tile.warn { background: var(--err-bg); border-color: var(--err-ink); color: var(--err-ink); }
+[data-theme="dark"] .tab .badge { background: #8C6A35; color: #FFFFFF; }
+[data-theme="dark"] .tab[aria-selected="true"] .badge { background: #D9B981; color: #1B2030; }
+[data-theme="dark"] .reminder { background: linear-gradient(135deg, rgba(48, 54, 76, 0.92), rgba(60, 50, 34, 0.82)); }
+[data-theme="dark"] .rem-row:active { background: rgba(255, 255, 255, 0.08); }
+/* İşaretlenmemiş kutuda onay imi görünmez (zeminle aynı renk) */
+[data-theme="dark"] .check .box { background: #1A1F2E; color: #1A1F2E; }
+[data-theme="dark"] .dlg-input { background: #1A1F2E; color: var(--navy); }
+[data-theme="dark"] .check[aria-pressed="true"] .box { background: var(--ok); border-color: var(--ok); color: #0B1F14; }
+[data-theme="dark"] .chip.st-reserved { background: #2E3345; color: #D5D9E6; }
+[data-theme="dark"] .chip.st-delivered { background: #3A2550; color: #E4C9F5; }
+[data-theme="dark"] .pv-bar .btn-go { color: #1B2030; }
+
 @page { size: A4; margin: 8mm; }
 
 @media print {
@@ -1016,6 +1106,7 @@ dialog.dlg::backdrop { background: rgba(27, 32, 48, 0.55); }
     <button type="button" class="btn-refresh" id="btn-refresh" aria-label="Verileri yenile">
       <span class="spin" aria-hidden="true">↻</span><span>Yenile</span>
     </button>
+    <button type="button" class="btn-refresh btn-gear" id="btn-theme" aria-label="Koyu moda geç">🌙</button>
     <button type="button" class="btn-refresh btn-gear" id="btn-settings" aria-label="Ayarlar">⚙</button>
   </div>
 </header>
@@ -1032,6 +1123,9 @@ dialog.dlg::backdrop { background: rgba(27, 32, 48, 0.55); }
     </button>
     <button type="button" class="tile alt" id="tile-returns" data-tab="returns">
       <div class="n" id="tile-n-returns">0</div><div class="t">🔄 Alınacak</div><div class="s" id="tile-s-returns"></div>
+    </button>
+    <button type="button" class="tile warn" id="tile-overdue" hidden>
+      <div class="n" id="tile-n-overdue">0</div><div class="t">⚠️ Geciken iade — almayı unutma</div>
     </button>
   </section>
 
@@ -1126,6 +1220,7 @@ dialog.dlg::backdrop { background: rgba(27, 32, 48, 0.55); }
   var EQUIP_TWO_COL_ROWS = 28;                // Bu sayıdan çok satırda yan yana iki tablo
   var QR_PIXELS = 384;
 
+  var LS_THEME = 'qv.theme.v1';               // 'dark' | 'light' (boşsa telefonun ayarı izlenir)
   var LS_GITHUB = 'qv.github.v1';             // GitHub erişim anahtarı (yalnızca bu cihazda)
   var LS_PENDING = 'qv.pending.v1';           // Quietvox'a gönderilmiş, sonucu beklenen işlemler
   var PENDING_FAIL_MS = 12 * 60 * 1000;       // Bu süre sonunda durum değişmediyse "olmadı" say
@@ -1450,8 +1545,14 @@ dialog.dlg::backdrop { background: rgba(27, 32, 48, 0.55); }
     return ordersOf(tab).filter(function (o) { return o.date >= state.today; });
   }
 
+  // Günü geçtiği hâlde Quietvox'ta hâlâ "Delivered" duran iadeler
+  function overdueReturns() {
+    return ordersOf('returns').filter(function (o) { return o.date < state.today && o.status === 'delivered'; });
+  }
+
   // Tarih filtresinden geçen siparişler (otel filtresi uygulanmadan)
   function dateOrdersFor(tab) {
+    if (state.filter === 'overdue') return tab === 'returns' ? overdueReturns() : [];
     var day = viewDate();
     return day ? ordersOn(tab, day) : upcomingOrders(tab);
   }
@@ -1625,7 +1726,8 @@ dialog.dlg::backdrop { background: rgba(27, 32, 48, 0.55); }
 
     var picked = state.filter === 'date';
     $('#date-pick').classList.toggle('active', picked);
-    $('#date-label').textContent = picked ? '📅 ' + longDate(state.date) : '📅 Tarih seç';
+    $('#date-label').textContent = picked ? '📅 ' + longDate(state.date)
+      : (state.filter === 'overdue' ? '⚠️ Geciken iadeler' : '📅 Tarih seç');
     $('#date-input').value = viewDate() || state.today;
   }
 
@@ -1660,6 +1762,9 @@ dialog.dlg::backdrop { background: rgba(27, 32, 48, 0.55); }
       $('#tile-s-' + tab).textContent = orders.length ? done + ' tamam · ' + (orders.length - done) + ' bekliyor' : 'iş yok';
     });
     $('#day-h').textContent = 'Bugün · ' + longDate(state.today);
+    var overdue = overdueReturns().length;
+    $('#tile-overdue').hidden = overdue === 0;
+    $('#tile-n-overdue').textContent = overdue;
   }
 
   function goToDate(dateStr) {
@@ -1913,6 +2018,7 @@ dialog.dlg::backdrop { background: rgba(27, 32, 48, 0.55); }
     if (state.filter === 'today') return 'Bugün ' + noun + ' sipariş yok.';
     if (state.filter === 'tomorrow') return 'Yarın ' + noun + ' sipariş yok.';
     if (state.filter === 'date') return longDate(state.date) + ' için ' + noun + ' sipariş yok.';
+    if (state.filter === 'overdue') return 'Geciken iade yok.';
     return 'Önümüzdeki günlerde ' + noun + ' sipariş görünmüyor.';
   }
 
@@ -2269,7 +2375,16 @@ dialog.dlg::backdrop { background: rgba(27, 32, 48, 0.55); }
   // Kart üzerindeki buton: alanı doldur (QR dahil, senkron) ve hemen yazdır
   function printOrder(order, which) {
     fillPrintArea(order, which);
-    window.print();
+    var fontsReady = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
+    var printed = false;
+    var go = function () {
+      if (printed) return;
+      printed = true;
+      fitPrintSheets($('#print-sheets')); // yazı tipi geldikten sonra yeniden ölç
+      window.print();
+    };
+    fontsReady.then(go, go);
+    window.setTimeout(go, 1500); // yazı tipi hiç gelmezse de yazdır
   }
 
   /* ---- Önizleme ---- */
@@ -2309,6 +2424,31 @@ dialog.dlg::backdrop { background: rgba(27, 32, 48, 0.55); }
     clearPrintArea();
     if (previewReturnFocus && document.contains(previewReturnFocus)) previewReturnFocus.focus();
     previewReturnFocus = null;
+  }
+
+  /* ========================================================================
+     TEMA (açık / koyu)
+     Seçim bu cihazda saklanır; seçim yoksa telefonun kendi ayarı izlenir.
+     ======================================================================== */
+  function currentTheme() {
+    var saved = lsRead(LS_THEME);
+    if (saved === 'dark' || saved === 'light') return saved;
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+
+  function applyTheme() {
+    var theme = currentTheme();
+    document.documentElement.setAttribute('data-theme', theme);
+    var meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', theme === 'dark' ? '#0B0E16' : '#1B2030');
+    var btn = $('#btn-theme');
+    btn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    btn.setAttribute('aria-label', theme === 'dark' ? 'Açık moda geç' : 'Koyu moda geç');
+  }
+
+  function toggleTheme() {
+    lsWrite(LS_THEME, currentTheme() === 'dark' ? 'light' : 'dark');
+    applyTheme();
   }
 
   /* ========================================================================
@@ -2509,6 +2649,12 @@ dialog.dlg::backdrop { background: rgba(27, 32, 48, 0.55); }
 
     $('#btn-refresh').addEventListener('click', function () { loadData(true); });
     $('#btn-settings').addEventListener('click', openSettings);
+    $('#btn-theme').addEventListener('click', toggleTheme);
+    $('#tile-overdue').addEventListener('click', function () {
+      setState({ tab: 'returns', filter: 'overdue', filterChosen: true, hotel: '' });
+      render(true);
+      $('#list').scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'start' });
+    });
 
     // Tarih çubuğu
     $('#date-input').addEventListener('change', function (ev) { goToDate(ev.target.value); });
@@ -2516,7 +2662,7 @@ dialog.dlg::backdrop { background: rgba(27, 32, 48, 0.55); }
     $('#date-next').addEventListener('click', function () { goToDate(addDays(viewDate() || state.today, 1)); });
 
     // Bugünün paneli: ilgili sekmeyi bugüne getir
-    document.querySelectorAll('.tile').forEach(function (tile) {
+    document.querySelectorAll('.tile[data-tab]').forEach(function (tile) {
       tile.addEventListener('click', function () {
         setState({ tab: tile.getAttribute('data-tab'), filter: 'today', filterChosen: true });
         render(true);
@@ -2570,6 +2716,7 @@ dialog.dlg::backdrop { background: rgba(27, 32, 48, 0.55); }
      ======================================================================== */
   function init() {
     var today = istanbulDate(new Date());
+    applyTheme();
     var github = lsRead(LS_GITHUB);
     var pending = lsRead(LS_PENDING);
     setState({

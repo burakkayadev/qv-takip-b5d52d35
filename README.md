@@ -86,8 +86,22 @@ Hatırlatmayı denemek için: **Actions → Quietvox Senkronizasyon → Run work
 
 Artık ana ekrandaki **Quietvox** simgesi tam ekran uygulama gibi açılır.
 
+### Android uygulaması (APK)
+Telefonda şu adresi açıp dosyayı indirin ve kurun (ilk kurulumda "bilinmeyen kaynaklara izin ver" sorusu çıkar):
+
+`https://github.com/burakkayadev/qv-takip-b5d52d35/releases/download/apk/quietvox-takip.apk`
+
+- Uygulama, web sürümünü Chrome motoruyla tam ekran açan ince bir kabuktur; web sürümü güncellenince
+  uygulama da kendiliğinden güncellenir, APK'yı yeniden kurmak gerekmez.
+- Telefonda Chrome yüklü ve güncel olmalıdır.
+- Yeniden derlemek için: **Actions → Android APK → Run workflow**. İmza anahtarı `ANDROID_KEYSTORE_B64` /
+  `ANDROID_KEYSTORE_PASS` secret'larındadır; yedeği bilgisayardaki `android-signing/` klasöründedir (repoya girmez).
+- Adres çubuğunun gizlenmesi için `burakkayadev.github.io` reposundaki `.well-known/assetlinks.json` dosyası gerekir; silmeyin.
+
 ### Kullanım
 - En üstte **Bugün paneli** (kaç iş var, kaçı tamam) ve **Yarın Hatırlatıcısı**.
+  Günü geçtiği hâlde alınmamış iade varsa kırmızı **Geciken iade** paneli çıkar; dokununca listelenir.
+- Sekmeler ekranın altındaki çubuktadır. Sağ üstteki **🌙 / ☀️** koyu ve açık mod arasında geçiş yapar.
 - **📦 Verilecekler / 🔄 Alınacaklar** sekmeleri, **Bugün / Yarın / Tümü** filtreleri.
 - **Tarih çubuğu:** `‹` `›` ile gün gün gezin ya da ortadaki tarihe dokunup istediğiniz günü seçin.
   Son 31 gün ve önümüzdeki 31 gün görüntülenebilir.
