@@ -128,8 +128,24 @@ Telefonda şu adresi açıp dosyayı indirin ve kurun (ilk kurulumda "bilinmeyen
 - **Teslim Alındı** (Alınacaklar): durumu **Returned** yapar, **Self Return** işaretler ve iade adetlerini doldurur:
   Battery AA ve Earphone 3.5mm New Style için teslim adedinin %3'ü (yukarı yuvarlanır), diğer tüm kalemler teslim adediyle aynı.
 - Butona basınca önce ne yazılacağını gösteren bir onay penceresi açılır. Onaydan sonra işlem 2–3 dakikada
-  tamamlanır; kartta "⏳ Quietvox'a gönderildi" görünür, sonuç ntfy bildirimi olarak da gelir.
-- Quietvox beklenmedik bir soru sorarsa ya da hata verirse işlem **kaydedilmez** ve nedenini bildirir.
+  tamamlanır; kartlarda canlı senkronizasyon rozetleri görünür:
+  - `⏳ Quietvox'a işleniyor...`
+  - `✅ Sistemde Onaylandı (Doğrulandı)`
+  - `❌ Sisteme Düşmedi — Tekrar Dene` (tek tıkla yeniden gönderim düğmesi)
+- Portal üzerinde `Save` düğmesine basıldığında çıkan *"Send sms to the Tour Guide after saving the Order?"* onay penceresinde
+  otomatik olarak **"No, just save changes"** seçilir ve işlem sonrasında takvim verisinden sipariş durumunun gerçekten
+  değiştiği teyit edilir (değişmediyse otomatik 2 kez yeniden denenir, yine düşmezse uyarı e-postası üretilir).
+
+### 7/24 Otomatik Sağlık Kontrolü ve Gereksiz Yük / Performans Denetimi (`healthcheck.yml`)
+- `.github/workflows/healthcheck.yml` (`tests/system_check.py`) Türkiye saatiyle günde 3 kez (**08:00, 13:00, 20:00**) ve her yeni
+  kod güncellemesinde otomatik çalışır:
+  1. `eu.quietvox.com` oturumunun ve takvim/aksiyon DOM seçicilerinin sağlamlığını doğrular.
+  2. Son tetiklenen "Hazırlandı" / "Delivered" / "Returned" işlemlerinde takılı kalan sipariş varsa otomatik yeniden işler (`--auto-heal`).
+  3. Canlı GitHub Pages (`HTTP 200`), `index.html` JS sözdizimi ve `data.json` veri tazeliğini denetler.
+  4. Dosya boyutlarını, `localStorage` / `IndexedDB` önbellek temizliğini, cron zamanlayıcılarını ve ölü dosyaları analiz ederek
+     **"Gereksiz Yük / Optimizasyon Önerisi"** bölümünü raporlar.
+  5. Her çalıştığında `MAIL_TO` alıcılarına Hotmail/Outlook spam korumalı (RFC uyumlu `From`, `Reply-To`, `Message-ID`, `Date`,
+     `multipart/alternative` ve emojisiz sade konu başlığıyla) durum raporu e-postası gönderir.
 
 Bunun için telefonda **bir kez** erişim anahtarı girilir:
 1. GitHub → sağ üst profil → **Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token**.

@@ -338,14 +338,15 @@ async def run_many(settings: scraper.Settings, spec: ActionSpec,
             page, active, _ = session
             for order_id, day in orders:
                 problem = ""
-                for attempt in range(1, 3):
+                # İlk deneme + başarısız olursa otomatik 2 yeniden deneme (toplam 3 deneme)
+                for attempt in range(1, 4):
                     try:
                         problem = await apply_action(page, active, spec, order_id, day, dry_run)
                     except Exception as exc:
                         problem = str(exc) or type(exc).__name__
                     if not problem:
                         break
-                    if attempt < 2:
+                    if attempt < 3:
                         log.warning("Sipariş %s deneme %d başarısız (%s); yeniden deneniyor...",
                                     order_id, attempt, problem)
                         await page.wait_for_timeout(1500)
@@ -353,7 +354,7 @@ async def run_many(settings: scraper.Settings, spec: ActionSpec,
                     log.error("Sipariş %s '%s' yapılamadı: %s", order_id, spec.label, problem)
                     failures.append((order_id, problem))
                 else:
-                    log.info("Sipariş %s '%s' yapıldı.", order_id, spec.label)
+                    log.info("Sipariş %s '%s' yapıldı ve portalda doğrulandı.", order_id, spec.label)
                     succeeded.append(order_id)
         finally:
             await browser.close()
@@ -369,6 +370,11 @@ async def run_many(settings: scraper.Settings, spec: ActionSpec,
             for oid, prob in failures[:5]:
                 scraper.send_ntfy(settings, f"❌ Sipariş {oid} {spec.label} yapılamadı: {prob[:200]}",
                                   priority="high")
+            try:
+                import notify_mail
+                notify_mail.send_action_failure_alert(failures, spec.label, os.environ)
+            except Exception as exc:
+                log.warning("Hata uyarı e-postası gönderilemedi: %s", exc)
         return EXIT_FAILED
     return EXIT_OK
 

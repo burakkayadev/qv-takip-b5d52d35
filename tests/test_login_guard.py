@@ -94,7 +94,9 @@ def test_alert_mail_subject_steps_and_recipients(monkeypatch):
 
     assert notify_mail.send_login_alert(NOW, env, "https://ornek.github.io/repo/")
     message = captured["message"]
-    assert message["Subject"] == "⚠️ ACİL: Quietvox Şifresi Değişmiş Olabilir - Giriş Başarısız"
+    assert message["Subject"] == "Quietvox Oturum Uyarisi - Sifre Kontrolu Gerekiyor"
+    assert message["From"] == "Quietvox Takip Sistemi <gonderen@example.com>"
+    assert message["Reply-To"] == "gonderen@example.com"
     assert message["To"] == "a@example.com, b@example.org"
     text = message.get_body(("plain",)).get_content()
     assert "25.11.2026 12:00" in text and "Kaydet ve Dene" in text and "QV_PASS" in text

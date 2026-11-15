@@ -30,9 +30,14 @@ def test_rows_contain_hotel_agency_pax_equipment_dates_and_time():
 
 def test_message_subject_and_bodies():
     rows = notify_mail.build_rows([("2000000001", "2026-11-16")], DATA, PRINTED)
-    message = notify_mail.build_message(rows, "gonderen@example.com", ["a@example.com", "b@example.com"])
+    message = notify_mail.build_message(rows, "burakcnkkaya@gmail.com", ["a@example.com", "b@example.com"])
 
-    assert message["Subject"] == "Quietvox: 1 Sipariş Formu Basıldı ve Teslim Edildi (Delivered)"
+    assert message["Subject"] == "Quietvox Siparis Formu Basildi ve Teslim Edildi"
+    assert message["From"] == "Quietvox Takip Sistemi <burakcnkkaya@gmail.com>"
+    assert message["Reply-To"] == "burakcnkkaya@gmail.com"
+    assert message["Message-ID"] and "@gmail.com>" in message["Message-ID"]
+    assert message["Date"]
+    assert message["Precedence"] is None
     assert message["To"] == "a@example.com, b@example.com"
     html = message.get_body(("html",)).get_content()
     assert "<table" in html and "Demo Otel" in html and "Delivered" in html
@@ -89,11 +94,36 @@ def test_send_update_notification_subject_and_body(monkeypatch, tmp_path):
 
     assert notify_mail.send_update_notification(env, version_path=vfile) is True
     msg = sent["msg"]
-    assert msg["Subject"] == "🚀 Quietvox Takip Uygulaması Güncellendi (Yeni Sürüm Hazır)"
+    assert msg["Subject"] == "Quietvox Uygulama Guncellemesi Yayinlandi"
+    assert msg["From"] == "Quietvox Takip Sistemi <gonderen@example.com>"
+    assert msg["Reply-To"] == "gonderen@example.com"
     assert msg["To"] == "a@example.com, b@example.com"
     plain = msg.get_body(("plain",)).get_content()
     html = msg.get_body(("html",)).get_content()
     assert "Build #77" in plain and "fix: toplu Hazırlandı" in plain
     assert "https://burakkayadev.github.io/qv-takip-b5d52d35/" in plain
     assert "Build #77" in html and "https://burakkayadev.github.io/qv-takip-b5d52d35/" in html
+
+
+def test_send_health_report_ok_and_warn(monkeypatch):
+    sent = []
+    monkeypatch.setattr(notify_mail, "send", lambda msg, host, port, user, pw: sent.append(msg))
+    env = {"MAIL_TO": "a@example.com, b@hotmail.com", "SMTP_USER": "burakcnkkaya@gmail.com", "SMTP_PASS": "x"}
+
+    report_ok = {
+        "healthy": True,
+        "checked_at": "15.11.2026 20:00",
+        "checks": [{"name": "Portal Testi", "ok": True, "detail": "Aktif"}],
+        "optimizations": ["Örnek öneri"],
+        "metrics": {"index_kb": 305.0, "data_kb": 1211.7},
+    }
+    assert notify_mail.send_health_report(report_ok, env) is True
+    assert sent[-1]["Subject"] == "Quietvox Sistem Raporu - Tum Sistemler Aktif"
+    assert sent[-1]["From"] == "Quietvox Takip Sistemi <burakcnkkaya@gmail.com>"
+    assert sent[-1]["Reply-To"] == "burakcnkkaya@gmail.com"
+
+    report_warn = dict(report_ok, healthy=False)
+    assert notify_mail.send_health_report(report_warn, env) is True
+    assert sent[-1]["Subject"] == "Quietvox Sistem Uyarisi - Kontrol Gerekiyor"
+
 

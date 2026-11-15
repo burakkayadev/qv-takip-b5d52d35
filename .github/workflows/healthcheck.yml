@@ -1,0 +1,64 @@
+name: Quietvox Sağlık ve Performans Kontrolü
+
+on:
+  schedule:
+    # Türkiye saatiyle günde 3 kez: 08:00 (05:00 UTC), 13:00 (10:00 UTC), 20:00 (17:00 UTC)
+    - cron: '0 5 * * *'
+    - cron: '0 10 * * *'
+    - cron: '0 17 * * *'
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'data.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: quietvox-healthcheck
+  cancel-in-progress: false
+
+jobs:
+  healthcheck:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: "!startsWith(github.event.head_commit.message, 'chore: sürüm numarası güncellendi') && !startsWith(github.event.head_commit.message, 'chore: data.json güncellendi')"
+    steps:
+      - name: Depoyu al
+        uses: actions/checkout@v4
+
+      - name: Python 3.12 kur
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Node.js kur (index.html JS sözdizimi kontrolü için)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Bağımlılıkları kur
+        run: pip install -r requirements.txt
+
+      - name: Playwright Chromium kur
+        run: python -m playwright install --with-deps chromium
+
+      - name: Uçtan uca sağlık ve performans/yük denetimini çalıştır ve rapor e-postasını gönder
+        env:
+          QV_USER: ${{ secrets.QV_USER }}
+          QV_PASS: ${{ secrets.QV_PASS }}
+          QV_PASS_BACKUP: ${{ secrets.QV_PASS_BACKUP }}
+          QV_HTTP_USER: ${{ secrets.QV_HTTP_USER }}
+          QV_HTTP_PASS: ${{ secrets.QV_HTTP_PASS }}
+          MAIL_TO: ${{ secrets.MAIL_TO }}
+          ALERT_TO: ${{ secrets.ALERT_TO }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          GH_TOKEN: ${{ github.token }}
+          APP_URL: https://burakkayadev.github.io/qv-takip-b5d52d35/
+        run: python tests/system_check.py --portal-check --auto-heal --live-check --send-email

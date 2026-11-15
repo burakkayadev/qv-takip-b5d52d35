@@ -1012,7 +1012,15 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
 }
 .hotel-chip[aria-pressed="true"] { background: var(--navy); border-color: var(--navy); color: var(--white); }
 .chip.pending { background: var(--warn-bg); color: var(--warn-ink); font-weight: 800; }
-.chip.pending.late { background: var(--err-bg); color: var(--err-ink); }
+.chip.pending.late { background: var(--err-bg); color: var(--err-ink); cursor: pointer; border: 1.5px solid var(--err-ink); }
+.chip.sync-ok { background: var(--ok-bg); color: var(--ok); font-weight: 800; }
+.toast.error-alert {
+  background: rgba(185, 28, 28, 0.94) !important;
+  color: #FFFFFF !important;
+  border: 1.5px solid #FCA5A5 !important;
+  box-shadow: 0 12px 32px rgba(185, 28, 28, 0.55) !important;
+  font-weight: 800;
+}
 /* Quietvox'a düşmemiş işlem: kırmızı çerçeve, gözden kaçmasın */
 .check.failed { border-color: var(--err-ink); background: var(--err-bg); color: var(--err-ink); }
 .check.waiting { border-style: dashed; }
@@ -3336,11 +3344,21 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     return Boolean(m.prepared || m.done || str(m.note) || hasItems);
   }
 
-  function showToast(message) {
+  function showToast(message, isError) {
     var t = $('#toast');
     t.textContent = message;
+    t.classList.toggle('error-alert', Boolean(isError));
     window.clearTimeout(toastTimer);
-    toastTimer = window.setTimeout(function () { t.textContent = ''; }, 2600);
+    toastTimer = window.setTimeout(function () {
+      t.textContent = '';
+      t.classList.remove('error-alert');
+    }, isError ? 6000 : 2800);
+  }
+
+  function showErrorAlert(message, openAuthOnClick) {
+    setState({ syncError: message, syncErrorAuth: Boolean(openAuthOnClick) });
+    showToast(message, true);
+    renderBanners();
   }
 
   /* ========================================================================
@@ -3714,6 +3732,14 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
 
     if (state.loadError) {
       items.push(['error', 'Veri yüklenemedi. İnternet bağlantınızı kontrol edip "Yenile"ye basın.']);
+    }
+    if (state.syncError) {
+      items.push(['error', state.syncError, function () {
+        var needAuth = state.syncErrorAuth;
+        setState({ syncError: '', syncErrorAuth: false });
+        renderBanners();
+        if (needAuth) openSettings();
+      }]);
     }
     if (d) {
       if (d.status === 'login_failed') {
@@ -4140,17 +4166,21 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     btn.setAttribute('aria-pressed', done ? 'true' : 'false');
     var text = el('span', '');
     var sub = bagReady ? '✓ Çanta tam — Quietvox\'a göndermek için dokun' : 'Quietvox\'a yazar';
-    if (done) sub = 'Quietvox: ' + info.quietvox + ' ✓';
+    if (done) sub = '✅ Sistemde Onaylandı (Doğrulandı · ' + info.quietvox + ')';
     else if (queued) sub = '📡 İnternet bekleniyor (Kuyrukta — otomatik gönderilecek)';
-    else if (waiting) sub = 'Gönderildi, Quietvox bekleniyor…';
-    else if (failed) sub = '⚠️ Quietvox\'a düşmedi — tekrar gönder';
+    else if (waiting) sub = '⏳ Quietvox\'a işleniyor...';
+    else if (failed) sub = '❌ Sisteme Düşmedi — Tekrar Dene';
     else if (localOnly) sub = '⚠️ Yalnızca bu telefonda — Quietvox\'a gönder';
     append(text, document.createTextNode(info.label), el('span', 'sub', sub));
-    append(btn, el('span', 'box', done ? '✓' : (queued ? '📡' : (waiting ? '⏳' : (bagReady ? '✓' : '')))), text);
+    append(btn, el('span', 'box', done ? '✓' : (queued ? '📡' : (waiting ? '⏳' : (failed ? '↻' : (bagReady ? '✓' : ''))))), text);
     btn.querySelector('.box').setAttribute('aria-hidden', 'true');
     btn.addEventListener('click', function () {
-      if (done) { showToast('Quietvox\'ta zaten ' + info.quietvox); return; }
-      if (waiting) { showToast('Gönderildi; Quietvox\'ta birkaç dakika içinde görünecek'); return; }
+      if (done) { showToast('✅ Sistemde Onaylandı (' + info.quietvox + ')'); return; }
+      if (waiting) { showToast('⏳ Quietvox\'a işleniyor... Birkaç dakika içinde tamamlanacak.'); return; }
+      if (failed && state.token && repoSlug()) {
+        sendAction(order, key, action);
+        return;
+      }
       openActionDialog(order, key, action);
     });
     return btn;
@@ -4354,12 +4384,30 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     append(main, cardChips(order), el('h3', 'hotel', hotelName), cardSummary(order));
     var queued = state.queue[key];
     var pending = state.pending[key];
-    if (queued && !finished) {
+    var targetAction = cardKind === 'return' ? 'returned' : 'delivered';
+    var isSystemVerified = reached(order, targetAction);
+    if (isSystemVerified) {
+      append(main.querySelector('.chips'), el('span', 'chip sync-ok', '✅ Sistemde Onaylandı (Doğrulandı)'));
+    } else if (queued && !finished) {
       append(main.querySelector('.chips'), el('span', 'chip queued', '📡 İnternet bekleniyor (Kuyrukta)'));
     } else if (pending && !finished) {
       var late = Boolean(pending.failed) || Date.now() - pending.ts > PENDING_FAIL_MS;
-      append(main.querySelector('.chips'), el('span', 'chip pending' + (late ? ' late' : ''),
-        late ? '⚠️ Quietvox\'a düşmedi' : '⏳ Quietvox\'a gönderildi'));
+      if (late) {
+        var retryChip = el('button', 'chip pending late', '❌ Sisteme Düşmedi — Tekrar Dene');
+        retryChip.type = 'button';
+        retryChip.title = 'Tek tıkla Quietvox sistemine tekrar gönder';
+        retryChip.addEventListener('click', function (ev) {
+          ev.stopPropagation();
+          if (state.token && repoSlug()) {
+            sendAction(order, key, pending.action || targetAction);
+          } else {
+            openActionDialog(order, key, pending.action || targetAction);
+          }
+        });
+        append(main.querySelector('.chips'), retryChip);
+      } else {
+        append(main.querySelector('.chips'), el('span', 'chip pending', '⏳ Quietvox\'a işleniyor...'));
+      }
     }
 
     // Saha Özelliği 2: Kayıtlı Teslim Kanıt Notu varsa kartta göster
@@ -5064,6 +5112,7 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
             return;
           }
           if (run.conclusion === 'success') {
+            setState({ syncError: '', syncErrorAuth: false });
             showToast('✅ ' + count + ' sipariş orijinal Quietvox sistemine \'' + info.label + '\' (' + info.quietvox + ') olarak işlendi! Veriler güncelleniyor…');
             window.setTimeout(function () { loadData(false); }, 15000);
             window.setTimeout(function () { loadData(false); }, 45000);
@@ -5076,7 +5125,7 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
             });
             savePending(nextP);
             render(true);
-            showToast('⚠️ Dikkat: ' + count + ' sipariş orijinal Quietvox sistemine işlenemedi (' + (run.conclusion || 'hata') + ')! Kart üzerindeki uyarıdan tekrar deneyebilirsiniz.');
+            showErrorAlert('❌ Dikkat: ' + count + ' sipariş orijinal Quietvox sistemine işlenemedi (' + (run.conclusion || 'hata') + ')! Kart üzerindeki "❌ Sisteme Düşmedi — Tekrar Dene" düğmesine dokunun.', false);
           }
         })
         .catch(function () { window.setTimeout(check, 15000); });
@@ -5161,7 +5210,7 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
         });
     }).catch(function (err) {
       if (err && err.message === 'auth') {
-        showToast('⚠️ Gönderilemedi: GitHub erişim anahtarı geçersiz ya da yetkisiz (⚙ Ayarlar)');
+        showErrorAlert('❌ Gönderilemedi: GitHub erişim anahtarı geçersiz ya da yetkisiz! ⚙ Ayarlar\'ı açmak için dokunun.', true);
       } else {
         todo.forEach(function (order) {
           enqueueAction(order, orderKey(order, kind), action, true);
@@ -5420,46 +5469,98 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     var finish = function () {
       var parts = [unique.length + ' sipariş için Form basıldı, \'Yazdırıldı ✓\' işaretlendi'];
       if (!canSend) {
-        parts.push('Quietvox\'a gönderim ve e-posta için ⚙ Ayarlar\'dan erişim anahtarı gerekli');
-      } else {
-        if (sent) parts.push(sent + ' sipariş Quietvox sistemine Delivered olarak işlendi');
-        if (queued) parts.push(queued + ' sipariş bağlantı gelince gönderilecek');
-        if (already) parts.push(already + ' sipariş zaten Delivered');
-        parts.push(sendNotify(notifyOrders, printedAt));
+        showErrorAlert('❌ Dikkat: GitHub erişim anahtarı eksik! Form yazdırıldı ancak Quietvox portalına otomatik Delivered işlenemedi. ⚙ Ayarlar\'ı açmak için dokunun.', true);
+        render(true);
+        return;
       }
+      if (sent) parts.push(sent + ' sipariş Quietvox sistemine Delivered olarak işleniyor');
+      if (queued) parts.push(queued + ' sipariş bağlantı gelince gönderilecek');
+      if (already) parts.push(already + ' sipariş zaten Delivered');
+      parts.push(sendNotify(notifyOrders, printedAt));
       render(true);
       showToast(parts.join(', ') + '.');
       if (sent) [120000, 240000].forEach(function (ms) { window.setTimeout(function () { loadData(false); }, ms); });
     };
 
-    var step = function () {
-      if (idx >= todo.length) { finish(); return; }
-      var item = todo[idx];
-      idx += 1;
-      if (!canSend) { step(); return; }
-      if (!navigator.onLine) {
+    if (!canSend || !todo.length) {
+      finish();
+      return;
+    }
+
+    if (!navigator.onLine) {
+      todo.forEach(function (item) {
         enqueueAction(item.order, item.key, 'delivered', true);
         queued += 1;
-        step();
+      });
+      finish();
+      return;
+    }
+
+    // Form basılan tüm siparişleri tek seferde order_ids listesiyle Quietvox'a Delivered olarak gönder
+    var batchIds = todo.map(function (it) { return bookingId(it.order) + ':' + it.order.date; }).join(',');
+    var firstItem = todo[0];
+    var batchKeys = todo.map(function (it) { return it.key; });
+    captureKnownActionRuns().then(function (knownIds) {
+      var batchBody = JSON.stringify({
+        ref: 'main',
+        inputs: {
+          action: 'delivered',
+          order_id: bookingId(firstItem.order),
+          order_date: firstItem.order.date,
+          order_ids: batchIds
+        }
+      });
+      return githubRequest('/actions/workflows/' + ACTION_WORKFLOW + '/dispatches', { method: 'POST', body: batchBody })
+        .then(function (res) {
+          if (res.status === 401 || res.status === 403 || res.status === 404) throw new Error('auth');
+          if (res.status === 204 || res.ok) {
+            sent = todo.length;
+            var pending = Object.assign({}, state.pending);
+            batchKeys.forEach(function (k) { pending[k] = { action: 'delivered', ts: Date.now() }; });
+            savePending(pending);
+            watchActionDispatch(knownIds, batchKeys, ACTIONS.delivered);
+            finish();
+            return;
+          }
+          // Geriye dönük uyumluluk: tek tek gönder
+          var step = function () {
+            if (idx >= todo.length) {
+              if (sent > 0) watchActionDispatch(knownIds, batchKeys.slice(0, sent), ACTIONS.delivered);
+              finish();
+              return;
+            }
+            var item = todo[idx];
+            idx += 1;
+            dispatchOne(item.order, 'delivered').then(function (ok) {
+              if (ok) {
+                sent += 1;
+                var pending = Object.assign({}, state.pending);
+                pending[item.key] = { action: 'delivered', ts: Date.now() };
+                savePending(pending);
+              } else {
+                enqueueAction(item.order, item.key, 'delivered', true);
+                queued += 1;
+              }
+            }).catch(function (err) {
+              if (err && err.message === 'auth') { canSend = false; return; }
+              enqueueAction(item.order, item.key, 'delivered', true);
+              queued += 1;
+            }).then(function () { window.setTimeout(step, BULK_DELAY_MS); });
+          };
+          step();
+        });
+    }).catch(function (err) {
+      if (err && err.message === 'auth') {
+        canSend = false;
+        finish();
         return;
       }
-      dispatchOne(item.order, 'delivered').then(function (ok) {
-        if (ok) {
-          sent += 1;
-          var pending = Object.assign({}, state.pending);
-          pending[item.key] = { action: 'delivered', ts: Date.now() };
-          savePending(pending);
-        } else {
-          enqueueAction(item.order, item.key, 'delivered', true);
-          queued += 1;
-        }
-      }).catch(function (err) {
-        if (err && err.message === 'auth') { canSend = false; return; }
+      todo.forEach(function (item) {
         enqueueAction(item.order, item.key, 'delivered', true);
         queued += 1;
-      }).then(function () { window.setTimeout(step, BULK_DELAY_MS); });
-    };
-    step();
+      });
+      finish();
+    });
   }
 
   // E-posta bildirimi: notify.yml iş akışını tek seferde tetikler; çevrimdışıysa kuyruğa alır
@@ -6754,9 +6855,9 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
         });
     }).catch(function (err) {
       if (err && err.message === 'auth') {
-        showToast('⚠️ Gönderilemedi: erişim anahtarı geçersiz ya da yetkisiz (⚙ Ayarlar)');
+        showErrorAlert('❌ Gönderilemedi: erişim anahtarı geçersiz ya da yetkisiz! ⚙ Ayarlar\'ı açmak için dokunun.', true);
       } else if (err && err.message === 'http') {
-        showToast('⚠️ Gönderilemedi: GitHub yanıt vermedi, tekrar deneyin');
+        showErrorAlert('❌ Gönderilemedi: GitHub API hata döndürdü, lütfen tekrar deneyin.', false);
       } else {
         // Otel bodrumu / zayıf şebeke: ağ hatasında işlemi çevrimdışı kuyruğa al
         enqueueAction(order, key, action, false);
@@ -7174,7 +7275,13 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
         req.onsuccess = function () {
           var list = req.result || [];
           var photos = {};
+          var now = Date.now();
+          var PHOTO_TTL_MS = 90 * 24 * 60 * 60 * 1000;
           list.forEach(function (item) {
+            if (item && item.ts && now - item.ts > PHOTO_TTL_MS) {
+              deletePhotoRecord(item.orderKey);
+              return;
+            }
             photos[item.orderKey] = item;
           });
           setState({ photos: photos });
