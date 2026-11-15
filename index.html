@@ -1055,6 +1055,146 @@ dialog.dlg::backdrop { background: rgba(27, 32, 48, 0.55); }
 [data-theme="dark"] .chip.st-delivered { background: #3A2550; color: #E4C9F5; }
 [data-theme="dark"] .pv-bar .btn-go { color: #1B2030; }
 
+/* ==========================================================================
+   8d) SADE DÜZEN: yan menü (çekmece), tek satır üst çubuk, sakin kartlar
+   ========================================================================== */
+/* Alt sekme çubuğu kaldırıldı: seçim yan menüden ve bugün panelinden yapılır */
+.tabs { display: none !important; }
+#app { padding-bottom: calc(28px + env(safe-area-inset-bottom)); }
+.toast { bottom: calc(24px + env(safe-area-inset-bottom)); }
+#reminder { display: none; } /* yarının özeti bugün panelinde tek satır */
+
+.topbar { gap: 10px; }
+.topbar .brand { flex: 1 1 auto; min-width: 0; }
+.topbar .brand h1 { font-size: 17px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  background: rgba(10, 12, 20, 0.5);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.scrim.open { opacity: 1; }
+.drawer {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 80;
+  width: min(84vw, 340px);
+  overflow-y: auto;
+  background: var(--cream);
+  color: var(--navy);
+  box-shadow: 8px 0 32px rgba(0, 0, 0, 0.3);
+  transform: translateX(-104%);
+  transition: transform 0.22s ease;
+  padding: calc(14px + env(safe-area-inset-top)) 14px calc(18px + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  visibility: hidden;
+}
+.drawer.open { transform: none; visibility: visible; }
+@media (prefers-reduced-motion: reduce) { .drawer, .scrim { transition: none; } }
+.drawer-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.drawer-head strong { font-family: var(--font-head); font-size: 24px; }
+.drawer-head strong span { color: var(--gold-deep); }
+.drawer-close {
+  min-width: var(--tap);
+  min-height: var(--tap);
+  border-radius: 14px;
+  border: 0;
+  background: transparent;
+  font-size: 24px;
+  cursor: pointer;
+}
+.drawer-sec {
+  margin: 12px 4px 2px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  min-height: 56px;
+  padding: 0 16px;
+  border-radius: 16px;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 18px;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+  color: var(--navy);
+}
+.nav-item b {
+  min-width: 34px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--glass-strong);
+  border: 1px solid var(--hairline);
+  font-size: 15px;
+  text-align: center;
+}
+.nav-item[aria-current="true"] { background: var(--glass-strong); box-shadow: inset 4px 0 0 var(--gold); }
+.nav-item.warn { color: var(--err-ink); }
+.nav-item.warn[hidden] { display: none; }
+.nav-days { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.drawer-foot { margin-top: auto; padding: 14px 4px 0; font-size: 13px; color: var(--ink-soft); }
+
+.tomorrow-line {
+  grid-column: 1 / -1;
+  min-height: 46px;
+  border-radius: 14px;
+  border: 1px dashed var(--gold);
+  background: transparent;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--navy);
+  cursor: pointer;
+  text-align: left;
+  padding: 8px 14px;
+}
+
+/* Sade kart: başlık + tek satır özet + ana işlem + dört küçük düğme */
+.card .summary { margin-top: 6px; font-size: 16px; color: var(--ink-soft); line-height: 1.4; }
+.card .summary b { color: var(--navy); font-weight: 700; }
+.primary { margin-top: 14px; }
+.primary .check { width: 100%; }
+.quick { display: grid; grid-template-columns: repeat(auto-fit, minmax(68px, 1fr)); gap: 8px; margin-top: 10px; }
+.qbtn {
+  min-height: 60px;
+  border-radius: 14px;
+  border: 1px solid var(--hairline);
+  background: var(--glass-strong);
+  color: var(--navy);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  cursor: pointer;
+  padding: 4px;
+}
+.qbtn .ic { font-size: 21px; line-height: 1; }
+.qbtn.off { opacity: 0.4; pointer-events: none; }
+.more-extra { display: grid; gap: 10px; margin-bottom: 12px; }
+.print-choice { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; }
+
 @page { size: A4; margin: 8mm; }
 
 @media print {
@@ -1102,18 +1242,41 @@ dialog.dlg::backdrop { background: rgba(27, 32, 48, 0.55); }
 
 <!-- ÜST ÇUBUK -->
 <header class="topbar">
+  <button type="button" class="btn-refresh btn-gear" id="btn-menu" aria-label="Menüyü aç"
+          aria-controls="drawer" aria-expanded="false">☰</button>
   <div class="brand">
-    <h1>Quiet<span>vox</span></h1>
+    <h1 id="view-title">📦 Verilecekler</h1>
     <div class="updated" id="updated">Son güncelleme: —</div>
   </div>
   <div class="top-actions">
     <button type="button" class="btn-refresh" id="btn-refresh" aria-label="Verileri yenile">
       <span class="spin" aria-hidden="true">↻</span><span>Yenile</span>
     </button>
-    <button type="button" class="btn-refresh btn-gear" id="btn-theme" aria-label="Koyu moda geç">🌙</button>
-    <button type="button" class="btn-refresh btn-gear" id="btn-settings" aria-label="Ayarlar">⚙</button>
   </div>
 </header>
+
+<!-- YAN MENÜ: verilecek / alınacak seçimi, gün, tema ve ayarlar -->
+<div class="scrim" id="scrim" hidden></div>
+<nav class="drawer" id="drawer" aria-label="Menü" aria-hidden="true">
+  <div class="drawer-head">
+    <strong>Quiet<span>vox</span></strong>
+    <button type="button" class="drawer-close" id="drawer-close" aria-label="Menüyü kapat">✕</button>
+  </div>
+  <div class="drawer-sec">Siparişler</div>
+  <button type="button" class="nav-item" id="nav-deliveries" data-nav-tab="deliveries">📦 Verilecekler <b id="nav-n-deliveries">0</b></button>
+  <button type="button" class="nav-item" id="nav-returns" data-nav-tab="returns">🔄 Alınacaklar <b id="nav-n-returns">0</b></button>
+  <button type="button" class="nav-item warn" id="nav-overdue" hidden>⚠️ Geciken iadeler <b id="nav-n-overdue">0</b></button>
+  <div class="drawer-sec">Gün</div>
+  <div class="nav-days">
+    <button type="button" class="filter" data-nav-filter="today">Bugün</button>
+    <button type="button" class="filter" data-nav-filter="tomorrow">Yarın</button>
+    <button type="button" class="filter" data-nav-filter="all">Tümü</button>
+  </div>
+  <div class="drawer-sec">Ayarlar</div>
+  <button type="button" class="nav-item" id="btn-theme">🌙 Koyu mod</button>
+  <button type="button" class="nav-item" id="btn-settings">⚙ Quietvox bağlantısı</button>
+  <div class="drawer-foot" id="drawer-foot"></div>
+</nav>
 
 <main id="app">
   <!-- Uyarı bantları (örnek veri, oturum hatası, eski veri, çevrimdışı) -->
@@ -1131,6 +1294,7 @@ dialog.dlg::backdrop { background: rgba(27, 32, 48, 0.55); }
     <button type="button" class="tile warn" id="tile-overdue" hidden>
       <div class="n" id="tile-n-overdue">0</div><div class="t">⚠️ Geciken iade — almayı unutma</div>
     </button>
+    <button type="button" class="tomorrow-line" id="tomorrow-line">🔔 Yarın: —</button>
   </section>
 
   <!-- Yarın hatırlatıcısı -->
@@ -1722,10 +1886,27 @@ dialog.dlg::backdrop { background: rgba(27, 32, 48, 0.55); }
       all: upcomingOrders(state.tab).length
     };
     var labels = { today: 'Bugün', tomorrow: 'Yarın', all: 'Tümü' };
-    document.querySelectorAll('.filter').forEach(function (btn) {
+    document.querySelectorAll('.filter[data-filter]').forEach(function (btn) {
       var f = btn.getAttribute('data-filter');
       btn.setAttribute('aria-pressed', state.filter === f ? 'true' : 'false');
       btn.textContent = labels[f] + ' (' + counts[f] + ')';
+    });
+
+    // Üst başlık ve yan menü: hangi liste açık, kaç sipariş var
+    var dayLabels = { today: 'Bugün', tomorrow: 'Yarın', all: 'Tümü', overdue: 'Geciken',
+      date: state.date ? shortDate(state.date) : '' };
+    var tabLabel = state.tab === 'returns' ? 'Alınacaklar' : 'Verilecekler';
+    $('#view-title').textContent = tabLabel + ' · ' + (dayLabels[state.filter] || '');
+    Object.keys(TAB_INFO).forEach(function (tab) {
+      $('#nav-n-' + tab).textContent = filteredOrdersFor(tab).length;
+      $('#nav-' + tab).setAttribute('aria-current', state.tab === tab && state.filter !== 'overdue' ? 'true' : 'false');
+    });
+    var overdueCount = overdueReturns().length;
+    $('#nav-overdue').hidden = overdueCount === 0;
+    $('#nav-n-overdue').textContent = overdueCount;
+    $('#nav-overdue').setAttribute('aria-current', state.filter === 'overdue' ? 'true' : 'false');
+    document.querySelectorAll('[data-nav-filter]').forEach(function (btn) {
+      btn.setAttribute('aria-pressed', state.filter === btn.getAttribute('data-nav-filter') ? 'true' : 'false');
     });
 
     var picked = state.filter === 'date';
@@ -1769,6 +1950,12 @@ dialog.dlg::backdrop { background: rgba(27, 32, 48, 0.55); }
     var overdue = overdueReturns().length;
     $('#tile-overdue').hidden = overdue === 0;
     $('#tile-n-overdue').textContent = overdue;
+
+    // Yarının tek satırlık özeti (dokununca yarının listesi açılır)
+    var active = function (o) { return !INACTIVE_STATUSES[o.status]; };
+    var tomorrowDeliveries = ordersOn('deliveries', state.tomorrow).filter(active).length;
+    var tomorrowReturns = ordersOn('returns', state.tomorrow).filter(active).length;
+    $('#tomorrow-line').textContent = '🔔 Yarın: ' + tomorrowDeliveries + ' verilecek · ' + tomorrowReturns + ' alınacak';
   }
 
   function goToDate(dateStr) {
@@ -1961,6 +2148,54 @@ dialog.dlg::backdrop { background: rgba(27, 32, 48, 0.55); }
     return append(details, body);
   }
 
+  // Kartın tek satırlık özeti: müşteri · kişi sayısı · rehber
+  function cardSummary(order) {
+    var p = el('p', 'summary');
+    var parts = [
+      [clientName(order), ''],
+      [order.dr_form.clients, ' kişi'],
+      [order.waybill.tour_manager_name, '', 'Rehber: ']
+    ];
+    parts.forEach(function (part) {
+      if (!str(part[0])) return;
+      if (p.childNodes.length) append(p, document.createTextNode(' · '));
+      if (part[2]) append(p, document.createTextNode(part[2]));
+      append(p, el('b', '', str(part[0])), part[1] ? document.createTextNode(part[1]) : null);
+    });
+    if (!p.childNodes.length) p.textContent = EMPTY;
+    return p;
+  }
+
+  function quickButton(icon, label, href, newTab) {
+    var node = href ? el('a', 'qbtn') : el('button', 'qbtn');
+    if (href) {
+      node.href = href;
+      if (newTab) { node.target = '_blank'; node.rel = 'noopener noreferrer'; }
+    } else {
+      node.type = 'button';
+    }
+    append(node, el('span', 'ic', icon), el('span', '', label));
+    node.querySelector('.ic').setAttribute('aria-hidden', 'true');
+    return node;
+  }
+
+  // Yazdırma seçimi: WayBill (yarım A4) ya da D&R Formu (A4), her biri önizlemeli
+  function openPrintDialog(order, opener) {
+    var title = el('h2', '', '🖨️ Etiket yazdır');
+    title.id = 'dlg-title';
+    var nodes = [title, el('p', '', (order.location_name || order.title) + ' · ' + (order.dr_form.qv_booking_id || order.id))];
+    [['waybill', '🖨️ WayBill (yarım A4)'], ['form', '🖨️ D&R Formu (A4)']].forEach(function (pair) {
+      var row = el('div', 'print-choice');
+      append(row,
+        dialogButton('btn-print', pair[1], function () { closeDialog(); printOrder(order, pair[0]); }),
+        dialogButton('btn-ghost', 'Önizle', function () { closeDialog(); openPreview(order, opener, pair[0]); }));
+      nodes.push(row);
+    });
+    nodes.push(el('p', 'dlg-note', 'Yazdırma ekranında kâğıt A4, ölçek %100 olmalı.'));
+    nodes.push(dialogButton('btn-link', 'Vazgeç', closeDialog));
+    showDialog(nodes);
+  }
+
   function buildCard(order, tab) {
     var info = TAB_INFO[tab];
     var key = orderKey(order, info.kind);
@@ -1972,28 +2207,7 @@ dialog.dlg::backdrop { background: rgba(27, 32, 48, 0.55); }
     var hotelName = order.location_name || order.title || 'Adı belirtilmemiş';
 
     var main = el('div', 'card-main');
-    append(main, cardChips(order), el('h3', 'hotel', hotelName), cardMeta(order));
-
-    // Ana adres: teslimatta teslimat yeri, iadede iade yeri
-    var address = tab === 'returns'
-      ? (w.return_location || w.delivery_location || order.location_name)
-      : (w.delivery_location || w.return_location || order.location_name);
-    var hotelTel = normalizePhone(w.delivery_phone);
-    var quick = el('div', 'actions' + (address && hotelTel ? '' : ' single'));
-    if (address) {
-      var map = linkButton('btn-ghost', '🗺️ Harita', mapsUrl(address), true);
-      map.setAttribute('aria-label', 'Haritada aç: ' + hotelName);
-      append(quick, map);
-    }
-    if (hotelTel) append(quick, linkButton('btn-ghost', '📞 Oteli Ara', 'tel:+' + hotelTel, false));
-
-    var checks = el('div', 'checks');
-    if (tab === 'deliveries') {
-      append(checks, remoteButton(order, key, 'delivered'), checkButton(key, 'done', info.finalLabel, card));
-    } else {
-      checks.classList.add('single');
-      append(checks, remoteButton(order, key, 'returned'));
-    }
+    append(main, cardChips(order), el('h3', 'hotel', hotelName), cardSummary(order));
     var pending = state.pending[key];
     if (pending && !isDone(order, tab)) {
       var late = Date.now() - pending.ts > PENDING_FAIL_MS;
@@ -2001,30 +2215,35 @@ dialog.dlg::backdrop { background: rgba(27, 32, 48, 0.55); }
         late ? '⚠️ Quietvox\'a düşmedi' : '⏳ Quietvox\'a gönderildi'));
     }
 
-    // Etiketler ayrı ayrı yazdırılır: WayBill yarım A4 (yatay), D&R Formu tam A4
-    var printRow = el('div', 'print-row');
-    var printGrid = el('div', 'print-grid');
-    [['waybill', '🖨️ WayBill (yarım A4)'], ['form', '🖨️ D&R Formu (A4)']].forEach(function (pair) {
-      var col = el('div', 'print-col');
-      var printBtn = el('button', 'btn btn-print', pair[1]);
-      printBtn.type = 'button';
-      printBtn.addEventListener('click', function () { printOrder(order, pair[0]); });
-      var previewBtn = el('button', 'btn btn-link', 'Önizle');
-      previewBtn.type = 'button';
-      previewBtn.addEventListener('click', function () { openPreview(order, previewBtn, pair[0]); });
-      append(printGrid, append(col, printBtn, previewBtn));
-    });
-    append(printRow, printGrid);
+    // Ana işlem: Quietvox'a yazan tek büyük düğme
+    var primary = el('div', 'primary');
+    append(primary, remoteButton(order, key, tab === 'deliveries' ? 'delivered' : 'returned'));
 
-    return append(card,
-      el('div', 'done-flag', '✓ ' + info.finalLabel),
-      main,
-      cardPhoneActions(order),
-      quick.childNodes.length ? quick : null,
-      checks,
-      printRow,
-      cardDetails(order, key)
-    );
+    // Dört küçük düğme: Ara · WhatsApp · Harita · Yazdır
+    var phone = normalizePhone(w.tour_manager_phone);
+    var address = tab === 'returns'
+      ? (w.return_location || w.delivery_location || order.location_name)
+      : (w.delivery_location || w.return_location || order.location_name);
+    var quick = el('div', 'quick');
+    var call = quickButton('📞', 'Ara', phone ? 'tel:+' + phone : '', false);
+    var wa = quickButton('💬', 'WhatsApp', phone ? 'https://wa.me/' + phone : '', true);
+    if (!phone) { call.classList.add('off'); wa.classList.add('off'); }
+    call.setAttribute('aria-label', phone ? 'Rehberi ara' : 'Rehber telefonu yok');
+    var map = quickButton('🗺️', 'Harita', address ? mapsUrl(address) : '', true);
+    if (!address) map.classList.add('off');
+    var print = quickButton('🖨️', 'Yazdır', '', false);
+    print.addEventListener('click', function () { openPrintDialog(order, print); });
+    append(quick, call, wa, map, print);
+
+    // Ayrıntılar: otel telefonu, el işareti, adresler, ekipman
+    var details = cardDetails(order, key);
+    var extra = el('div', 'more-extra');
+    var hotelTel = normalizePhone(w.delivery_phone);
+    if (hotelTel) append(extra, linkButton('btn-ghost', '📞 Oteli Ara', 'tel:+' + hotelTel, false));
+    if (tab === 'deliveries') append(extra, checkButton(key, 'done', info.finalLabel, card));
+    if (extra.childNodes.length) details.querySelector('.more-body').prepend(extra);
+
+    return append(card, el('div', 'done-flag', '✓ ' + info.finalLabel), main, primary, quick, details);
   }
 
   function emptyMessage() {
@@ -2460,13 +2679,42 @@ dialog.dlg::backdrop { background: rgba(27, 32, 48, 0.55); }
     var meta = document.querySelector('meta[name="theme-color"]');
     if (meta) meta.setAttribute('content', theme === 'dark' ? '#0B0E16' : '#1B2030');
     var btn = $('#btn-theme');
-    btn.textContent = theme === 'dark' ? '☀️' : '🌙';
-    btn.setAttribute('aria-label', theme === 'dark' ? 'Açık moda geç' : 'Koyu moda geç');
+    btn.textContent = theme === 'dark' ? '☀️ Açık mod' : '🌙 Koyu mod';
   }
 
   function toggleTheme() {
     lsWrite(LS_THEME, currentTheme() === 'dark' ? 'light' : 'dark');
     applyTheme();
+  }
+
+  /* ========================================================================
+     YAN MENÜ (çekmece)
+     ======================================================================== */
+  function openDrawer() {
+    var drawer = $('#drawer');
+    var scrim = $('#scrim');
+    $('#drawer-foot').textContent = $('#updated').textContent;
+    scrim.hidden = false;
+    drawer.setAttribute('aria-hidden', 'false');
+    $('#btn-menu').setAttribute('aria-expanded', 'true');
+    window.requestAnimationFrame(function () {
+      scrim.classList.add('open');
+      drawer.classList.add('open');
+      var current = drawer.querySelector('[aria-current="true"]') || $('#nav-deliveries');
+      current.focus();
+    });
+  }
+
+  function closeDrawer(returnFocus) {
+    var drawer = $('#drawer');
+    if (!drawer.classList.contains('open')) return;
+    drawer.classList.remove('open');
+    drawer.setAttribute('aria-hidden', 'true');
+    $('#scrim').classList.remove('open');
+    $('#scrim').hidden = true;
+    $('#btn-menu').setAttribute('aria-expanded', 'false');
+    if (returnFocus) $('#btn-menu').focus();
+    else window.scrollTo({ top: 0, behavior: reducedMotion() ? 'auto' : 'smooth' });
   }
 
   /* ========================================================================
@@ -2659,7 +2907,7 @@ dialog.dlg::backdrop { background: rgba(27, 32, 48, 0.55); }
       });
     });
 
-    document.querySelectorAll('.filter').forEach(function (btn) {
+    document.querySelectorAll('.filter[data-filter]').forEach(function (btn) {
       btn.addEventListener('click', function () {
         setState({ filter: btn.getAttribute('data-filter'), filterChosen: true });
         render(true);
@@ -2667,7 +2915,36 @@ dialog.dlg::backdrop { background: rgba(27, 32, 48, 0.55); }
     });
 
     $('#btn-refresh').addEventListener('click', function () { loadData(true); });
-    $('#btn-settings').addEventListener('click', openSettings);
+    $('#btn-settings').addEventListener('click', function () { closeDrawer(false); openSettings(); });
+    $('#btn-menu').addEventListener('click', openDrawer);
+    $('#drawer-close').addEventListener('click', function () { closeDrawer(true); });
+    $('#scrim').addEventListener('click', function () { closeDrawer(true); });
+    document.querySelectorAll('[data-nav-tab]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var tab = btn.getAttribute('data-nav-tab');
+        if (state.filter === 'overdue') setState({ filter: 'today', filterChosen: true });
+        setState({ hotel: '' });
+        selectTab(tab, false);
+        closeDrawer(false);
+      });
+    });
+    document.querySelectorAll('[data-nav-filter]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        setState({ filter: btn.getAttribute('data-nav-filter'), filterChosen: true });
+        render(true);
+        closeDrawer(false);
+      });
+    });
+    $('#nav-overdue').addEventListener('click', function () {
+      setState({ tab: 'returns', filter: 'overdue', filterChosen: true, hotel: '' });
+      render(true);
+      closeDrawer(false);
+    });
+    $('#tomorrow-line').addEventListener('click', function () {
+      setState({ filter: 'tomorrow', filterChosen: true, hotel: '' });
+      render(true);
+      $('#list').scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'start' });
+    });
     $('#btn-theme').addEventListener('click', toggleTheme);
     $('#tile-overdue').addEventListener('click', function () {
       setState({ tab: 'returns', filter: 'overdue', filterChosen: true, hotel: '' });
@@ -2695,7 +2972,9 @@ dialog.dlg::backdrop { background: rgba(27, 32, 48, 0.55); }
     $('#pv-close').addEventListener('click', closePreview);
     $('#pv-print').addEventListener('click', function () { window.print(); });
     document.addEventListener('keydown', function (ev) {
-      if (ev.key === 'Escape') closePreview();
+      if (ev.key !== 'Escape') return;
+      if ($('#drawer').classList.contains('open')) closeDrawer(true);
+      else closePreview();
     });
     window.addEventListener('resize', updatePreviewScale);
 
