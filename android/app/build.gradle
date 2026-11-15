@@ -1,0 +1,48 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'io.github.burakkayadev.qvtakip'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId 'io.github.burakkayadev.qvtakip'
+        minSdk 23
+        targetSdk 34
+        // Sürüm kodu derleme numarasından gelir; böylece yeni APK eskisinin üzerine kurulabilir
+        versionCode((System.getenv('VERSION_CODE') ?: '1') as Integer)
+        versionName '1.' + (System.getenv('VERSION_CODE') ?: '0')
+    }
+
+    signingConfigs {
+        release {
+            // İmza anahtarı depoda tutulmaz; derleme sırasında ortam değişkenlerinden okunur
+            def keystore = System.getenv('KEYSTORE_FILE')
+            if (keystore) {
+                storeFile file(keystore)
+                storePassword System.getenv('KEYSTORE_PASS')
+                keyAlias 'qvtakip'
+                keyPassword System.getenv('KEYSTORE_PASS')
+                storeType 'pkcs12'
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.release
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    // Web uygulamasını Chrome motoruyla tam ekran açar (yazdırma dahil her şey Chrome'daki gibi çalışır)
+    implementation 'com.google.androidbrowserhelper:androidbrowserhelper:2.5.0'
+}

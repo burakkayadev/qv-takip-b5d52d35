@@ -1,0 +1,64 @@
+name: Android APK
+
+# Android uygulamasını derler ve "apk" sürümüne (Releases) yükler.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'android/**'
+      - '.github/workflows/apk.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Depoyu al
+        uses: actions/checkout@v4
+
+      - name: Java 17 kur
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Gradle kur
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      # İmza anahtarı yalnızca derleme süresince geçici klasörde durur
+      - name: İmza anahtarını hazırla
+        env:
+          ANDROID_KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
+        run: echo "$ANDROID_KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/qvtakip.p12"
+
+      - name: APK derle
+        env:
+          KEYSTORE_PASS: ${{ secrets.ANDROID_KEYSTORE_PASS }}
+          VERSION_CODE: ${{ github.run_number }}
+        run: |
+          export KEYSTORE_FILE="$RUNNER_TEMP/qvtakip.p12"
+          gradle -p android assembleRelease --no-daemon --stacktrace
+
+      - name: İmzayı doğrula
+        run: |
+          APK=android/app/build/outputs/apk/release/app-release.apk
+          SIGNER=$(ls "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -1)
+          "$SIGNER" verify --print-certs "$APK" | head -5
+          cp "$APK" quietvox-takip.apk
+          ls -la quietvox-takip.apk
+
+      - name: Sürüme yükle
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete apk --yes --cleanup-tag 2>/dev/null || true
+          sleep 3
+          gh release create apk quietvox-takip.apk \
+            --title "Quietvox Takip (Android)" \
+            --notes "Telefonda bu sayfayı açıp quietvox-takip.apk dosyasına dokunarak kurun. Derleme #${{ github.run_number }}."
