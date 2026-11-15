@@ -3,7 +3,7 @@
   "demo": false,
   "status": "ok",
   "status_message": "",
-  "generated_at": "2026-11-15T09:38:59Z",
+  "generated_at": "2026-11-15T10:25:27Z",
   "timezone": "Europe/Istanbul",
   "window_days": 32,
   "deliveries": [
@@ -10268,7 +10268,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123156000"
       },
-      "status": "delivered"
+      "status": "returned"
     },
     {
       "id": "2000264250",
@@ -31910,7 +31910,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123156000"
       },
-      "status": "delivered"
+      "status": "returned"
     },
     {
       "id": "2000264462",
