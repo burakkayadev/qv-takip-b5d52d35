@@ -1,11 +1,20 @@
 # MODEL_BRIDGE — Uygulamalar Arası Ortak Hafıza
 
-> **Son Aktif Uygulama:** Antigravity  
-> **Son Güncelleme:** 15 Kasım 2026, 19:24 (UTC+3)
+> **Son Aktif Uygulama:** Claude Masaüstü  
+> **Son Güncelleme:** 15 Kasım 2026 (UTC+3) — **GitHub'a henüz gönderilmedi** (kullanıcı "push" yazınca gönderilecek)
 
 ---
 
-## 📌 SON DURUM ÖZETİ
+## 📌 SON DURUM ÖZETİ — Son Aktif Uygulama: Claude Masaüstü
+
+| Başlık | Detay |
+|---|---|
+| **Son Aktif Uygulama** | Claude Masaüstü |
+| **Tamamlanan İşler** | 1. **Takvim — otel adları tam:** `.cal-company` / `.cal-hotel` artık `white-space: normal; line-height: 1.3`; `nowrap`/`ellipsis` kaldırıldı, uzun adlar ("Four Seasons Hotel Istanbul At Sultanahmet") alt satıra kayarak tam okunuyor.<br>2. **Takvim — telefon (< 768px):** varsayılan **Liste** görünümü (bugünden başlayan 7 gün alt alta; her günde **📤 Verilecekler** ve **📥 Alınacaklar** ayrı bloklar, büyük yazı, en küçük yazı 14px). Görünüm anahtarına "Liste" eklendi; Ay görünümü telefonda 150px sütunlarla yatay kaydırmalı. Çip kodu tek işlevde toplandı (`buildCalChip`), Gün görünümü de liste düzenini kullanıyor. Masaüstü varsayılanı Ay olarak kaldı.<br>3. **Sade Mod kaldırıldı:** menüdeki ve Ayarlar penceresindeki anahtar, `buildMinimalCard`, `.card-minimal` CSS'i, `LS_VIEW_MODE` ve `updateViewModeButtons` silindi; telefondaki eski `qv.view_mode.v1` kaydı açılışta temizleniyor.<br>4. **Sesli asistan:** konuşurken mikrofona basınca yalnızca susturuyor ve mikrofonu açmıyor (kendi sesini dinlemez); dinlerken 2. basış komut çalıştırmadan iptal ediyor. Tarih ayrıştırma yeniden yazıldı (`parseVoiceDate`): "ayın 18'inde", "18 Aralık", "on sekiz kasım", "dün", "yarından sonra", hafta günleri ("cuma", "haftaya salı"); ay artık sabit "Kasım" değil. Yön (`voiceDirection`): "teslim alınacak" artık alınacaklar sayılıyor (eskiden verilecek sanılıyordu).<br>5. **Otomatik güncelleme hatası (KRİTİK):** `version.yml` build'i her push'ta `run_number` ile yazıyor, `index.html`'deki `CURRENT_BUILD` ise elle sabitti → bir sonraki push'ta "güncelleme var" bandı güncellemeden sonra da kaybolmayacaktı. Artık iş akışı aynı numarayı `version.json`, `index.html` (`CURRENT_BUILD`) ve `sw.js` (`VERSION`) içine **aynı commit'te** yazıyor; yalnızca uygulama dosyaları değişince çalışıyor, gönderimi 3 kez deniyor.<br>6. **Service worker mesajı:** uygulama `{type:'SKIP_WAITING'}` gönderiyordu, `sw.js` yalnızca `{action:'skipWaiting'}` dinliyordu; ikisi de kabul ediliyor.<br>7. **Doğrulama:** 31 maddelik uçtan uca tarayıcı denetimi (375px + 1280px, service worker açık): konsol hatası yok; Sade Mod kalıntısı yok; takvim Liste/Ay/filtre/gezinme; 8 sesli komut senaryosu; 2. basış davranışları; toplu yazdırma sırası (2 Form → 2 WayBill, taşma yok); güncelleme bandı çıkıyor ve güncellemeden sonra kayboluyor. 123 Python testi geçti. |
+| **Değişen Dosyalar** | `index.html`, `sw.js`, `.github/workflows/version.yml`, `.gitignore`, `MODEL_BRIDGE.md` (yedek: `_backup_before_claude_v5/`) |
+| **Bir Sonraki Uygulamanın Yapacağı İş** | Kullanıcı "push" yazınca commit + push; ardından `version.yml`'in build numarasını üç dosyaya birlikte yazdığını ve canlıda bandın çıkmadığını kontrol et. `CURRENT_BUILD`'i elle değiştirme. |
+
+### Önceki kayıt — Antigravity (15.11.2026 19:24)
 
 | Başlık | Detay |
 |---|---|

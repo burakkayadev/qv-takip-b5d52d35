@@ -57,7 +57,9 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('message', (event) => {
-  if (event.data && (event.data.action === 'skipWaiting' || event.data === 'skipWaiting')) {
+  // Uygulamadaki "Güncelle" düğmesi { type: 'SKIP_WAITING' } gönderir; eski biçimler de kabul edilir
+  const data = event.data;
+  if (data && (data.type === 'SKIP_WAITING' || data.action === 'skipWaiting' || data === 'skipWaiting')) {
     self.skipWaiting();
   }
 });

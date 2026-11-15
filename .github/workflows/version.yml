@@ -1,36 +1,76 @@
 name: Update Version Metadata
 
+# Uygulama dosyaları değişip push edildiğinde sürüm numarasını artırır.
+# ÖNEMLİ: build numarası version.json, index.html (CURRENT_BUILD) ve sw.js (önbellek adı)
+# içine AYNI commit'te yazılır. Böylece "güncelleme var" bandı yalnızca telefondaki eski
+# sürüm için çıkar ve güncelleme yapılınca kaybolur (eskiden index.html'deki sayı elle
+# sabitlendiği için band güncellemeden sonra da kaybolmuyordu).
 on:
   push:
     branches: [main]
-    paths-ignore:
-      - 'version.json'
-      - '.github/workflows/version.yml'
+    paths:
+      - 'index.html'
+      - 'sw.js'
+      - 'manifest.webmanifest'
+      - 'icons/**'
 
 permissions:
   contents: write
 
+concurrency:
+  group: quietvox-version
+  cancel-in-progress: false
+
 jobs:
   version:
     runs-on: ubuntu-latest
+    # Bu iş akışının kendi commit'i GITHUB_TOKEN ile gönderildiği için yeniden tetiklenmez (döngü olmaz)
     steps:
       - uses: actions/checkout@v4
-      - name: Update version.json
+
+      - name: Sürüm numarasını yaz
+        env:
+          BUILD: ${{ github.run_number }}
+          SHA: ${{ github.sha }}
         run: |
-          python3 -c "
-          import json, os, datetime
+          python3 - <<'PY'
+          import datetime, json, os, re
+          build = int(os.environ["BUILD"])
           try:
-              with open('version.json', 'r') as f:
+              with open("version.json", encoding="utf-8") as f:
                   data = json.load(f)
-          except:
-              data = {'version': '3.0.0'}
-          data['build'] = int('${{ github.run_number }}')
-          data['commit'] = '${{ github.sha }}'[:7]
-          data['updated_at'] = datetime.datetime.now(datetime.timezone.utc).isoformat()
-          with open('version.json', 'w') as f:
-              json.dump(data, f, indent=2)
-          "
+          except (OSError, ValueError):
+              data = {"version": "4.0.0"}
+          data["build"] = build
+          data["commit"] = os.environ["SHA"][:7]
+          data["updated_at"] = datetime.datetime.now(datetime.timezone.utc).isoformat()
+          with open("version.json", "w", encoding="utf-8") as f:
+              json.dump(data, f, ensure_ascii=False, indent=2)
+              f.write("\n")
+          for name, pattern, repl in (
+              ("index.html", r"var CURRENT_BUILD = \d+;", f"var CURRENT_BUILD = {build};"),
+              ("sw.js", r"const VERSION = '[^']*';", f"const VERSION = 'b{build}';"),
+          ):
+              with open(name, encoding="utf-8") as f:
+                  text = f.read()
+              new, n = re.subn(pattern, repl, text, count=1)
+              if n != 1:
+                  raise SystemExit(f"{name}: sürüm satırı bulunamadı")
+              with open(name, "w", encoding="utf-8", newline="\n") as f:
+                  f.write(new)
+          print("build", build)
+          PY
+
+      - name: Commit et ve gönder
+        run: |
           git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add version.json
-          git diff --quiet && git diff --staged --quiet || (git commit -m "chore: auto-update version.json [skip ci]" && git push)
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add version.json index.html sw.js
+          if git diff --cached --quiet; then echo "Değişiklik yok."; exit 0; fi
+          git commit -m "chore: sürüm numarası güncellendi (build ${{ github.run_number }})"
+          for attempt in 1 2 3; do
+            git pull --rebase -X theirs origin "${GITHUB_REF_NAME}" || { git rebase --abort || true; }
+            if git push origin "HEAD:${GITHUB_REF_NAME}"; then exit 0; fi
+            sleep 5
+          done
+          exit 1

@@ -1541,74 +1541,6 @@ dialog.dlg::backdrop {
   background: linear-gradient(145deg, rgba(15, 23, 42, 0.34), rgba(220, 38, 38, 0.18));
 }
 
-/* SADE LİSTE / TEK ODAK MODU (Seçenek 1) */
-.card-minimal {
-  position: relative;
-  padding: 14px 16px;
-  margin-bottom: 12px;
-  background: linear-gradient(155deg, rgba(15, 23, 42, 0.36) 0%, rgba(15, 23, 42, 0.24) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-left: 5px solid var(--emerald);
-  border-radius: 14px;
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.22);
-  -webkit-backdrop-filter: blur(28px) saturate(190%);
-  backdrop-filter: blur(28px) saturate(190%);
-  transition: transform 0.16s ease, box-shadow 0.16s ease;
-}
-.card-minimal.kind-delivery { border-left-color: var(--emerald); }
-.card-minimal.kind-return   { border-left-color: var(--amber); }
-.card-minimal.kind-overdue  { border-left-color: var(--crimson); }
-.card-minimal.done { opacity: 0.65; }
-.card-minimal .min-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 6px; }
-.card-minimal .min-hotel { font-size: 16px; font-weight: 700; color: #FFFFFF; line-height: 1.25; margin: 0; }
-.card-minimal.done .min-hotel { text-decoration: line-through; }
-.card-minimal .min-summary { font-size: 13px; color: #94A3B8; margin-bottom: 10px; line-height: 1.4; }
-.card-minimal .min-actions { display: flex; align-items: center; gap: 8px; }
-.card-minimal .btn-min-confirm {
-  flex: 1;
-  padding: 11px 14px;
-  border-radius: 10px;
-  font-size: 13px;
-  font-weight: 700;
-  border: 1px solid rgba(16, 185, 129, 0.45);
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.38), rgba(5, 150, 105, 0.26));
-  color: #ECFDF5;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  transition: all 0.15s ease;
-}
-.card-minimal .btn-min-confirm:active { transform: scale(0.97); }
-.card-minimal .btn-min-confirm.is-done {
-  background: rgba(16, 185, 129, 0.18);
-  border-color: rgba(16, 185, 129, 0.4);
-  color: #6EE7B7;
-}
-.card-minimal .btn-min-toggle {
-  padding: 11px 12px;
-  border-radius: 10px;
-  font-size: 12px;
-  font-weight: 600;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(30, 41, 59, 0.55);
-  color: #E2E8F0;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-.card-minimal .btn-min-toggle:active { transform: scale(0.97); }
-.card-minimal .min-drawer-body {
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
-  display: none;
-}
-.card-minimal.open .min-drawer-body {
-  display: block;
-}
-
 .hotel {
   color: #FFFFFF;
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
@@ -2774,24 +2706,87 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
   background: #3B82F6;
   color: #FFFFFF;
 }
+/* Otel ve acente adları ASLA kırpılmaz: alt satıra kayarak tam okunur */
 .cal-company {
   font-weight: 800;
-  font-size: 10.5px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-size: 11.5px;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  overflow-wrap: anywhere;
   color: inherit;
-  line-height: 1.2;
+  line-height: 1.3;
 }
 .cal-hotel {
-  font-weight: 600;
-  font-size: 9.5px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-weight: 700;
+  font-size: 11px;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  overflow-wrap: anywhere;
   color: inherit;
-  opacity: 0.95;
-  line-height: 1.25;
+  line-height: 1.3;
+}
+.cal-chip-top { align-items: flex-start; line-height: 1.3; }
+.cal-badge { flex: none; }
+
+/* ---- Takvim: Liste görünümü (telefonda varsayılan) ---- */
+.qv-cal-container.agenda .qv-cal-grid-header { display: none; }
+.qv-cal-container.agenda .qv-cal-days { display: block; background: #F1F5F9; padding: 10px; }
+.qv-cal-container.agenda .qv-cal-grid-wrap { background: #F1F5F9; }
+.cal-agenda-day {
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+.cal-agenda-day.today { border: 2px solid #D4AF37; }
+.cal-agenda-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  padding: 10px 14px;
+  background: #0B1120;
+  color: #FFFFFF;
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.cal-agenda-day.today .cal-agenda-head { background: #3B2F0B; color: #FDE68A; }
+.cal-agenda-head small { font-size: 13px; font-weight: 700; color: #CBD5E1; white-space: nowrap; }
+.cal-agenda-sec { padding: 10px 12px 12px; }
+.cal-agenda-sec + .cal-agenda-sec { border-top: 1px solid #E2E8F0; }
+.cal-agenda-sec h4 { margin: 0 0 8px; font-size: 14px; font-weight: 800; letter-spacing: 0.02em; }
+.cal-agenda-sec.sec-del h4 { color: #047857; }
+.cal-agenda-sec.sec-ret h4 { color: #1D4ED8; }
+.cal-agenda-list { display: flex; flex-direction: column; gap: 8px; }
+.cal-agenda-empty { padding: 12px 14px; font-size: 14px; color: #475569; }
+.qv-cal-container.agenda .cal-order-chip { min-height: 52px !important; padding: 8px 10px; border-left-width: 6px; }
+.qv-cal-container.agenda .cal-company { font-size: 15px; }
+.qv-cal-container.agenda .cal-hotel { font-size: 16px; font-weight: 800; }
+.qv-cal-container.agenda .cal-badge { font-size: 11px; padding: 3px 6px; }
+
+/* ---- Takvim: telefon ekranı (< 768px) ---- */
+@media (max-width: 767px) {
+  .qv-cal-modal { padding: 0; }
+  .qv-cal-container { width: 100vw; max-height: 100vh; height: 100vh; border-radius: 0; border: 0; }
+  .qv-cal-head { padding: 10px 12px; gap: 8px; }
+  .qv-cal-nav { gap: 6px; flex: 1 1 auto; }
+  .qv-cal-nav h2 { min-width: 0; font-size: 15px; flex: 1 1 auto; }
+  .qv-cal-btn { min-height: 40px; min-width: 40px; font-size: 14px; }
+  .qv-cal-vbtn { font-size: 14px; padding: 8px 12px; }
+  .qv-cal-ftab { font-size: 13px; padding: 9px 12px; }
+  .qv-cal-legend { font-size: 13px; }
+  /* Ay görünümü: sütunlar sıkıştırılmaz, tablo yatay kaydırılır */
+  .qv-cal-grid-header, .qv-cal-days { grid-template-columns: repeat(7, minmax(150px, 1fr)); }
+  .qv-cal-grid-header { font-size: 13px; }
+  .cal-day-num { font-size: 14px; }
+  .cal-company { font-size: 13px; }
+  .cal-hotel { font-size: 13px; }
+  .cal-badge { font-size: 11px; }
+  .cal-order-chip { color: #0F172A !important; }
 }
 
 /* Baskı ve Önizleme Eşitlemesi & Güvenli Metin Kırılmaları */
@@ -2868,11 +2863,6 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     <button type="button" class="filter" data-nav-filter="today">Bugün</button>
     <button type="button" class="filter" data-nav-filter="tomorrow">Yarın</button>
     <button type="button" class="filter" data-nav-filter="all">Tümü</button>
-  </div>
-  <div class="drawer-sec">Görünüm Modu</div>
-  <div class="view-mode-row" style="display:flex;gap:6px;padding:0 12px;margin-bottom:8px;">
-    <button type="button" class="filter" data-view-mode="classic" style="flex:1;" aria-pressed="true">🎴 Klasik</button>
-    <button type="button" class="filter" data-view-mode="minimal" style="flex:1;" aria-pressed="false">📋 Sade</button>
   </div>
   <div class="drawer-sec">Ayarlar</div>
   <button type="button" class="nav-item" id="btn-theme">🌙 Koyu mod</button>
@@ -3030,6 +3020,7 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
         <button type="button" class="qv-cal-btn qv-cal-today-btn" id="cal-today">Bugün</button>
       </div>
       <div class="qv-cal-views">
+        <button type="button" class="qv-cal-vbtn" data-cal-view="list">Liste</button>
         <button type="button" class="qv-cal-vbtn active" data-cal-view="month">Ay</button>
         <button type="button" class="qv-cal-vbtn" data-cal-view="week">Hafta</button>
         <button type="button" class="qv-cal-vbtn" data-cal-view="day">Gün</button>
@@ -3128,7 +3119,6 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
   var ROUTE_MAX_STOPS = 10;                    // Google Haritalar bağlantısı en fazla 10 durak alır
   var BULK_DELAY_MS = 500;                     // toplu gönderimde istekler arası bekleme
   var LS_THEME = 'qv.theme.v1';               // 'dark' | 'light' (boşsa telefonun ayarı izlenir)
-  var LS_VIEW_MODE = 'qv.view_mode.v1';       // 'classic' | 'minimal' (Arayüz görünüm modu)
   var LS_GITHUB = 'qv.github.v1';             // GitHub erişim anahtarı (yalnızca bu cihazda)
   var LS_PENDING = 'qv.pending.v1';           // Quietvox'a gönderilmiş, sonucu beklenen işlemler
   var LS_QUEUE = 'qv.queue.v1';               // Çevrimdışıyken kuyruğa alınan işlemler (bağlantı gelince gönderilir)
@@ -4323,91 +4313,7 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     showDialog([title, who, chips, input, buttons]);
   }
 
-  function buildMinimalCard(order, tab) {
-    var info = TAB_INFO[tab] || TAB_INFO.deliveries;
-    var actualKind = order.waybill && order.waybill.qv_id ? (order.status === 'returned' || isPickedUp(order) ? 'return' : 'delivery') : info.kind;
-    var cardKind = tab === 'archive' ? actualKind : info.kind;
-    var key = orderKey(order, cardKind);
-    var w = order.waybill;
-    var finished = isDone(order, tab === 'archive' ? (cardKind === 'return' ? 'returns' : 'deliveries') : tab) ||
-                   (tab === 'deliveries' && markOf(key).done) ||
-                   (tab === 'archive');
-    var isOverdueCard = tab === 'returns' && order.date < state.today && order.status === 'delivered' && !isPickedUp(order);
-    var stripeClass = isOverdueCard ? ' kind-overdue' : (cardKind === 'return' ? ' kind-return' : ' kind-delivery');
-    var card = el('article', 'glass card-minimal' + stripeClass + (finished ? ' done' : ''));
-    var hotelName = order.location_name || order.title || 'Adı belirtilmemiş';
-
-    var head = el('div', 'min-head');
-    var hotelEl = el('h3', 'min-hotel', hotelName);
-    var chips = cardChips(order);
-    append(head, hotelEl, chips);
-
-    var summaryEl = cardSummary(order);
-    summaryEl.className = 'min-summary';
-
-    var actionRow = el('div', 'min-actions');
-    var isDel = cardKind !== 'return';
-    var actionLabel = finished
-      ? (isDel ? '✓ Hazırlandı' : '✓ Teslim Alındı')
-      : (isDel ? '📦 Hazırlandı' : '🔄 Teslim Alındı');
-
-    var btnConfirm = el('button', 'btn-min-confirm' + (finished ? ' is-done' : ''), actionLabel);
-    btnConfirm.type = 'button';
-    btnConfirm.addEventListener('click', function () {
-      if (finished) {
-        toggleDone(key, order, cardKind);
-      } else {
-        openDeliveryNoteDialog(order, key, isDel ? 'delivered' : 'returned', cardKind);
-      }
-    });
-
-    var btnToggle = el('button', 'btn-min-toggle', '⚙️ İşlemler ▾');
-    btnToggle.type = 'button';
-    btnToggle.addEventListener('click', function () {
-      card.classList.toggle('open');
-      btnToggle.textContent = card.classList.contains('open') ? '⚙️ Kapat ▴' : '⚙️ İşlemler ▾';
-    });
-
-    append(actionRow, btnConfirm, btnToggle);
-
-    // Açılır çekmece: Kontrol listesi, Kanıt Fotoğrafı, Ara/WhatsApp/Yazdır
-    var drawerBody = el('div', 'min-drawer-body');
-    var checklist = buildChecklist(order, key, card, tab);
-    
-    var phone = normalizePhone(w ? w.tour_manager_phone : '');
-    var address = cardKind === 'return'
-      ? (w && (w.return_location || w.delivery_location) || order.location_name)
-      : (w && (w.delivery_location || w.return_location) || order.location_name);
-    var quick = el('div', 'quick');
-    var call = quickButton('📞', 'Ara', phone ? 'tel:+' + phone : '', false);
-    var wa = quickButton('💬', 'WhatsApp',
-      phone ? 'https://wa.me/' + phone + '?text=' + encodeURIComponent(waText(order, tab)) : '', true);
-    if (!phone) { call.classList.add('off'); wa.classList.add('off'); }
-    var map = quickButton('🗺️', 'Harita', address ? mapsUrl(address) : '', true);
-    if (!address) map.classList.add('off');
-    var print = quickButton('🖨️', 'Yazdır', '', false);
-    print.addEventListener('click', function () { openPrintDialog(order, print); });
-    append(quick, call, wa, map, print);
-
-    var savedNote = str(markOf(key).note);
-    if (savedNote) {
-      var noteBar = el('div', 'delivery-note-bar');
-      var editBtn = el('button', '', '✏️ Düzenle');
-      editBtn.type = 'button';
-      editBtn.addEventListener('click', function () { openNoteEditDialog(order, key); });
-      append(noteBar, el('span', '', '📝 Teslim Notu: ' + savedNote), editBtn);
-      append(drawerBody, noteBar);
-    }
-
-    append(drawerBody, checklist, quick);
-    append(card, head, summaryEl, actionRow, drawerBody);
-    return card;
-  }
-
   function buildCard(order, tab) {
-    if (state.viewMode === 'minimal') {
-      return buildMinimalCard(order, tab);
-    }
     var info = TAB_INFO[tab] || TAB_INFO.deliveries;
     var actualKind = order.waybill && order.waybill.qv_id ? (order.status === 'returned' || isPickedUp(order) ? 'return' : 'delivery') : info.kind;
     var cardKind = tab === 'archive' ? actualKind : info.kind;
@@ -4983,13 +4889,6 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     var saved = lsRead(LS_THEME);
     if (saved === 'light' || saved === 'dark') return saved;
     return 'dark';
-  }
-
-  function updateViewModeButtons() {
-    var mode = state.viewMode || 'classic';
-    document.querySelectorAll('[data-view-mode]').forEach(function (btn) {
-      btn.setAttribute('aria-pressed', btn.getAttribute('data-view-mode') === mode ? 'true' : 'false');
-    });
   }
 
   function applyTheme() {
@@ -5885,6 +5784,86 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     speakText(confirmMsg);
   }
 
+  var VOICE_MONTHS = [['ocak'], ['şubat', 'subat'], ['mart'], ['nisan'], ['mayıs', 'mayis'], ['haziran'],
+    ['temmuz'], ['ağustos', 'agustos'], ['eylül', 'eylul'], ['ekim'], ['kasım', 'kasim'], ['aralık', 'aralik']];
+  var VOICE_WEEKDAYS = [['pazartesi', 1], ['cumartesi', 6], ['salı', 2], ['sali', 2], ['çarşamba', 3], ['carsamba', 3],
+    ['perşembe', 4], ['persembe', 4], ['cuma', 5], ['pazar', 0]];
+  var VOICE_UNITS = { 'bir': 1, 'iki': 2, 'üç': 3, 'uc': 3, 'dört': 4, 'dort': 4, 'beş': 5, 'bes': 5,
+    'altı': 6, 'alti': 6, 'yedi': 7, 'sekiz': 8, 'dokuz': 9 };
+  var VOICE_TENS = { 'on': 10, 'yirmi': 20, 'otuz': 30 };
+
+  function isoDaysBetween(a, b) {
+    return Math.round((Date.parse(b + 'T00:00:00Z') - Date.parse(a + 'T00:00:00Z')) / 86400000);
+  }
+
+  // Söylenen gün sayısı: "18", "18'inde", "on sekiz", "yirmi beş" (yazıyla olan yalnızca ay adı ya da "ayın" ile birlikte)
+  function voiceDayNumber(norm) {
+    var digits = norm.match(/(?:^|[^\d:.])(\d{1,2})(?![\d:.])/);
+    if (digits && !/saat\s*\d/.test(norm.slice(Math.max(0, digits.index - 6), digits.index + digits[0].length))) {
+      return parseInt(digits[1], 10);
+    }
+    var words = norm.match(/(?:\b(on|yirmi|otuz)\s*)?\b(bir|iki|üç|uc|dört|dort|beş|bes|altı|alti|yedi|sekiz|dokuz)\b|\b(on|yirmi|otuz)\b/);
+    if (!words) return 0;
+    var value = (VOICE_TENS[words[1] || words[3]] || 0) + (VOICE_UNITS[words[2]] || 0);
+    var hasContext = /ay[ıi]n\s/.test(norm) || VOICE_MONTHS.some(function (m) { return m.some(function (w) { return norm.indexOf(w) !== -1; }); });
+    return hasContext ? value : 0;
+  }
+
+  // Doğal Türkçe tarih ifadesini YYYY-AA-GG'ye çevirir (anlaşılamazsa boş döner)
+  function parseVoiceDate(norm, today) {
+    if (/yar[ıi]ndan sonra|[öo]b[üu]r g[üu]n/.test(norm)) return addDays(today, 2);
+    if (/(^|\s)d[üu]n(\s|$|k[üu])/.test(norm)) return addDays(today, -1);
+    if (/yar[ıi]n/.test(norm)) return addDays(today, 1);
+    if (/bug[üu]n/.test(norm)) return today;
+    for (var i = 0; i < VOICE_WEEKDAYS.length; i++) {
+      if (norm.indexOf(VOICE_WEEKDAYS[i][0]) !== -1) {
+        var todayWd = new Date(today + 'T12:00:00Z').getUTCDay();
+        var delta = (VOICE_WEEKDAYS[i][1] - todayWd + 7) % 7;
+        if (/haftaya|gelecek hafta|[öo]n[üu]m[üu]zdeki hafta/.test(norm)) delta += 7;
+        return addDays(today, delta);
+      }
+    }
+    var day = voiceDayNumber(norm);
+    if (!day || day > 31) return '';
+    var year = parseInt(today.slice(0, 4), 10);
+    var month = parseInt(today.slice(5, 7), 10);
+    var spokenMonth = 0;
+    VOICE_MONTHS.forEach(function (names, idx) {
+      if (!spokenMonth && names.some(function (w) { return norm.indexOf(w) !== -1; })) spokenMonth = idx + 1;
+    });
+    if (spokenMonth) {
+      month = spokenMonth;
+    } else if (day < parseInt(today.slice(8, 10), 10) - 7) {
+      month += 1; // ayın sonunda "3'ünde" denirse gelecek ay kastedilir
+    }
+    if (month > 12) { month = 1; year += 1; }
+    var iso = year + '-' + ('0' + month).slice(-2) + '-' + ('0' + day).slice(-2);
+    if (isNaN(Date.parse(iso + 'T00:00:00Z')) || new Date(iso + 'T00:00:00Z').getUTCDate() !== day) return '';
+    if (spokenMonth && isoDaysBetween(iso, today) > 60) {
+      iso = (year + 1) + iso.slice(4); // geçmişte kalan bir ay söylenmişse gelecek yıl
+    }
+    return iso;
+  }
+
+  // Yön: "teslim al" / "alınacak" / "iade" → alınacaklar; "verilecek" / "teslimat" → verilecekler
+  function voiceDirection(norm) {
+    if (/al[ıi]nacak|[ıi]ade|teslim al|toplanacak|geri al/.test(norm)) return 'returns';
+    if (/verilecek|teslim edilecek|teslimat|teslim|da[ğg][ıi]t[ıi]lacak|g[öo]t[üu]r[üu]lecek/.test(norm)) return 'deliveries';
+    return '';
+  }
+
+  function speakForDate(target, direction) {
+    goToDate(target);
+    if (direction) selectTab(direction, false);
+    var active = function (o) { return !INACTIVE_STATUSES[o.status]; };
+    var dels = rawOrdersOn('deliveries', target).filter(active).length;
+    var rets = rawOrdersOn('returns', target).filter(active).length;
+    var label = target === state.today ? 'Bugün' : (target === state.tomorrow ? 'Yarın' : longDate(target));
+    if (direction === 'returns') speakText(label + ' için ' + rets + ' iade alımı var.');
+    else if (direction === 'deliveries') speakText(label + ' için ' + dels + ' teslimat var.');
+    else speakText(label + ' için ' + dels + ' teslimat ve ' + rets + ' iade alımı var.');
+  }
+
   function handleVoiceCommand(transcript) {
     if (!transcript) return;
     var norm = transcript.toLocaleLowerCase('tr-TR');
@@ -5921,27 +5900,10 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
       return;
     }
 
-    // 6. Belirli Bir Gün ve Yön (Örn: "Ayın 18'inde alınacak ne var?", "18 Kasım'da verilecekler", "18'inde ne var?")
-    var dayMatch = norm.match(/(?:ay[ıi]n\s+)?(\d{1,2})(?:['’](?:s[ıi]|nde|nda|si|i|e|a))?\s*(?:kas[ıi]m)?/);
-    if (dayMatch) {
-      var dNum = parseInt(dayMatch[1], 10);
-      var curDate = new Date();
-      var targetDate = curDate.getFullYear() + '-' + ('0' + (curDate.getMonth() + 1)).slice(-2) + '-' + (dNum < 10 ? '0' : '') + dNum;
-      goToDate(targetDate);
-      var isRet = /al[ıi]nacak|[ıi]ade/.test(norm);
-      var isDel = /verilecek|teslim/.test(norm);
-      if (isRet) selectTab('returns', false);
-      else if (isDel) selectTab('deliveries', false);
-
-      var dels = rawOrdersOn('deliveries', targetDate);
-      var rets = rawOrdersOn('returns', targetDate);
-      if (isRet) {
-        speakText(dNum + ' Kasım günü için ' + rets.length + ' iade alımı bulundu.');
-      } else if (isDel) {
-        speakText(dNum + ' Kasım günü için ' + dels.length + ' teslimat siparişi bulundu.');
-      } else {
-        speakText(dNum + ' Kasım günü için ' + dels.length + ' teslimat ve ' + rets.length + ' iade alımı listelendi.');
-      }
+    // 6. Belirli bir gün ve yön ("ayın 18'inde alınacaklar", "18 Aralık verilecekler", "cuma ne var", "dün")
+    var spokenDate = parseVoiceDate(norm, state.today);
+    if (spokenDate && !/yar[ıi]n|bug[üu]n/.test(norm)) {
+      speakForDate(spokenDate, voiceDirection(norm));
       return;
     }
 
@@ -5967,31 +5929,16 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
       return;
     }
 
-    // 8. Yarın ve Bugün Yönlü Sorgular
-    if (/yar[ıi]n/.test(norm)) {
-      goToDate(state.tomorrow);
-      if (/al[ıi]nacak|[ıi]ade/.test(norm)) { selectTab('returns', false); speakVoiceReturns(); }
-      else if (/verilecek|teslim/.test(norm)) { selectTab('deliveries', false); speakVoiceDeliveries(); }
-      else { speakText('Yarının siparişleri listelendi.'); }
+    // 8. Yarın ve bugün yönlü sorgular ("teslim alınacak" önce kontrol edilir; verilecek sanılmaz)
+    var direction = voiceDirection(norm);
+    if (/yar[ıi]n|bug[üu]n/.test(norm)) {
+      var dayIso = parseVoiceDate(norm, state.today) || state.today;
+      if (dayIso === state.today && !direction) { goToDate(dayIso); speakVoiceToday(); return; }
+      speakForDate(dayIso, direction);
       return;
     }
-
-    if (/bug[üu]n/.test(norm)) {
-      goToDate(state.today);
-      if (/al[ıi]nacak|[ıi]ade/.test(norm)) { selectTab('returns', false); speakVoiceReturns(); }
-      else if (/verilecek|teslim/.test(norm)) { selectTab('deliveries', false); speakVoiceDeliveries(); }
-      else { speakVoiceToday(); }
-      return;
-    }
-
-    if (/verilecek|teslim/.test(norm)) {
-      speakVoiceDeliveries();
-      return;
-    }
-    if (/al[ıi]nacak|[ıi]ade/.test(norm)) {
-      speakVoiceReturns();
-      return;
-    }
+    if (direction === 'returns') { speakVoiceReturns(); return; }
+    if (direction === 'deliveries') { speakVoiceDeliveries(); return; }
 
     // Genel özet fallback
     speakVoiceToday();
@@ -6038,11 +5985,19 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
       showToast('Cihazınızda ses tanıma (SpeechRecognition) desteklenmiyor');
       return;
     }
+    var synth = window.speechSynthesis;
+    // 2. basış: dinliyorsa dinlemeyi iptal et (komut çalıştırılmaz)
     if (isVoiceListening) {
       if (voiceRecognition) {
-        try { voiceRecognition.stop(); } catch (e) {}
+        try { voiceRecognition.abort(); } catch (e) {}
       }
       setVoiceListening(false);
+      return;
+    }
+    // 2. basış: asistan konuşuyorsa yalnızca sustur (mikrofon açılmaz, kendi sesini dinlemez)
+    if (synth && (synth.speaking || synth.pending)) {
+      synth.cancel();
+      showToast('Sesli yanıt durduruldu');
       return;
     }
 
@@ -6084,11 +6039,16 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
       };
 
       recognition.onend = function () {
+        var wasCurrent = voiceRecognition === recognition;
         setVoiceListening(false);
-        if (finalTranscript && finalTranscript.trim()) {
+        voiceRecognition = null;
+        // abort() ile iptal edilen dinlemede komut çalıştırılmaz
+        if (wasCurrent && !recognition.__aborted && finalTranscript && finalTranscript.trim()) {
           handleVoiceCommand(finalTranscript.trim());
         }
       };
+      var originalAbort = recognition.abort.bind(recognition);
+      recognition.abort = function () { recognition.__aborted = true; originalAbort(); };
 
       recognition.start();
     } catch (err) {
@@ -6544,51 +6504,6 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     input.value = state.token;
     input.setAttribute('aria-label', 'GitHub erişim anahtarı');
 
-    // Görünüm Modu Seçimi (Klasik Kart vs Sade Liste)
-    var modeLabel = el('p', '', 'Görünüm Modu (Arayüz Tercihi):');
-    modeLabel.style.marginTop = '16px';
-    modeLabel.style.marginBottom = '6px';
-    modeLabel.style.fontSize = '13px';
-    modeLabel.style.fontWeight = '600';
-    modeLabel.style.color = '#F3F4F6';
-
-    var modeGroup = el('div', 'view-mode-row');
-    modeGroup.style.display = 'flex';
-    modeGroup.style.gap = '8px';
-    modeGroup.style.marginBottom = '14px';
-
-    var btnClassic = el('button', 'btn-vm-opt', '🎴 Klasik Kart');
-    btnClassic.type = 'button';
-    btnClassic.setAttribute('aria-pressed', state.viewMode !== 'minimal' ? 'true' : 'false');
-    btnClassic.style.flex = '1';
-
-    var btnMinimal = el('button', 'btn-vm-opt', '📋 Sade Liste');
-    btnMinimal.type = 'button';
-    btnMinimal.setAttribute('aria-pressed', state.viewMode === 'minimal' ? 'true' : 'false');
-    btnMinimal.style.flex = '1';
-
-    btnClassic.addEventListener('click', function () {
-      setState({ viewMode: 'classic' });
-      lsWrite(LS_VIEW_MODE, 'classic');
-      btnClassic.setAttribute('aria-pressed', 'true');
-      btnMinimal.setAttribute('aria-pressed', 'false');
-      updateViewModeButtons();
-      render(true);
-      showToast('Klasik Kart Görünümü aktif ✓');
-    });
-
-    btnMinimal.addEventListener('click', function () {
-      setState({ viewMode: 'minimal' });
-      lsWrite(LS_VIEW_MODE, 'minimal');
-      btnClassic.setAttribute('aria-pressed', 'false');
-      btnMinimal.setAttribute('aria-pressed', 'true');
-      updateViewModeButtons();
-      render(true);
-      showToast('Sade Liste Modu aktif ✓');
-    });
-
-    append(modeGroup, btnClassic, btnMinimal);
-
     var buttons = el('div', 'dlg-btns');
     append(buttons,
       dialogButton('btn-ghost', 'Kapat', closeDialog),
@@ -6605,8 +6520,6 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
       }));
     showDialog([
       title,
-      modeLabel,
-      modeGroup,
       el('p', '', 'Quietvox\'a yazabilmek için GitHub erişim anahtarı (yalnızca bu cihazda saklanır):'),
       input,
       el('p', 'dlg-note', slug ? 'Repo: ' + slug : 'Bu adres GitHub Pages olmadığı için Quietvox\'a yazma kapalı.'),
@@ -6816,8 +6729,20 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
   var calState = {
     view: 'month',
     currentDate: null,
-    filter: 'all'
+    filter: 'all',
+    viewChosen: false   // kullanıcı görünümü elle seçtiyse telefonda da o kalır
   };
+  var CAL_MOBILE_MAX = 767; // bu genişliğin altında takvim varsayılan olarak Liste görünümüyle açılır
+
+  function syncCalViewButtons() {
+    document.querySelectorAll('.qv-cal-vbtn').forEach(function (b) {
+      b.classList.toggle('active', b.getAttribute('data-cal-view') === calState.view);
+    });
+  }
+
+  function isoOf(d) {
+    return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
+  }
 
   var CAL_MONTH_NAMES = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
 
@@ -6834,6 +6759,10 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     } else {
       calState.currentDate = state.today ? new Date(state.today + 'T00:00:00') : new Date();
     }
+    if (!calState.viewChosen) {
+      calState.view = window.innerWidth <= CAL_MOBILE_MAX ? 'list' : 'month';
+    }
+    syncCalViewButtons();
     $('#qv-calendar-modal').hidden = false;
     document.body.style.overflow = 'hidden';
     renderQuietvoxCalendar();
@@ -6848,7 +6777,7 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     var d = getCalDate();
     if (calState.view === 'month') {
       d.setMonth(d.getMonth() + dir);
-    } else if (calState.view === 'week') {
+    } else if (calState.view === 'week' || calState.view === 'list') {
       d.setDate(d.getDate() + (dir * 7));
     } else {
       d.setDate(d.getDate() + dir);
@@ -6906,6 +6835,31 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
 
     var container = $('#qv-cal-days');
     container.replaceChildren();
+    var agenda = calState.view === 'list' || calState.view === 'day';
+    document.querySelector('.qv-cal-container').classList.toggle('agenda', agenda);
+
+    if (agenda) {
+      // Liste: seçili günden (açılışta bugün) başlayan 7 gün alt alta; Gün: yalnızca seçili gün
+      var start = new Date(d);
+      var count = calState.view === 'list' ? 7 : 1;
+      var days = [];
+      for (var i = 0; i < count; i++) {
+        var cur = new Date(start);
+        cur.setDate(start.getDate() + i);
+        days.push(isoOf(cur));
+      }
+      if (count > 1) {
+        var first = new Date(start);
+        var last = new Date(start);
+        last.setDate(start.getDate() + 6);
+        $('#qv-cal-title').textContent = first.getDate() + (first.getMonth() !== last.getMonth() ? ' ' + CAL_MONTH_NAMES[first.getMonth()] : '') +
+          ' – ' + last.getDate() + ' ' + CAL_MONTH_NAMES[last.getMonth()] + ' ' + last.getFullYear();
+      } else {
+        $('#qv-cal-title').textContent = longDate(days[0]);
+      }
+      days.forEach(function (iso) { container.appendChild(buildCalAgendaDay(iso)); });
+      return;
+    }
 
     if (calState.view === 'month') {
       var firstDay = new Date(year, month, 1).getDay(); // 0 is Sunday
@@ -6953,6 +6907,71 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     }
   }
 
+  // Liste görünümünde bir gün: başlık + Verilecekler ve Alınacaklar ayrı bloklar
+  function buildCalAgendaDay(dateStr) {
+    var items = getOrdersForCalendarDate(dateStr);
+    var dels = items.filter(function (it) { return it.kind === 'delivery'; });
+    var rets = items.filter(function (it) { return it.kind === 'return'; });
+    var box = el('section', 'cal-agenda-day' + (dateStr === state.today ? ' today' : ''));
+    var head = el('div', 'cal-agenda-head');
+    append(head, el('span', '', (dateStr === state.today ? 'Bugün · ' : '') + longDate(dateStr)),
+      el('small', '', dels.length + ' ver · ' + rets.length + ' al'));
+    head.addEventListener('click', function () { closeQuietvoxCalendar(); goToDate(dateStr); });
+    append(box, head);
+    var filter = calState.filter || 'all';
+    if (!items.length) {
+      append(box, el('div', 'cal-agenda-empty', 'Bu gün sipariş yok.'));
+      return box;
+    }
+    [['deliveries', 'sec-del', '📤 Verilecekler', dels], ['returns', 'sec-ret', '📥 Alınacaklar', rets]].forEach(function (s) {
+      if (filter !== 'all' && filter !== s[0]) return;
+      var sec = el('div', 'cal-agenda-sec ' + s[1]);
+      append(sec, el('h4', '', s[2] + ' (' + s[3].length + ')'));
+      var list = el('div', 'cal-agenda-list');
+      if (!s[3].length) append(list, el('div', 'cal-agenda-empty', 'Yok'));
+      s[3].forEach(function (item) { append(list, buildCalChip(item)); });
+      append(box, append(sec, list));
+    });
+    return box;
+  }
+
+  function buildCalChip(item) {
+    var o = item.order;
+    var isDel = item.kind === 'delivery';
+    var chip = el('div', 'cal-order-chip qv-cal-item ' + statusToCalClass(o.status));
+
+    // Müşteri / acente adı
+    var client = (o.waybill && o.waybill.client) || (o.dr_form && o.dr_form.customer) || o.title || 'Müşteri';
+    if (client.indexOf(' · ') !== -1) client = client.split(' · ')[0];
+
+    // Otel adı (boş ya da N/A ise adresin ilk satırı, o da yoksa sipariş numarası)
+    var hotel = o.location_name || '';
+    if (!hotel || hotel === 'N/A' || hotel.indexOf(' · N/A') !== -1 || hotel.trim() === '') {
+      var w = o.waybill;
+      hotel = (w && (isDel ? (w.delivery_location || w.return_location) : (w.return_location || w.delivery_location))) || '';
+    }
+    if (hotel.indexOf('\n') !== -1) hotel = hotel.split('\n')[0];
+    if (!hotel || hotel === 'N/A' || hotel.indexOf(' · N/A') !== -1 || hotel.trim() === '') {
+      var qvId = (o.dr_form && o.dr_form.qv_booking_id) || (o.waybill && o.waybill.qv_id) || o.id || '—';
+      hotel = 'Otel Belirtilmemiş (ID: ' + qvId + ')';
+    }
+
+    var pax = (o.dr_form && o.dr_form.clients && parseInt(o.dr_form.clients, 10) > 0) ? (' (' + o.dr_form.clients + ' Pax)') : '';
+    var topRow = el('div', 'cal-chip-top');
+    append(topRow, el('span', 'cal-badge ' + (isDel ? 'badge-del' : 'badge-ret'), isDel ? '📤 VER' : '📥 AL'),
+      el('span', 'cal-company', client));
+    append(chip, topRow, el('div', 'cal-hotel', hotel + pax));
+    chip.title = client + ' — ' + hotel + pax;
+
+    chip.addEventListener('click', function (ev) {
+      ev.stopPropagation();
+      closeQuietvoxCalendar();
+      goToDate(o.date);
+      selectTab(item.tab, false);
+    });
+    return chip;
+  }
+
   function buildCalCell(dateStr, dayNum, isOtherMonth, isDayView) {
     var cell = el('div', 'cal-day-cell qv-cal-day' + (isOtherMonth ? ' other-month' : '') + (dateStr === state.today ? ' today' : ''));
     if (isDayView) cell.style.gridColumn = '1 / -1';
@@ -6961,48 +6980,7 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
 
     var eventsEl = el('div', 'cal-orders-list qv-cal-events');
     var items = getOrdersForCalendarDate(dateStr);
-    items.forEach(function (item) {
-      var o = item.order;
-      var isDel = item.kind === 'delivery';
-      var chip = el('div', 'cal-order-chip qv-cal-item ' + statusToCalClass(o.status));
-
-      // Customer / Client Name
-      var client = (o.waybill && o.waybill.client) || (o.dr_form && o.dr_form.customer) || o.title || 'Müşteri';
-      if (client.indexOf(' · ') !== -1) client = client.split(' · ')[0];
-
-      // Hotel Name Sanitization (Boş veya N/A durumlarını kurtarma)
-      var hotel = o.location_name || '';
-      if (!hotel || hotel === 'N/A' || hotel.indexOf(' · N/A') !== -1 || hotel.trim() === '') {
-        var w = o.waybill;
-        hotel = (w && (isDel ? (w.delivery_location || w.return_location) : (w.return_location || w.delivery_location))) || '';
-        if (hotel.indexOf('\n') !== -1) hotel = hotel.split('\n')[0];
-      }
-      if (!hotel || hotel === 'N/A' || hotel.indexOf(' · N/A') !== -1 || hotel.trim() === '') {
-        var qvId = (o.dr_form && o.dr_form.qv_booking_id) || (o.waybill && o.waybill.qv_id) || o.id || '—';
-        hotel = 'Otel Belirtilmemiş (ID: ' + qvId + ')';
-      } else if (hotel.indexOf('\n') !== -1) {
-        hotel = hotel.split('\n')[0];
-      }
-
-      // Pax
-      var pax = (o.dr_form && o.dr_form.clients && parseInt(o.dr_form.clients, 10) > 0) ? (' (' + o.dr_form.clients + ' Pax)') : '';
-
-      var topRow = el('div', 'cal-chip-top');
-      var badge = el('span', 'cal-badge ' + (isDel ? 'badge-del' : 'badge-ret'), isDel ? '📤 VER' : '📥 AL');
-      var compEl = el('span', 'cal-company', client);
-      append(topRow, badge, compEl);
-
-      var hotelEl = el('div', 'cal-hotel', hotel + pax);
-      append(chip, topRow, hotelEl);
-
-      chip.addEventListener('click', function (ev) {
-        ev.stopPropagation();
-        closeQuietvoxCalendar();
-        goToDate(o.date);
-        selectTab(item.tab, false);
-      });
-      eventsEl.appendChild(chip);
-    });
+    items.forEach(function (item) { eventsEl.appendChild(buildCalChip(item)); });
 
     cell.appendChild(eventsEl);
     cell.addEventListener('click', function () {
@@ -7015,6 +6993,8 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
   /* ========================================================================
      UYGULAMA İÇİ OTOMATİK GÜNCELLEME SİSTEMİ
      ======================================================================== */
+  // Bu sayı version.json'daki "build" ile her yayında AYNI commit içinde güncellenir
+  // (.github/workflows/version.yml). Elle değiştirmeyin; aksi hâlde güncelleme bandı takılı kalır.
   var CURRENT_BUILD = 3;
 
   function checkAppUpdate() {
@@ -7087,18 +7067,6 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     $('#lightbox-close').addEventListener('click', closePhotoLightbox);
     $('#photo-lightbox').addEventListener('click', function (ev) { if (ev.target === ev.currentTarget) closePhotoLightbox(); });
 
-    // Görünüm Modu Butonları (Klasik Kart vs Sade Liste)
-    document.querySelectorAll('[data-view-mode]').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        var mode = btn.getAttribute('data-view-mode');
-        setState({ viewMode: mode });
-        lsWrite(LS_VIEW_MODE, mode);
-        updateViewModeButtons();
-        render(true);
-        showToast(mode === 'minimal' ? 'Sade Liste Modu aktif ✓' : 'Klasik Kart Görünümü aktif ✓');
-      });
-    });
-
     // Quietvox Takvim Etkinlikleri
     $('#cal-close').addEventListener('click', closeQuietvoxCalendar);
     $('#cal-prev').addEventListener('click', function () { calNavigate(-1); });
@@ -7109,6 +7077,7 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
         document.querySelectorAll('.qv-cal-vbtn').forEach(function (b) { b.classList.remove('active'); });
         btn.classList.add('active');
         calState.view = btn.getAttribute('data-cal-view') || 'month';
+        calState.viewChosen = true;
         renderQuietvoxCalendar();
       });
     });
@@ -7270,15 +7239,14 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     var github = lsRead(LS_GITHUB);
     var pending = lsRead(LS_PENDING);
     var queue = lsRead(LS_QUEUE);
-    var viewMode = lsRead(LS_VIEW_MODE) || 'classic';
     setState({
       today: today, tomorrow: addDays(today, 1), marks: loadMarks(),
       token: github && typeof github.token === 'string' ? github.token : '',
       pending: pending && typeof pending === 'object' && !Array.isArray(pending) ? pending : {},
-      queue: queue && typeof queue === 'object' && !Array.isArray(queue) ? queue : {},
-      viewMode: viewMode
+      queue: queue && typeof queue === 'object' && !Array.isArray(queue) ? queue : {}
     });
-    updateViewModeButtons();
+    // Kaldırılan "Sade Mod" tercihinin eski kaydı temizlenir
+    try { window.localStorage.removeItem('qv.view_mode.v1'); } catch (e) { /* depolama kapalı olabilir */ }
     applyFont();
     applyUrlParams();
     bindEvents();

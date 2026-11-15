@@ -19,3 +19,5 @@ _backup_before_updates/
 _backup_before_voice/
 _backup_before_v3/
 _backup_before_v4/
+_backup_before_claude_v5/
+.claude/launch.json
