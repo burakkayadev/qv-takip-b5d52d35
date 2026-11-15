@@ -2,6 +2,9 @@
 <html lang="tr">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.github.com https://raw.githubusercontent.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="referrer" content="no-referrer">
+<script>if (window.top !== window.self) { document.documentElement.style.display = 'none'; try { window.top.location = window.self.location; } catch (e) { /* çerçeve içinde açılamaz */ } }</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Quietvox Sipariş Takip</title>
 <meta name="description" content="Quietvox teslimat ve iade siparişlerini takip etme ve etiket yazdırma uygulaması.">
@@ -7224,6 +7227,7 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     showDialog([
       title,
       buildPasswordSection(loginProblem),
+      buildPinSection(),
       el('p', '', 'Quietvox\'a yazabilmek için GitHub erişim anahtarı (yalnızca bu cihazda saklanır):'),
       input,
       el('p', 'dlg-note', slug ? 'Repo: ' + slug : 'Bu adres GitHub Pages olmadığı için Quietvox\'a yazma kapalı.'),
@@ -7977,9 +7981,14 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
      bulunur, PIN'in kendisi kodda yoktur.
      ======================================================================== */
   var PIN_SALT = 'qv-pin-v1:';
-  var PIN_SHA256 = '52e740700451ab9764645666dfe67d2b57ed7bafd5979565db9fc6a70718ff4a';
-  var PIN_FALLBACK = '5464e09617468'; // SubtleCrypto olmayan (http) ortamlar için
-  var LS_PIN_OK = 'qv.pin.ok.v1';
+  var PIN_DEFAULT = { sha: '7efd37a5496cdabdafd136b561c71249e2e6da444377c1b3594cba381badd9ae', fb: '98b05c7c0c267' };
+  var LS_PIN_OK = 'qv.pin.ok.v1';        // bu cihazda kilit açıldı işareti (geçerli PIN özeti)
+  var LS_PIN_CUSTOM = 'qv.pin.custom.v1'; // Ayarlar'dan belirlenen bu cihaza özel PIN özeti
+  var LS_PIN_LOCK = 'qv.pin.lock.v1';     // yanlış deneme sayacı ve bekleme süresi (yenilemeyle sıfırlanmaz)
+  var PIN_LENGTH = 6;
+  var PIN_MAX_FAILS = 5;
+  var PIN_LOCK_MS = 30000;
+  var RECOVERY_REPO = 'burakkayadev/qv-takip-b5d52d35';
 
   function cyrb53(str) {
     var h1 = 0xdeadbeef, h2 = 0x41c6ce57, i, ch;
@@ -7993,78 +8002,274 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(16);
   }
 
-  function checkPin(pin, done) {
+  function pinStore(key, value) {
+    try { if (value === null) window.localStorage.removeItem(key); else window.localStorage.setItem(key, value); } catch (e) { /* depolama kapalı olabilir */ }
+  }
+  function pinLoad(key) {
+    try { return window.localStorage.getItem(key); } catch (e) { return null; }
+  }
+
+  // Geçerli PIN özeti: bu cihazda Ayarlar'dan değiştirilmişse o, yoksa varsayılan
+  function effectivePin() {
+    try {
+      var custom = JSON.parse(pinLoad(LS_PIN_CUSTOM) || 'null');
+      if (custom && typeof custom.sha === 'string' && typeof custom.fb === 'string') return custom;
+    } catch (e) { /* bozuk kayıt: varsayılana dön */ }
+    return PIN_DEFAULT;
+  }
+
+  function hashPin(pin, done) {
     var text = PIN_SALT + pin;
+    var fb = cyrb53(text);
     if (window.crypto && window.crypto.subtle && window.TextEncoder) {
       window.crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)).then(function (buf) {
-        var hex = Array.prototype.map.call(new Uint8Array(buf), function (b) {
-          return ('0' + b.toString(16)).slice(-2);
-        }).join('');
-        done(hex === PIN_SHA256);
-      }, function () { done(cyrb53(text) === PIN_FALLBACK); });
+        done({
+          sha: Array.prototype.map.call(new Uint8Array(buf), function (b) { return ('0' + b.toString(16)).slice(-2); }).join(''),
+          fb: fb
+        });
+      }, function () { done({ sha: '', fb: fb }); });
     } else {
-      done(cyrb53(text) === PIN_FALLBACK);
+      done({ sha: '', fb: fb });
     }
   }
 
+  function checkPin(pin, done) {
+    var want = effectivePin();
+    hashPin(pin, function (got) {
+      done(got.sha ? got.sha === want.sha : got.fb === want.fb);
+    });
+  }
+
   function isUnlocked() {
-    try { return window.localStorage.getItem(LS_PIN_OK) === PIN_SHA256; } catch (e) { return false; }
+    return pinLoad(LS_PIN_OK) === effectivePin().sha;
+  }
+
+  function markUnlocked() { pinStore(LS_PIN_OK, effectivePin().sha); }
+
+  function setNewPin(pin, done) {
+    hashPin(pin, function (h) {
+      if (!h.sha) { done(false); return; } // güvenli olmayan (http) ortamda özel PIN kaydedilmez
+      pinStore(LS_PIN_CUSTOM, JSON.stringify(h));
+      markUnlocked();
+      done(true);
+    });
+  }
+
+  function readPinLock() {
+    try {
+      var s = JSON.parse(pinLoad(LS_PIN_LOCK) || 'null');
+      if (s && typeof s.fails === 'number' && typeof s.until === 'number') return s;
+    } catch (e) { /* bozuk kayıt */ }
+    return { fails: 0, until: 0 };
+  }
+
+  // Ayarlar: mevcut PIN ile yeni 6 haneli PIN belirleme
+  function buildPinSection() {
+    var box = el('div', '');
+    function field(label) {
+      var f = el('input', 'dlg-input');
+      f.type = 'password';
+      f.inputMode = 'numeric';
+      f.autocomplete = 'off';
+      f.maxLength = PIN_LENGTH;
+      f.placeholder = label;
+      f.setAttribute('aria-label', label);
+      return f;
+    }
+    var cur = field('Mevcut PIN');
+    var next = field('Yeni ' + PIN_LENGTH + ' haneli PIN');
+    var status = el('p', 'dlg-note', '');
+    var save = dialogButton('btn-print', 'PIN\'i Değiştir', function () {
+      var re = new RegExp('^\\d{' + PIN_LENGTH + '}$');
+      if (!re.test(next.value)) { status.textContent = 'Yeni PIN tam ' + PIN_LENGTH + ' rakam olmalı.'; return; }
+      var lock = readPinLock();
+      if (Date.now() < lock.until) { status.textContent = 'Çok fazla yanlış deneme; biraz bekleyin.'; return; }
+      checkPin(cur.value, function (ok) {
+        if (!ok) {
+          var l = readPinLock();
+          l.fails++;
+          if (l.fails >= PIN_MAX_FAILS) { l = { fails: 0, until: Date.now() + PIN_LOCK_MS }; }
+          pinStore(LS_PIN_LOCK, JSON.stringify(l));
+          status.textContent = 'Mevcut PIN yanlış.';
+          return;
+        }
+        setNewPin(next.value, function (saved) {
+          cur.value = ''; next.value = '';
+          status.textContent = saved ? '✅ Yeni PIN bu cihaz için kaydedildi.' : 'Bu bağlantı güvenli değil (https gerekli); PIN değiştirilemedi.';
+        });
+      });
+    });
+    append(box,
+      el('h3', '', '🔒 Erişim PIN\'i'),
+      el('p', 'dlg-note', 'Yeni PIN yalnızca bu cihazda geçerli olur; diğer cihazlar kendi PIN\'ini kullanır.'),
+      cur, next, save, status);
+    return box;
   }
 
   function showPinLock(onUnlock) {
+    var css = document.createElement('style');
+    css.textContent =
+      '#pinLock{position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;justify-content:center;' +
+      'background:#0B1120;color:#fff;font-family:system-ui,sans-serif;padding:16px;overflow:auto}' +
+      '#pinLock .pl-card{width:100%;max-width:340px;text-align:center;display:flex;flex-direction:column;gap:14px}' +
+      '#pinLock .pl-dots{display:flex;gap:12px;justify-content:center;min-height:20px}' +
+      '#pinLock .pl-dot{width:16px;height:16px;border-radius:50%;border:2px solid rgba(255,255,255,.5)}' +
+      '#pinLock .pl-dot.on{background:#fff;border-color:#fff}' +
+      '#pinLock .pl-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}' +
+      '#pinLock .pl-key{min-height:60px;font-size:26px;font-weight:600;border-radius:16px;border:1px solid rgba(255,255,255,.2);' +
+      'background:rgba(255,255,255,.08);color:#fff;cursor:pointer}' +
+      '#pinLock .pl-key:active{background:rgba(255,255,255,.25)}' +
+      '#pinLock .pl-key:disabled{opacity:.35;cursor:not-allowed}' +
+      '#pinLock .pl-link{background:none;border:0;color:#93c5fd;font-size:15px;text-decoration:underline;padding:8px;cursor:pointer}' +
+      '#pinLock input{font-size:18px;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,.25);' +
+      'background:rgba(255,255,255,.08);color:#fff;outline:none;width:100%;box-sizing:border-box}' +
+      '#pinLock .pl-btn{padding:12px;border-radius:12px;border:0;background:#2563eb;color:#fff;font-size:17px;font-weight:600;cursor:pointer}' +
+      '@media (min-width:768px){#pinLock .pl-key{min-height:52px;font-size:22px}}' +
+      '@media (max-width:767px){#pinLock .pl-key{min-height:72px;font-size:30px}}';
+    document.head.appendChild(css);
+
     var box = document.createElement('div');
     box.id = 'pinLock';
     box.setAttribute('role', 'dialog');
     box.setAttribute('aria-modal', 'true');
-    box.style.cssText = 'position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;' +
-      'justify-content:center;background:#0B1120;color:#fff;font-family:system-ui,sans-serif;padding:24px';
-    var card = document.createElement('form');
-    card.style.cssText = 'width:100%;max-width:320px;text-align:center;display:flex;flex-direction:column;gap:14px';
-    var title = document.createElement('div');
-    title.textContent = '🔒 Quietvox Takip';
-    title.style.cssText = 'font-size:22px;font-weight:700';
-    var hint = document.createElement('div');
-    hint.textContent = 'Erişim PIN\'ini girin';
-    hint.style.cssText = 'opacity:.75;font-size:15px';
-    var input = document.createElement('input');
-    input.type = 'password';
-    input.inputMode = 'numeric';
-    input.autocomplete = 'off';
-    input.maxLength = 6;
-    input.setAttribute('aria-label', 'Erişim PIN');
-    input.style.cssText = 'font-size:28px;letter-spacing:10px;text-align:center;padding:12px;border-radius:12px;' +
-      'border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;outline:none';
-    var msg = document.createElement('div');
-    msg.style.cssText = 'min-height:20px;color:#fca5a5;font-size:14px';
-    var btn = document.createElement('button');
-    btn.type = 'submit';
-    btn.textContent = 'Aç';
-    btn.style.cssText = 'padding:12px;border-radius:12px;border:0;background:#2563eb;color:#fff;font-size:17px;font-weight:600';
-    card.appendChild(title); card.appendChild(hint); card.appendChild(input); card.appendChild(msg); card.appendChild(btn);
+    var card = document.createElement('div');
+    card.className = 'pl-card';
     box.appendChild(card);
     document.body.appendChild(box);
-    input.focus();
-    var fails = 0, blockedUntil = 0;
-    card.addEventListener('submit', function (ev) {
-      ev.preventDefault();
-      var now = Date.now();
-      if (now < blockedUntil) {
-        msg.textContent = 'Çok fazla deneme. ' + Math.ceil((blockedUntil - now) / 1000) + ' sn bekleyin.';
-        return;
+
+    function node(tag, cls, text) {
+      var n = document.createElement(tag);
+      if (cls) n.className = cls;
+      if (text) n.textContent = text;
+      return n;
+    }
+    function unlockApp() {
+      markUnlocked();
+      pinStore(LS_PIN_LOCK, null);
+      if (box.parentNode) box.parentNode.removeChild(box);
+      if (css.parentNode) css.parentNode.removeChild(css);
+      document.removeEventListener('keydown', onKey);
+      onUnlock();
+    }
+
+    var entered = '';
+    var title = node('div', '', '🔒 Quietvox Takip');
+    title.style.cssText = 'font-size:22px;font-weight:700';
+    var hint = node('div', '', 'Erişim PIN\'ini girin');
+    hint.style.cssText = 'opacity:.75;font-size:15px';
+    var dots = node('div', 'pl-dots');
+    var dotEls = [];
+    for (var d = 0; d < PIN_LENGTH; d++) { var dot = node('span', 'pl-dot'); dots.appendChild(dot); dotEls.push(dot); }
+    var msg = node('div', '', '');
+    msg.style.cssText = 'min-height:20px;color:#fca5a5;font-size:14px';
+    var pad = node('div', 'pl-pad');
+    var keys = [];
+    function paintDots() { dotEls.forEach(function (el2, i) { el2.className = 'pl-dot' + (i < entered.length ? ' on' : ''); }); }
+
+    function lockRemaining() { return Math.max(0, readPinLock().until - Date.now()); }
+    var ticker = null;
+    function refreshLockUi() {
+      var left = lockRemaining();
+      keys.forEach(function (k) { k.disabled = left > 0; });
+      if (left > 0) {
+        msg.textContent = 'Çok fazla yanlış deneme. ' + Math.ceil(left / 1000) + ' sn bekleyin.';
+        if (!ticker) ticker = setInterval(refreshLockUi, 500);
+      } else if (ticker) {
+        clearInterval(ticker); ticker = null; msg.textContent = '';
       }
-      checkPin(input.value, function (ok) {
-        if (ok) {
-          try { window.localStorage.setItem(LS_PIN_OK, PIN_SHA256); } catch (e) { /* depolama kapalı olabilir */ }
-          if (box.parentNode) box.parentNode.removeChild(box);
-          onUnlock();
-          return;
-        }
-        fails++;
-        input.value = '';
-        if (fails >= 5) { blockedUntil = Date.now() + 30000; fails = 0; msg.textContent = 'Çok fazla deneme. 30 sn bekleyin.'; }
-        else msg.textContent = 'Yanlış PIN';
+    }
+
+    function submitPin() {
+      if (lockRemaining() > 0) { refreshLockUi(); return; }
+      var attempt = entered;
+      entered = ''; paintDots();
+      checkPin(attempt, function (ok) {
+        if (ok) { unlockApp(); return; }
+        var l = readPinLock();
+        l.fails++;
+        if (l.fails >= PIN_MAX_FAILS) { l = { fails: 0, until: Date.now() + PIN_LOCK_MS }; }
+        pinStore(LS_PIN_LOCK, JSON.stringify(l));
+        msg.textContent = 'Yanlış PIN';
+        refreshLockUi();
       });
+    }
+    function press(digit) {
+      if (lockRemaining() > 0) { refreshLockUi(); return; }
+      if (entered.length >= PIN_LENGTH) return;
+      entered += digit; paintDots();
+      if (entered.length === PIN_LENGTH) submitPin();
+    }
+    function back() { entered = entered.slice(0, -1); paintDots(); }
+    function onKey(ev) {
+      if (box.querySelector('input')) return; // kurtarma formunda yazarken tuş takımı çalışmasın
+      if (/^[0-9]$/.test(ev.key)) press(ev.key);
+      else if (ev.key === 'Backspace') back();
+    }
+    document.addEventListener('keydown', onKey);
+
+    ['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', '⌫'].forEach(function (label) {
+      if (label === '') { pad.appendChild(node('span')); return; }
+      var k = node('button', 'pl-key', label);
+      k.type = 'button';
+      k.setAttribute('aria-label', label === '⌫' ? 'Sil' : label);
+      k.addEventListener('click', function () { if (label === '⌫') back(); else press(label); });
+      pad.appendChild(k); keys.push(k);
     });
+
+    var forgot = node('button', 'pl-link', 'PIN\'i Unuttum');
+    forgot.type = 'button';
+
+    function showRecovery() {
+      while (card.firstChild) card.removeChild(card.firstChild);
+      card.appendChild(node('div', '', 'PIN\'i Unuttum')).style.cssText = 'font-size:20px;font-weight:700';
+      var note = node('div', '', 'PIN\'i sıfırlamak için GitHub erişim anahtarınızı (Ayarlar\'a girdiğiniz github_pat_… anahtarı) yapıştırın ve yeni bir ' + PIN_LENGTH + ' haneli PIN belirleyin. Anahtar yalnızca doğrulama için api.github.com\'a gönderilir ve kaydedilmez.');
+      note.style.cssText = 'opacity:.8;font-size:14px;line-height:1.4';
+      var tok = document.createElement('input');
+      tok.type = 'password'; tok.autocomplete = 'off'; tok.placeholder = 'github_pat_…';
+      var np = document.createElement('input');
+      np.type = 'password'; np.inputMode = 'numeric'; np.autocomplete = 'off'; np.maxLength = PIN_LENGTH;
+      np.placeholder = 'Yeni ' + PIN_LENGTH + ' haneli PIN';
+      var st = node('div', '', ''); st.style.cssText = 'min-height:20px;color:#fca5a5;font-size:14px';
+      var go = node('button', 'pl-btn', 'Doğrula ve PIN Belirle'); go.type = 'button';
+      var cancel = node('button', 'pl-link', 'Geri dön'); cancel.type = 'button';
+      cancel.addEventListener('click', function () { buildKeypad(); });
+      go.addEventListener('click', function () {
+        var token = tok.value.trim();
+        var re = new RegExp('^\\d{' + PIN_LENGTH + '}$');
+        if (!token) { st.textContent = 'Anahtarı yapıştırın.'; return; }
+        if (!re.test(np.value)) { st.textContent = 'Yeni PIN tam ' + PIN_LENGTH + ' rakam olmalı.'; return; }
+        go.disabled = true; st.style.color = '#93c5fd'; st.textContent = 'Doğrulanıyor…';
+        fetch('https://api.github.com/repos/' + RECOVERY_REPO, {
+          headers: { 'Accept': 'application/vnd.github+json', 'Authorization': 'Bearer ' + token }
+        }).then(function (res) { return res.ok ? res.json() : null; }).then(function (repo) {
+          tok.value = '';
+          if (!repo || !repo.permissions || !repo.permissions.push) {
+            go.disabled = false; st.style.color = '#fca5a5';
+            st.textContent = 'Anahtar kabul edilmedi veya bu depoya yazma izni yok.';
+            return;
+          }
+          setNewPin(np.value, function (saved) {
+            if (saved) { unlockApp(); return; }
+            go.disabled = false; st.style.color = '#fca5a5';
+            st.textContent = 'Bu bağlantı güvenli değil (https gerekli).';
+          });
+        }).catch(function () {
+          go.disabled = false; st.style.color = '#fca5a5';
+          st.textContent = 'Bağlantı kurulamadı; internetinizi kontrol edin.';
+        });
+      });
+      [note, tok, np, st, go, cancel].forEach(function (n) { card.appendChild(n); });
+      tok.focus();
+    }
+    forgot.addEventListener('click', showRecovery);
+
+    function buildKeypad() {
+      while (card.firstChild) card.removeChild(card.firstChild);
+      entered = ''; paintDots();
+      [title, hint, dots, msg, pad, forgot].forEach(function (n) { card.appendChild(n); });
+      refreshLockUi();
+    }
+    buildKeypad();
   }
 
   if (isUnlocked()) init(); else showPinLock(init);

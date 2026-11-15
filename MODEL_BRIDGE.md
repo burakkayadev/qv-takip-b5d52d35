@@ -1,11 +1,23 @@
 # MODEL_BRIDGE — Uygulamalar Arası Ortak Hafıza
 
 > **Son Aktif Uygulama:** Antigravity  
-> **Son Güncelleme:** 15 Kasım 2026 23:20 (UTC+3) — **Gereksiz yük optimizasyonları + güvenlik sertleştirmesi (6 haneli erişim PIN'i) tamamlandı.**
+> **Son Güncelleme:** 15 Kasım 2026 23:40 (UTC+3) — **PIN 192834 + tuş takımı/kilit/PIN değiştirme/kurtarma + CSP ve ek güvenlik katmanları.**
 
 ---
 
-## 📌 SON DURUM ÖZETİ — Son Aktif Uygulama: Antigravity (Optimizasyon & Güvenlik)
+## 📌 SON DURUM ÖZETİ — Son Aktif Uygulama: Antigravity (PIN & Ek Güvenlik)
+
+| Başlık | Detay |
+|---|---|
+| **Son Aktif Uygulama** | Antigravity |
+| **Tarih / Saat** | 15.11.2026 23:40 (İstanbul) |
+| **Tamamlanan İşler** | 1. **PIN (`index.html`):** varsayılan `192834` (tuzlu SHA-256 özeti kodda; eski PIN geçersiz). Cihazda `localStorage` ile hatırlanır; ekranda büyük tuş takımı; 5 yanlışta 30 sn kilit (`qv.pin.lock.v1`, yenilemeyle sıfırlanmaz). Ayarlar'da PIN değiştirme (yalnızca o cihaz için, `qv.pin.custom.v1`). **PIN'i Unuttum:** GitHub anahtarı depoya yazma izniyle doğrulanınca yeni PIN belirlenir. İSTENEN AMA YAPILMADI: e-postayla PIN gönderme ve Quietvox şifresiyle sıfırlama (sunucu/gizli bilgi olmadan istemciden güvenle yapılamaz).<br>2. **Repo gizliliği:** repo PUBLIC bırakıldı (Pages private için ücretli plan gerekir, doğrulanamadı; denemek canlı siteyi kapatabilir). `data.json` maskeleme yapılmadı: gerçek koruma sağlamayan kodlama scraper, iş akışları, testler ve uygulamayı riske atar. Gerçek çözüm: private repo + ücretli plan veya parolayla şifrelenmiş veri.<br>3. **Güvenlik başlıkları:** CSP meta (self, cdnjs, Google Fonts, api.github.com, raw.githubusercontent.com), `referrer no-referrer`, iframe kırıcı. Tarayıcıda konsol hatası yok.<br>4. **Android anahtarı:** `android-signing/` gitignore'da, depoda yok, flash yedekte 4 dosya mevcut.<br>5. **Bağımlılıklar:** OSV taramasında açık yok (playwright 1.65.2, bs4 4.15.0, html5lib 1.1, tzdata 2026.6).<br>6. **sw.js:** `version.yml` her yayında sürümü artırır, eski `qv-` önbellekleri activate'te silinir.<br>7. **Yedek:** `_backup_before_antigravity_v11/` (v10 korundu, v9 silindi). |
+| **Değişen Dosyalar** | `index.html`, `MODEL_BRIDGE.md`, `Quietvox_Kullanim_Kilavuzu.pdf` |
+| **Bir Sonraki Uygulamanın Yapacağı İş** | `MODEL_BRIDGE.md` okuyup çalışan özellikleri bozmadan devam etmek. |
+
+### Önceki kayıt — Antigravity (15.11.2026 23:20)
+
+### (23:20 özeti) Optimizasyon & Güvenlik
 
 | Başlık | Detay |
 |---|---|
