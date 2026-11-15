@@ -171,6 +171,15 @@ DIRECT_SKIPPED_ROWS = {"bag id", "clients"}  # ekipman tablosunda kalem olmayan 
 # seçili durumla karşılaştırılarak doğrulandı (feed ve form aynı kodları kullanır).
 ORDER_STATUS_NAMES = {1: "reserved", 2: "delivered", 3: "lost", 4: "cancelled", 5: "confirmed",
                       6: "returned", 8: "duplicated"}
+# Quietvox takviminde (getContent.html / FullCalendar DOM) yeşil görünen ya da
+# tamamlandı sınıfı taşıyan iade etkinliklerini yakalamak için renk/sınıf ipuçları
+GREEN_STYLE_TOKENS = (
+    "green", "returned", "return-done", "status-6", "status_6", "label-success", "bg-success",
+    "#00a65a", "#28a745", "#5cb85c", "#4caf50", "#198754", "#2ecc71", "#008000", "#8bc34a",
+    "#3c763d", "#dff0d8", "#a3e635", "#22c55e", "#16a34a", "#15803d", "#10b981", "#059669",
+)
+_RGB_RE = re.compile(r"rgba?\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})", re.I)
+_HEX6_RE = re.compile(r"#([0-9a-f]{6})\b", re.I)
 # Belgeleri her çalıştırmada yeniden okunacak gün aralığı; dışındakiler önceki data.json'dan alınır
 REFRESH_PAST_DAYS = 1
 REFRESH_FUTURE_DAYS = 10
@@ -848,13 +857,97 @@ def _html_lines(html: Any) -> str:
 
 def order_status_name(code: Any) -> str:
     """Quietvox durum kodunu ada çevirir; bilinmeyen kod metin olarak kalır."""
+    if isinstance(code, str) and code.strip().casefold() in ORDER_STATUS_NAMES.values():
+        return code.strip().casefold()
     try:
         return ORDER_STATUS_NAMES.get(int(code), str(code))
     except (TypeError, ValueError):
         return ""
 
 
-def parse_feed_items(payload: Any, today: date, days: int, past: int = 0) -> list[dict[str, str]] | None:
+def is_green_style(text: Any) -> bool:
+    """Etkinlik rengi, CSS sınıfı veya stil metni yeşil/tamamlanmış mı?"""
+    haystack = one_line(text).casefold()
+    if not haystack:
+        return False
+    if any(token in haystack for token in GREEN_STYLE_TOKENS):
+        return True
+    for r_str, g_str, b_str in _RGB_RE.findall(haystack):
+        r, g, b = int(r_str), int(g_str), int(b_str)
+        if g >= 110 and g > r * 1.25 and g >= b * 1.15:
+            return True
+    for hex_code in _HEX6_RE.findall(haystack):
+        r, g, b = int(hex_code[0:2], 16), int(hex_code[2:4], 16), int(hex_code[4:6], 16)
+        if g >= 110 and g > r * 1.25 and g >= b * 1.15:
+            return True
+    return False
+
+
+def _entry_style_hint(entry: Mapping[str, Any]) -> str:
+    """Feed öğesindeki renk/sınıf alanlarını tek metinde birleştirir."""
+    keys = ("color", "backgroundColor", "background_color", "borderColor", "textColor",
+            "className", "class", "classes", "cssClass", "style", "statusName", "status_name")
+    parts: list[str] = []
+    for key in keys:
+        val = entry.get(key)
+        if isinstance(val, (list, tuple)):
+            parts.extend(str(x) for x in val if x)
+        elif val:
+            parts.append(str(val))
+    return " ".join(parts)
+
+
+def has_returned_details(details: Mapping[str, Any] | None) -> bool:
+    """D&R Formunda iade adedi veya 0'dan büyük iade ağırlığı girilmiş mi?"""
+    if not details:
+        return False
+    equipment = details.get("equipment") or (details.get("dr_form") or {}).get("equipment") or []
+    for row in equipment:
+        qty = one_line((row or {}).get("return_quantity", ""))
+        if qty and qty not in {"0", "0.0", "0.00", "-", "—"}:
+            return True
+    weight = one_line((details.get("raw") or {}).get("Return weight", ""))
+    if weight:
+        numbers = [float(m) for m in re.findall(r"\d+(?:\.\d+)?", weight)]
+        if any(n > 0 for n in numbers):
+            return True
+    return False
+
+
+def is_return_completed(order: Mapping[str, Any], today: date | None = None) -> bool:
+    """İade siparişi tamamlanmış (Returned / yeşil) kabul edilmeli mi?"""
+    status = str(order.get("status") or "").casefold()
+    if status == "returned":
+        return True
+    if order.get("qv_done") is True or is_green_style(order.get("qv_color", "")):
+        return True
+    if has_returned_details(order):
+        return True
+    if order.get("type", "return") == "return" and status == "delivered" and today is not None:
+        order_date = valid_iso(order.get("date", ""))
+        if order_date and order_date < today.isoformat():
+            return True
+    return False
+
+
+def resolve_order_status(kind: str, raw_status: str, event_date: str, today: date,
+                         style_hint: str = "", details: Mapping[str, Any] | None = None) -> str:
+    """Takvim türü, feed durumu, renk/sınıf ipucu ve D&R detayından nihai durumu belirler."""
+    status = (raw_status or "").casefold()
+    if status in {"cancelled", "lost", "duplicated", "returned"}:
+        return status
+    if kind == "return":
+        if is_green_style(style_hint) or has_returned_details(details):
+            return "returned"
+        if status == "delivered" and valid_iso(event_date) and event_date < today.isoformat():
+            return "returned"
+    elif kind == "delivery" and not status and is_green_style(style_hint):
+        return "delivered"
+    return status
+
+
+def parse_feed_items(payload: Any, today: date, days: int, past: int = 0,
+                     kind: str = "") -> list[dict[str, str]] | None:
     """Feed JSON'unu pencere içindeki {id,date,time,title,status} listesine çevirir; biçim tanınmazsa None."""
     if not isinstance(payload, list):
         return None
@@ -868,8 +961,13 @@ def parse_feed_items(payload: Any, today: date, days: int, past: int = 0) -> lis
             continue
         time_text = "" if entry.get("allDay", True) else extract_time(start[10:])
         title = " · ".join(_html_lines(entry.get("title")).split("\n"))
+        raw_status = order_status_name(entry.get("status"))
+        style_hint = _entry_style_hint(entry)
+        status = resolve_order_status(kind, raw_status, day, today, style_hint) if kind else (
+            "returned" if is_green_style(style_hint) and raw_status in {"", "delivered"} else raw_status
+        )
         items.append({"id": str(entry["id"]), "date": day, "time": time_text, "title": title,
-                      "status": order_status_name(entry.get("status"))})
+                      "status": status})
     return items
 
 
@@ -1415,10 +1513,12 @@ def build_today_text(deliveries: list[dict[str, Any]], returns: list[dict[str, A
 
 
 def build_missed_text(returns: list[dict[str, Any]], today: date) -> str:
-    """Günü geçtiği hâlde Quietvox'ta hâlâ 'Delivered' duran iadeler için uyarı metni."""
+    """Günü geçtiği hâlde Quietvox'ta hâlâ 'Delivered' duran (yeşil/Returned olmayan) iadeler için uyarı metni."""
     oldest = (today - timedelta(days=MISSED_RETURN_DAYS)).isoformat()
     missed = [order for order in returns
-              if oldest <= order.get("date", "") < today.isoformat() and order.get("status") == "delivered"]
+              if oldest <= order.get("date", "") < today.isoformat()
+              and order.get("status") == "delivered"
+              and not is_return_completed(order)]
     if not missed:
         return ""
     return f"⚠️ Almayı unuttun: {len(missed)} iade hâlâ alınmadı{_names_summary(missed)}."
@@ -2257,7 +2357,10 @@ async def _direct_order(context: Any, settings: Settings, spec: CalendarSpec,
     if order and not readable:
         order = {**order, "id": item["id"]}
     if order:
-        order = {**order, "status": item.get("status", "")}
+        final_status = resolve_order_status(
+            spec.kind, item.get("status", ""), order["date"], settings.today, details=details if readable else None
+        )
+        order = {**order, "status": final_status}
     return order, readable
 
 
@@ -2268,7 +2371,9 @@ def reusable_order(item: dict[str, str], cached: dict[str, Any] | None, today: d
     day = date.fromisoformat(item["date"])
     if today - timedelta(days=REFRESH_PAST_DAYS) <= day <= today + timedelta(days=REFRESH_FUTURE_DAYS):
         return None
-    return {**cached, "status": item.get("status", ""), "title": item["title"]}
+    kind = str(cached.get("type") or "")
+    status = resolve_order_status(kind, item.get("status", ""), item["date"], today, details=cached) if kind else item.get("status", "")
+    return {**cached, "status": status, "title": item["title"]}
 
 
 def previous_orders_by_id(settings: Settings, spec: CalendarSpec) -> dict[str, dict[str, Any]]:
@@ -2290,7 +2395,7 @@ async def scrape_calendar_direct(page: Any, settings: Settings, spec: CalendarSp
     except Exception as exc:
         log.debug("%s: feed alınamadı (%s).", spec.name, type(exc).__name__)
         return None
-    items = parse_feed_items(payload, settings.today, settings.window_days, settings.past_days)
+    items = parse_feed_items(payload, settings.today, settings.window_days, settings.past_days, kind=spec.kind)
     if items is None:
         return None
     unique = list({(item["id"], item["date"]): item for item in items}.values())

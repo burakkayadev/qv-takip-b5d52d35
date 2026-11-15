@@ -12,6 +12,7 @@
 <meta name="apple-mobile-web-app-title" content="Quietvox">
 <meta name="format-detection" content="telephone=no">
 <link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
 <link rel="apple-touch-icon" sizes="180x180" href="./icons/apple-touch-icon.png">
 
@@ -24,43 +25,80 @@
 /* ==========================================================================
    1) TASARIM DEĞİŞKENLERİ
    ========================================================================== */
-:root {
-  /* Palet */
-  --cream: #F4F1EA;        /* krem arka plan */
-  --navy: #1B2030;         /* koyu lacivert: metin, başlık, üst çubuk */
-  --gold: #9C7A4B;         /* altın/bronz vurgu: çizgi, kenarlık, büyük öğeler */
-  --gold-deep: #6F5126;    /* küçük metin ve dolu butonlar için koyu altın (AA kontrast) */
-  --ink-soft: #454B5C;     /* ikincil metin (krem üzerinde AA) */
+:root,
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  /* Palet — Ultra-Saydam Midnight Obsidian Glass (Varsayılan Lüks Koyu Cam) */
+  --cream: #0B1120;        /* derin gece laciverti zemin */
+  --navy: #F8FAFC;         /* yüksek kontrast parlak beyaz/krem metin */
+  --gold: #D4AF37;         /* sıcak altın vurgu */
+  --gold-deep: #E5C158;    /* parlak altın/kehribar */
+  --ink-soft: #CBD5E1;     /* yüksek okunabilirlikli ikincil açık krem/gümüş metin */
   --white: #FFFFFF;
 
-  /* Cam (glassmorphism) kart */
-  --glass: rgba(255, 255, 255, 0.64);
-  --glass-strong: rgba(255, 255, 255, 0.86);
-  --glass-border: rgba(255, 255, 255, 0.8);
-  --hairline: rgba(27, 32, 48, 0.14);
-  --shadow: 0 8px 28px rgba(27, 32, 48, 0.10);
-  --blur: 14px;
+  /* Canlı eylem ve durum vurgu renkleri */
+  --emerald: #10B981;
+  --emerald-dark: #059669;
+  --emerald-soft: rgba(16, 185, 129, 0.20);
+  --coral: #EF4444;
+  --coral-dark: #DC2626;
+  --coral-soft: rgba(239, 68, 68, 0.20);
+  --electric: #3B82F6;
+  --electric-soft: rgba(59, 130, 246, 0.20);
+  --amber: #F59E0B;
+  --amber-soft: rgba(245, 158, 11, 0.22);
 
-  /* Durum renkleri (metin/zemin çiftleri AA kontrastlıdır) */
-  --ok: #1B6337;
-  --ok-bg: #DDF0E2;
-  --warn-bg: #FFF0BF;
-  --warn-ink: #513B00;
-  --err-bg: #FAD8D4;
-  --err-ink: #7A1410;
-  --info-bg: #E2E7F4;
-  --info-ink: #1B2030;
-  --whatsapp: #0B6B5F;
+  /* Ultra-Saydam Gerçek Cam (Glassmorphism: 0.25 – 0.38 opaklık) */
+  --glass: rgba(15, 23, 42, 0.28);
+  --glass-strong: rgba(15, 23, 42, 0.36);
+  --glass-border: rgba(255, 255, 255, 0.16);
+  --hairline: rgba(255, 255, 255, 0.14);
+  --shadow: 0 20px 44px -10px rgba(0, 0, 0, 0.60), inset 0 1px 0 rgba(255, 255, 255, 0.28), inset 0 0 0 1px rgba(212, 175, 55, 0.08);
+  --blur: 28px;
+
+  /* Durum renkleri (yüksek kontrastlı) */
+  --ok: #6EE7B7;
+  --ok-bg: rgba(16, 185, 129, 0.24);
+  --warn-bg: rgba(245, 158, 11, 0.24);
+  --warn-ink: #FEF08A;
+  --err-bg: rgba(239, 68, 68, 0.26);
+  --err-ink: #FECACA;
+  --info-bg: rgba(59, 130, 246, 0.24);
+  --info-ink: #DBEAFE;
+  --whatsapp: #059669;
 
   /* Ölçüler */
   --radius: 20px;
   --radius-sm: 14px;
-  --tap: 54px;             /* en küçük dokunma yüksekliği (≥48px) */
+  --tap: 52px;             /* en küçük dokunma yüksekliği (≥48px) */
   --gap: 14px;
 
   /* Yazı tipleri (sistem yedekli) */
   --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --font-head: 'Montserrat', 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* Açık mod (yan menüden seçilirse) */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --cream: #F4F1EA;
+  --navy: #1B2030;
+  --gold: #9C7A4B;
+  --gold-deep: #7A5B30;
+  --ink-soft: #334155;
+  --glass: rgba(255, 255, 255, 0.62);
+  --glass-strong: rgba(255, 255, 255, 0.78);
+  --glass-border: rgba(255, 255, 255, 0.75);
+  --hairline: rgba(27, 32, 48, 0.12);
+  --shadow: 0 16px 36px -8px rgba(27, 32, 48, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  --ok: #065F46;
+  --ok-bg: #D1FAE5;
+  --warn-bg: #FEF3C7;
+  --warn-ink: #92400E;
+  --err-bg: #FEE2E2;
+  --err-ink: #991B1B;
+  --info-bg: #DBEAFE;
+  --info-ink: #1E40AF;
 }
 
 /* ==========================================================================
@@ -81,14 +119,58 @@ body {
   font-size: 18px;
   line-height: 1.45;
   color: var(--navy);
-  /* Krem zemin + cam efektinin görünmesi için çok hafif altın/lacivert lekeler */
-  background-color: var(--cream);
+  /* Midnight Obsidian Glass (#0B1120 → #162038) + yumuşak altın ve zümrüt ışık küreleri */
+  background-color: #0B1120;
   background-image:
-    radial-gradient(60vmax 40vmax at 100% 0%, rgba(156, 122, 75, 0.22), transparent 60%),
-    radial-gradient(50vmax 40vmax at 0% 45%, rgba(27, 32, 48, 0.08), transparent 60%),
-    radial-gradient(60vmax 45vmax at 90% 100%, rgba(156, 122, 75, 0.16), transparent 60%);
+    radial-gradient(48vmax 48vmax at 12% 14%, rgba(212, 175, 55, 0.24), transparent 65%),
+    radial-gradient(46vmax 46vmax at 88% 36%, rgba(16, 185, 129, 0.22), transparent 65%),
+    radial-gradient(52vmax 52vmax at 48% 88%, rgba(156, 122, 75, 0.22), transparent 65%),
+    linear-gradient(160deg, #0B1120 0%, #111A2E 52%, #162038 100%);
   background-attachment: fixed;
   -webkit-tap-highlight-color: transparent;
+}
+
+[data-theme="light"] body {
+  background-color: #F4F1EA;
+  background-image:
+    radial-gradient(50vmax 42vmax at 10% 10%, rgba(212, 175, 55, 0.24), transparent 60%),
+    radial-gradient(48vmax 40vmax at 90% 45%, rgba(16, 185, 129, 0.14), transparent 60%),
+    linear-gradient(160deg, #F4F1EA 0%, #EFECE3 55%, #E7E1D3 100%);
+}
+
+/* Arkadaki yumuşak altın/zümrüt ışık küreleri (Ambient Mesh Glow Orbs) */
+.ambient-orbs {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+.ambient-orbs .orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(55px);
+}
+.ambient-orbs .orb-gold {
+  width: 340px;
+  height: 340px;
+  top: -50px;
+  left: -60px;
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.34) 0%, rgba(156, 122, 75, 0.10) 60%, transparent 75%);
+}
+.ambient-orbs .orb-emerald {
+  width: 360px;
+  height: 360px;
+  top: 28%;
+  right: -90px;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.30) 0%, rgba(5, 150, 105, 0.08) 60%, transparent 75%);
+}
+.ambient-orbs .orb-amber {
+  width: 380px;
+  height: 380px;
+  bottom: 4%;
+  left: 8%;
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.26) 0%, rgba(59, 130, 246, 0.12) 60%, transparent 75%);
 }
 
 h1, h2, h3 { font-family: var(--font-head); margin: 0; line-height: 1.2; }
@@ -108,14 +190,26 @@ a { color: inherit; }
   overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
 }
 
-/* Cam kart ortak görünümü */
+/* Ultra-Saydam Cam Kart Ortak Görünümü (blur 28px, saturate 190%, specular üst kenar) */
 .glass {
+  position: relative;
   background: var(--glass);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
-  -webkit-backdrop-filter: blur(var(--blur)) saturate(140%);
-  backdrop-filter: blur(var(--blur)) saturate(140%);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  backdrop-filter: blur(28px) saturate(190%);
+}
+.glass::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 16px;
+  right: 16px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55), rgba(212, 175, 55, 0.55), transparent);
+  pointer-events: none;
+  border-radius: 999px;
 }
 
 /* ==========================================================================
@@ -999,80 +1093,300 @@ dialog.dlg::backdrop { background: rgba(27, 32, 48, 0.55); }
 .tile.warn .t { margin-top: 0; font-size: 16px; }
 
 /* ==========================================================================
-   8c) KOYU MOD
-   Renk değişkenleri koyu zemine göre yeniden tanımlanır. "navy" açık temada hem
-   metin hem koyu yüzey rengidir; koyu temada metin açık olur, koyu yüzeyler ayrıca boyanır.
+   8c) ULTRA-SAYDAM MIDNIGHT OBSIDIAN GLASS (GERÇEK CAM DERİNLİĞİ)
+   Opaklık: rgba(15, 23, 42, 0.25) – 0.38 aralığı
+   Bulanıklık: backdrop-filter: blur(28px) saturate(190%)
+   Kenarlık: 1px solid rgba(255, 255, 255, 0.16) + üst specular ışık yansıması
    ========================================================================== */
-:root[data-theme="dark"] {
-  color-scheme: dark;
-  --cream: #11141D;
-  --navy: #ECE8DE;
-  --gold: #B8935A;
-  --gold-deep: #DDBB84;
-  --ink-soft: #A9AFC0;
-  --glass: rgba(34, 39, 56, 0.74);
-  --glass-strong: rgba(42, 48, 68, 0.94);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --hairline: rgba(255, 255, 255, 0.14);
-  --shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
-  --ok: #7FD6A0;
-  --ok-bg: #16382A;
-  --warn-bg: #4A3B0C;
-  --warn-ink: #FFE08A;
-  --err-bg: #4A1B18;
-  --err-ink: #FFB4AC;
-  --info-bg: #232B45;
-  --info-ink: #C9D4F5;
+main, .topbar { position: relative; z-index: 1; }
+
+.topbar,
+.toast,
+body.pv-open .pv-bar {
+  background: rgba(15, 23, 42, 0.32);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  backdrop-filter: blur(28px) saturate(190%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45), inset 0 -1px 0 rgba(212, 175, 55, 0.22);
+  color: #FFFFFF;
 }
-[data-theme="dark"] body {
-  background-image:
-    radial-gradient(60vmax 40vmax at 100% 0%, rgba(156, 122, 75, 0.16), transparent 60%),
-    radial-gradient(60vmax 45vmax at 0% 100%, rgba(80, 96, 160, 0.12), transparent 60%);
+[data-theme="light"] .topbar {
+  background: rgba(27, 32, 48, 0.85);
 }
-[data-theme="dark"] .topbar,
-[data-theme="dark"] .toast,
-[data-theme="dark"] body.pv-open .pv-bar { background: #0B0E16; color: #FFFFFF; }
-[data-theme="dark"] .tab[aria-selected="true"],
-[data-theme="dark"] .btn-call,
-[data-theme="dark"] .tile,
-[data-theme="dark"] .rem-count,
-[data-theme="dark"] .chip.cruise,
-[data-theme="dark"] .hotel-chip[aria-pressed="true"] { background: #3B4670; border-color: #3B4670; color: #FFFFFF; }
-[data-theme="dark"] .tile.alt,
-[data-theme="dark"] .btn-print,
-[data-theme="dark"] .filter[aria-pressed="true"],
-[data-theme="dark"] .date-pick.active { background: #8C6A35; border-color: #8C6A35; color: #FFFFFF; }
-[data-theme="dark"] .tile.warn { background: var(--err-bg); border-color: var(--err-ink); color: var(--err-ink); }
-[data-theme="dark"] .tab .badge { background: #8C6A35; color: #FFFFFF; }
-[data-theme="dark"] .tab[aria-selected="true"] .badge { background: #D9B981; color: #1B2030; }
-[data-theme="dark"] .reminder { background: linear-gradient(135deg, rgba(48, 54, 76, 0.92), rgba(60, 50, 34, 0.82)); }
-[data-theme="dark"] .rem-row:active { background: rgba(255, 255, 255, 0.08); }
-/* İşaretlenmemiş kutuda onay imi görünmez (zeminle aynı renk) */
-[data-theme="dark"] .check .box { background: #1A1F2E; color: #1A1F2E; }
-[data-theme="dark"] .dlg-input { background: #1A1F2E; color: var(--navy); }
-[data-theme="dark"] .check[aria-pressed="true"] .box { background: var(--ok); border-color: var(--ok); color: #0B1F14; }
-[data-theme="dark"] .chip.st-reserved { background: #2E3345; color: #D5D9E6; }
-[data-theme="dark"] .chip.st-delivered { background: #3A2550; color: #E4C9F5; }
-[data-theme="dark"] .pv-bar .btn-go { color: #1B2030; }
+
+.tab[aria-selected="true"],
+.btn-call,
+.rem-count,
+.chip.cruise,
+.hotel-chip[aria-pressed="true"] {
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.85), rgba(29, 78, 216, 0.78));
+  border: 1px solid rgba(147, 197, 253, 0.45);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  color: #FFFFFF;
+}
+
+.btn-print,
+.filter[aria-pressed="true"],
+.date-pick.active {
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.88), rgba(156, 122, 75, 0.82));
+  border-color: rgba(254, 240, 138, 0.55);
+  box-shadow: 0 6px 20px rgba(212, 175, 55, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.40);
+  color: #0B1120;
+  font-weight: 800;
+}
+
+.filter,
+.datebar > button,
+.date-pick,
+.hotel-chip,
+.search input,
+.tool,
+.day-btn,
+.qbtn,
+.chk-item,
+.check {
+  background: rgba(15, 23, 42, 0.30);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  backdrop-filter: blur(28px) saturate(190%);
+  color: #F8FAFC;
+}
+[data-theme="light"] .filter,
+[data-theme="light"] .datebar > button,
+[data-theme="light"] .date-pick,
+[data-theme="light"] .hotel-chip,
+[data-theme="light"] .search input,
+[data-theme="light"] .tool,
+[data-theme="light"] .day-btn,
+[data-theme="light"] .qbtn,
+[data-theme="light"] .chk-item,
+[data-theme="light"] .check {
+  background: rgba(255, 255, 255, 0.68);
+  border-color: rgba(27, 32, 48, 0.16);
+  color: #1B2030;
+}
+
+.search input::placeholder { color: rgba(226, 232, 240, 0.72); }
+[data-theme="light"] .search input::placeholder { color: #64748B; }
+
+.chip {
+  background: rgba(15, 23, 42, 0.36);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: #F8FAFC;
+}
+[data-theme="light"] .chip {
+  background: rgba(27, 32, 48, 0.08);
+  border-color: rgba(27, 32, 48, 0.12);
+  color: #1B2030;
+}
+.chip.qv {
+  background: rgba(212, 175, 55, 0.14);
+  border: 1.5px solid rgba(212, 175, 55, 0.55);
+  color: #FDE68A;
+}
+[data-theme="light"] .chip.qv {
+  background: rgba(156, 122, 75, 0.10);
+  border-color: #9C7A4B;
+  color: #7A5B30;
+}
+
+.tab .badge { background: rgba(255, 255, 255, 0.16); color: #F8FAFC; }
+.tab[aria-selected="true"] .badge { background: #FFFFFF; color: #0B1120; }
+.reminder { background: rgba(15, 23, 42, 0.30); border: 1px solid rgba(212, 175, 55, 0.38); }
+.rem-row:active { background: rgba(255, 255, 255, 0.10); }
+/* İşaretlenmemiş kutuda onay imi görünmez */
+.check .box { background: rgba(15, 23, 42, 0.45); color: transparent; border-color: rgba(255, 255, 255, 0.38); }
+[data-theme="light"] .check .box { background: #FFFFFF; border-color: #1B2030; }
+.dlg-input {
+  background: rgba(15, 23, 42, 0.42);
+  color: #F8FAFC;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+}
+[data-theme="light"] .dlg-input { background: #FFFFFF; color: #1B2030; border-color: #1B2030; }
+.check[aria-pressed="true"] {
+  background: rgba(16, 185, 129, 0.26);
+  border-color: rgba(52, 211, 153, 0.65);
+  color: #A7F3D0;
+}
+.check[aria-pressed="true"] .box { background: var(--emerald); border-color: var(--emerald); color: #052E16; }
+.chip.st-reserved { background: rgba(148, 163, 184, 0.22); color: #F1F5F9; }
+.chip.st-delivered { background: rgba(168, 85, 247, 0.26); color: #F3E8FF; }
+.pv-bar .btn-go { color: #0B1120; }
+dialog.dlg {
+  background: rgba(15, 23, 42, 0.68);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  backdrop-filter: blur(28px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.20);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.70), inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  color: var(--navy);
+}
+[data-theme="light"] dialog.dlg { background: rgba(244, 241, 234, 0.92); color: #1B2030; }
+dialog.dlg::backdrop {
+  background: rgba(6, 10, 20, 0.62);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
 
 /* ==========================================================================
-   8d) SADE DÜZEN: yan menü (çekmece), tek satır üst çubuk, sakin kartlar
+   8d) MODERN LOJİSTİK KOMUTA MERKEZİ, KART VURGULARI VE SAHA BİLEŞENLERİ
    ========================================================================== */
-/* Alt sekme çubuğu kaldırıldı: seçim yan menüden ve bugün panelinden yapılır */
-.tabs { display: none !important; }
-#app { padding-bottom: calc(28px + env(safe-area-inset-bottom)); }
-.toast { bottom: calc(24px + env(safe-area-inset-bottom)); }
-#reminder { display: none; } /* yarının özeti bugün panelinde tek satır */
+#reminder { display: none; } /* yarının özeti bugün panelinde tek satır + Çanta Hazırlık modunda */
 
-.topbar { gap: 10px; }
+/* Mikro etkileşimler: tüm dokunmatik düğmelerde canlı geri bildirim */
+.btn, .tile, .filter, .hotel-chip, .qbtn, .check, .day-btn, .tool, .tab, .chk-item, .note-chip, .tomorrow-line {
+  transition: transform 0.14s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.16s ease, background-color 0.16s ease, border-color 0.16s ease;
+}
+.btn:active, .tile:active, .filter:active, .hotel-chip:active, .qbtn:active, .check:active, .day-btn:active, .tool:active, .tab:active, .chk-item:active, .note-chip:active, .tomorrow-line:active {
+  transform: scale(0.97);
+}
+
+/* Yüzen Alt Gezinme Çubuğu (Ultra-Saydam Pill-Tab Bar: rgba(15, 23, 42, 0.34)) */
+.tabs {
+  position: fixed;
+  left: 10px;
+  right: 10px;
+  bottom: calc(10px + env(safe-area-inset-bottom));
+  z-index: 40;
+  max-width: 696px;
+  margin: 0 auto;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  gap: 5px;
+  padding: 5px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.34);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.30);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  backdrop-filter: blur(28px) saturate(190%);
+}
+[data-theme="light"] .tabs {
+  background: rgba(255, 255, 255, 0.68);
+  border-color: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 14px 34px rgba(27, 32, 48, 0.16), inset 0 1px 0 #FFFFFF;
+}
+.tab {
+  min-width: 0;
+  min-height: 46px;
+  border-radius: 999px;
+  font-size: 14px;
+  gap: 5px;
+  padding: 5px 8px;
+  color: var(--navy);
+}
+.tab .badge {
+  min-width: 24px;
+  height: 24px;
+  padding: 0 6px;
+  font-size: 13px;
+}
+.tab[aria-selected="true"] {
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.86), rgba(156, 122, 75, 0.78));
+  border: 1px solid rgba(254, 240, 138, 0.55);
+  color: #0B1120;
+  box-shadow: 0 6px 18px rgba(212, 175, 55, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+.tab.tab-prep {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.28), rgba(59, 130, 246, 0.22));
+  border: 1px solid rgba(52, 211, 153, 0.45);
+  color: #ECFDF5;
+  padding: 5px 10px;
+}
+@media (max-width: 400px) {
+  .tab { font-size: 13px; padding: 4px 6px; gap: 4px; }
+  .tab.tab-prep { padding: 4px 8px; }
+}
+[data-theme="light"] .tab.tab-prep { color: #065F46; }
+#app { padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
+.toast { bottom: calc(86px + env(safe-area-inset-bottom)); }
+
+.topbar {
+  gap: 10px;
+}
 .topbar .brand { flex: 1 1 auto; min-width: 0; }
-.topbar .brand h1 { font-size: 17px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.topbar .brand h1 {
+  font-size: 18px;
+  font-weight: 800;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.45);
+}
+
+/* Komuta Merkezi (Üst Bugün Paneli: Ultra-Saydam rgba(15, 23, 42, 0.28)) */
+.daypanel {
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: linear-gradient(145deg, rgba(15, 23, 42, 0.34), rgba(15, 23, 42, 0.25));
+  box-shadow: 0 22px 48px -10px rgba(0, 0, 0, 0.60), inset 0 1px 0 rgba(255, 255, 255, 0.28), inset 0 0 0 1px rgba(212, 175, 55, 0.12);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  backdrop-filter: blur(28px) saturate(190%);
+}
+[data-theme="light"] .daypanel {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.68), rgba(244, 241, 234, 0.56));
+  border-color: rgba(255, 255, 255, 0.80);
+}
+.daypanel h2 {
+  color: #FDFBF7;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.4);
+}
+[data-theme="light"] .daypanel h2 { color: #1B2030; text-shadow: none; }
+.daypanel .tile {
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px;
+  padding: 14px;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.36) 0%, rgba(5, 150, 105, 0.24) 100%);
+  border: 1px solid rgba(52, 211, 153, 0.42);
+  color: #FFFFFF;
+  box-shadow: 0 10px 26px -6px rgba(16, 185, 129, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.32);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
+}
+.daypanel .tile.alt {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.36) 0%, rgba(29, 78, 216, 0.24) 100%);
+  border: 1px solid rgba(147, 197, 253, 0.42);
+  box-shadow: 0 10px 26px -6px rgba(59, 130, 246, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.32);
+}
+.daypanel .tile.warn {
+  background: linear-gradient(135deg, rgba(220, 38, 38, 0.42) 0%, rgba(153, 27, 27, 0.30) 100%);
+  color: #FFFFFF;
+  border: 1px solid rgba(252, 165, 165, 0.48);
+  box-shadow: 0 10px 26px -6px rgba(239, 68, 68, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.30);
+}
+[data-theme="light"] .daypanel .tile {
+  background: linear-gradient(135deg, #059669 0%, #10B981 100%);
+}
+[data-theme="light"] .daypanel .tile.alt {
+  background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%);
+}
+[data-theme="light"] .daypanel .tile.warn {
+  background: linear-gradient(135deg, #DC2626 0%, #EF4444 100%);
+}
+.tile-prog {
+  margin-top: 8px;
+  height: 6px;
+  width: 100%;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.24);
+  overflow: hidden;
+}
+.tile-prog-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: 999px;
+  background: #FFFFFF;
+  transition: width 0.35s ease;
+}
 
 .scrim {
   position: fixed;
   inset: 0;
   z-index: 70;
-  background: rgba(10, 12, 20, 0.5);
+  background: rgba(6, 10, 20, 0.58);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
   opacity: 0;
   transition: opacity 0.2s ease;
 }
@@ -1085,9 +1399,12 @@ dialog.dlg::backdrop { background: rgba(27, 32, 48, 0.55); }
   z-index: 80;
   width: min(84vw, 340px);
   overflow-y: auto;
-  background: var(--cream);
+  background: rgba(15, 23, 42, 0.56);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  backdrop-filter: blur(28px) saturate(190%);
+  border-right: 1px solid rgba(255, 255, 255, 0.16);
   color: var(--navy);
-  box-shadow: 8px 0 32px rgba(0, 0, 0, 0.3);
+  box-shadow: 12px 0 40px rgba(0, 0, 0, 0.55);
   transform: translateX(-104%);
   transition: transform 0.22s ease;
   padding: calc(14px + env(safe-area-inset-top)) 14px calc(18px + env(safe-area-inset-bottom));
@@ -1096,6 +1413,7 @@ dialog.dlg::backdrop { background: rgba(27, 32, 48, 0.55); }
   gap: 6px;
   visibility: hidden;
 }
+[data-theme="light"] .drawer { background: rgba(244, 241, 234, 0.88); }
 .drawer.open { transform: none; visibility: visible; }
 @media (prefers-reduced-motion: reduce) { .drawer, .scrim { transition: none; } }
 .drawer-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
@@ -1124,13 +1442,13 @@ dialog.dlg::backdrop { background: rgba(27, 32, 48, 0.55); }
   justify-content: space-between;
   gap: 10px;
   width: 100%;
-  min-height: 56px;
+  min-height: 54px;
   padding: 0 16px;
   border-radius: 16px;
   border: 0;
   background: transparent;
   font: inherit;
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 700;
   text-align: left;
   cursor: pointer;
@@ -1145,40 +1463,361 @@ dialog.dlg::backdrop { background: rgba(27, 32, 48, 0.55); }
   font-size: 15px;
   text-align: center;
 }
-.nav-item[aria-current="true"] { background: var(--glass-strong); box-shadow: inset 4px 0 0 var(--gold); }
-.nav-item.warn { color: var(--err-ink); }
+.nav-item[aria-current="true"] { background: var(--glass-strong); box-shadow: inset 4px 0 0 var(--emerald); }
+.nav-item.warn { color: var(--coral); }
 .nav-item.warn[hidden] { display: none; }
 .nav-days { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .drawer-foot { margin-top: auto; padding: 14px 4px 0; font-size: 13px; color: var(--ink-soft); }
 
-.tomorrow-line {
+.tomorrow-row {
   grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+}
+.tomorrow-line {
   min-height: 46px;
   border-radius: 14px;
-  border: 1px dashed var(--gold);
-  background: transparent;
+  border: 1px dashed rgba(212, 175, 55, 0.55);
+  background: rgba(15, 23, 42, 0.26);
   font: inherit;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
-  color: var(--navy);
+  color: #FDFBF7;
   cursor: pointer;
   text-align: left;
-  padding: 8px 14px;
+  padding: 8px 12px;
+}
+[data-theme="light"] .tomorrow-line { color: #1B2030; background: rgba(156, 122, 75, 0.10); }
+.btn-prep-inline {
+  min-height: 46px;
+  border-radius: 14px;
+  border: 1px solid rgba(52, 211, 153, 0.55);
+  background: rgba(16, 185, 129, 0.24);
+  color: #A7F3D0;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  padding: 8px 12px;
+  white-space: nowrap;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+[data-theme="light"] .btn-prep-inline { color: #065F46; }
+
+/* Sipariş Kartları: Ultra-Saydam Gerçek Cam (rgba(15, 23, 42, 0.26) – 0.34) + Specular Edge + Sol Şerit */
+.card {
+  position: relative;
+  padding: 16px 16px 16px 18px;
+  background: linear-gradient(155deg, rgba(15, 23, 42, 0.34) 0%, rgba(15, 23, 42, 0.25) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-left: 5px solid var(--emerald);
+  box-shadow: 0 20px 44px -10px rgba(0, 0, 0, 0.58), inset 0 1px 0 rgba(255, 255, 255, 0.26), inset 0 0 0 1px rgba(212, 175, 55, 0.08);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  backdrop-filter: blur(28px) saturate(190%);
+  transition: transform 0.16s ease, box-shadow 0.16s ease;
+}
+[data-theme="light"] .card {
+  background: linear-gradient(155deg, rgba(255, 255, 255, 0.66) 0%, rgba(255, 255, 255, 0.52) 100%);
+  border-color: rgba(255, 255, 255, 0.80);
+  box-shadow: 0 16px 36px -8px rgba(27, 32, 48, 0.12), inset 0 1px 0 #FFFFFF;
+}
+.card.done {
+  background: rgba(15, 23, 42, 0.18);
+}
+.card.kind-delivery { border-left-color: var(--emerald); }
+.card.kind-return   { border-left-color: var(--amber); }
+.card.kind-overdue  {
+  border-left-color: var(--coral);
+  background: linear-gradient(145deg, rgba(15, 23, 42, 0.34), rgba(220, 38, 38, 0.18));
 }
 
-/* Sade kart: başlık + tek satır özet + ana işlem + dört küçük düğme */
-.card .summary { margin-top: 6px; font-size: 16px; color: var(--ink-soft); line-height: 1.4; }
-.card .summary b { color: var(--navy); font-weight: 700; }
-.primary { margin-top: 14px; }
-.primary .check { width: 100%; }
-.quick { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-top: 10px; }
-html.fs-l .quick, html.fs-xl .quick { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.hotel {
+  color: #FFFFFF;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
+}
+[data-theme="light"] .hotel { color: #1B2030; text-shadow: none; }
+.card .summary { margin-top: 6px; font-size: 16px; color: #E2E8F0; line-height: 1.4; }
+.card .summary b { color: #FDFBF7; font-weight: 700; }
+[data-theme="light"] .card .summary { color: #334155; }
+[data-theme="light"] .card .summary b { color: #1B2030; }
+.primary { margin-top: 12px; }
+.primary .check { width: 100%; border-width: 1.5px; }
+
+/* Tüm ekipman tiklendiğinde "Hazırlandı" butonu canlı zümrüt yeşiline döner */
+.check.ready-emerald:not([aria-pressed="true"]) {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.88) 0%, rgba(5, 150, 105, 0.82) 100%);
+  border-color: rgba(167, 243, 208, 0.65);
+  color: #FFFFFF;
+  box-shadow: 0 10px 24px -4px rgba(16, 185, 129, 0.50), inset 0 1px 0 rgba(255, 255, 255, 0.38);
+}
+.check.ready-emerald:not([aria-pressed="true"]) .box {
+  background: rgba(255, 255, 255, 0.24);
+  border-color: #FFFFFF;
+  color: #FFFFFF;
+}
+.check.ready-emerald:not([aria-pressed="true"]) .sub { color: rgba(255, 255, 255, 0.95); opacity: 1; }
+
+/* Saha Özelliği 1: Çanta İçi Hızlı Kontrol (Checklist - Ultra-Saydam Cam) */
+.bag-checklist {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+[data-theme="light"] .bag-checklist { background: rgba(255, 255, 255, 0.48); border-color: rgba(27, 32, 48, 0.12); }
+.bag-checklist.all-packed {
+  background: rgba(16, 185, 129, 0.18);
+  border-color: rgba(52, 211, 153, 0.48);
+}
+.chk-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 800;
+  color: #E2E8F0;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+[data-theme="light"] .chk-head { color: #334155; }
+.bag-checklist.all-packed .chk-head { color: var(--ok); }
+.chk-all-btn {
+  border: 0;
+  background: transparent;
+  color: #93C5FD;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 8px;
+}
+[data-theme="light"] .chk-all-btn { color: #2563EB; }
+.chk-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.chk-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 40px;
+  padding: 5px 11px;
+  border-radius: 11px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(15, 23, 42, 0.32);
+  color: #F8FAFC;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: left;
+}
+.chk-item .chk-box {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  border: 2px solid rgba(255, 255, 255, 0.45);
+  display: inline-grid;
+  place-items: center;
+  font-size: 13px;
+  font-weight: 900;
+  color: transparent;
+  background: rgba(15, 23, 42, 0.45);
+}
+[data-theme="light"] .chk-item .chk-box { background: #FFFFFF; border-color: #475569; }
+.chk-item[aria-pressed="true"] {
+  background: rgba(16, 185, 129, 0.26);
+  border-color: rgba(52, 211, 153, 0.65);
+  color: #ECFDF5;
+}
+[data-theme="light"] .chk-item[aria-pressed="true"] { color: #065F46; }
+.chk-item[aria-pressed="true"] .chk-box {
+  background: var(--emerald);
+  border-color: var(--emerald);
+  color: #FFFFFF;
+}
+.chk-qty {
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  font-size: 13px;
+  font-weight: 800;
+}
+[data-theme="light"] .chk-qty { background: rgba(27, 32, 48, 0.08); }
+
+/* Saha Özelliği 2: Teslim Kanıt Notu (Kartta ve Onay Penceresinde) */
+.delivery-note-bar {
+  margin-top: 10px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: var(--electric-soft);
+  border: 1px solid rgba(147, 197, 253, 0.32);
+  color: var(--info-ink);
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.delivery-note-bar button {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: underline;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.note-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+.note-chip {
+  min-height: 36px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--gold);
+  background: var(--glass-strong);
+  color: var(--navy);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.note-chip.active {
+  background: var(--electric);
+  border-color: var(--electric);
+  color: #FFFFFF;
+}
+
+/* Saha Özelliği 4: Atölye / Çanta Hazırlık Özeti Ekranı */
+.prep-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin: 6px 0;
+}
+.prep-kpi {
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: var(--glass-strong);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.prep-kpi.highlight {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.45), rgba(5, 150, 105, 0.35));
+  border-color: rgba(52, 211, 153, 0.55);
+  color: #FFFFFF;
+}
+.prep-kpi.highlight-blue {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.45), rgba(29, 78, 216, 0.35));
+  border-color: rgba(147, 197, 253, 0.55);
+  color: #FFFFFF;
+}
+.prep-kpi .kpi-val {
+  font-family: var(--font-head);
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1.05;
+}
+.prep-kpi .kpi-lbl {
+  font-size: 13px;
+  font-weight: 700;
+  opacity: 0.92;
+}
+.prep-bag-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 36vh;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+.prep-bag-card {
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: var(--glass-strong);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-left: 4px solid var(--emerald);
+  font-size: 14px;
+}
+.prep-bag-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font-weight: 800;
+  font-size: 15px;
+}
+.prep-bag-items {
+  margin-top: 4px;
+  color: var(--ink-soft);
+  font-weight: 600;
+  font-size: 13px;
+}
+
+/* Saha Özelliği 5: Çevrimdışı (Offline) İşlem Kuyruğu Rozeti */
+.chip.queued {
+  background: var(--amber-soft);
+  border: 1.5px solid var(--amber);
+  color: var(--warn-ink);
+  font-weight: 800;
+}
+.check.queued {
+  border-color: var(--amber);
+  background: var(--amber-soft);
+  color: var(--warn-ink);
+  border-style: dashed;
+}
+
+.quick { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; margin-top: 10px; }
+html.fs-l .quick, html.fs-xl .quick { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.day-actions { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+@media (max-width: 400px) {
+  .day-actions { grid-template-columns: 1fr 1fr; }
+  .day-actions .day-btn:last-child { grid-column: 1 / -1; }
+}
+.day-btn {
+  min-height: 44px;
+  border-radius: 14px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 6px 10px;
+}
+.day-btn[aria-pressed="true"] {
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.85), rgba(156, 122, 75, 0.78));
+  color: #0B1120;
+  border-color: rgba(254, 240, 138, 0.55);
+}
+.time-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 4px; }
+.time-chip {
+  min-height: 40px; padding: 4px 12px; border-radius: 999px; border: 1px solid var(--gold);
+  background: var(--glass-strong); color: var(--navy); font: inherit; font-size: 14px; font-weight: 700; cursor: pointer;
+}
+.time-chip.active {
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.88), rgba(156, 122, 75, 0.80));
+  color: #0B1120;
+  border-color: rgba(254, 240, 138, 0.6);
+}
 .qbtn {
   min-height: 60px;
   border-radius: 14px;
-  border: 1px solid var(--hairline);
-  background: var(--glass-strong);
-  color: var(--navy);
   font: inherit;
   font-size: 13px;
   font-weight: 700;
@@ -1206,9 +1845,6 @@ html.fs-l .quick, html.fs-xl .quick { grid-template-columns: repeat(2, minmax(0,
   box-sizing: border-box;
   min-height: var(--tap);
   border-radius: 14px;
-  border: 2px solid var(--hairline);
-  background: var(--glass-strong);
-  color: var(--navy);
   font: inherit;
   font-size: 17px;
   padding: 0 48px 0 14px;
@@ -1218,43 +1854,50 @@ html.fs-l .quick, html.fs-xl .quick { grid-template-columns: repeat(2, minmax(0,
   position: absolute; right: 4px; top: 50%; transform: translateY(-50%);
   min-width: 44px; min-height: 44px; border: 0; background: transparent; font-size: 20px; cursor: pointer; color: var(--navy);
 }
-.tool-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.tool-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+@media (max-width: 400px) { .tool-row { grid-template-columns: repeat(2, 1fr); } }
 .tool {
-  min-height: 48px; border-radius: 14px; border: 1px solid var(--hairline);
-  background: var(--glass-strong); color: var(--navy); font: inherit; font-size: 15px; font-weight: 700; cursor: pointer;
+  min-height: 48px; border-radius: 14px;
+  font: inherit; font-size: 14px; font-weight: 700; cursor: pointer;
 }
-.tool[aria-pressed="true"] { background: var(--navy); color: var(--cream); border-color: var(--navy); }
-[data-theme="dark"] .tool[aria-pressed="true"] { background: #3B4670; color: #FFFFFF; border-color: #3B4670; }
+.tool[aria-pressed="true"] {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.85), rgba(29, 78, 216, 0.80));
+  color: #FFFFFF;
+  border-color: rgba(147, 197, 253, 0.55);
+}
 
-.card { position: relative; }
 .sel-box {
   position: absolute; top: 12px; right: 12px; z-index: 2;
-  width: 46px; height: 46px; border-radius: 12px; border: 2px solid var(--navy);
+  width: 46px; height: 46px; border-radius: 12px; border: 1.5px solid rgba(255, 255, 255, 0.45);
   background: var(--glass-strong); font-size: 24px; font-weight: 800; color: transparent; cursor: pointer;
 }
-.sel-box[aria-pressed="true"] { background: var(--gold-deep); border-color: var(--gold-deep); color: #FFFFFF; }
-.card.selected { outline: 3px solid var(--gold); outline-offset: -3px; }
+.sel-box[aria-pressed="true"] { background: var(--emerald); border-color: var(--emerald); color: #FFFFFF; }
+.card.selected { outline: 3px solid var(--emerald); outline-offset: -3px; }
 .selecting .card .chips { padding-right: 56px; }
 
 .bulkbar {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
   max-width: 720px; margin: 0 auto;
   padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
-  background: var(--navy); color: var(--cream);
+  background: rgba(15, 23, 42, 0.42);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  backdrop-filter: blur(28px) saturate(190%);
+  border-top: 1px solid rgba(255, 255, 255, 0.20);
+  color: #FFFFFF;
   border-radius: 20px 20px 0 0;
   display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
-  box-shadow: 0 -8px 28px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 -12px 36px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.28);
 }
-[data-theme="dark"] .bulkbar { background: #0B0E16; color: #FFFFFF; }
 .bulkbar[hidden] { display: none; }
 .bulkbar .bulk-head { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; font-weight: 800; }
 .bulkbar button {
-  min-height: 50px; border-radius: 14px; border: 0; font: inherit; font-weight: 800; font-size: 15px; cursor: pointer;
+  min-height: 50px; border-radius: 14px; border: 1px solid rgba(255, 255, 255, 0.18); font: inherit; font-weight: 800; font-size: 15px; cursor: pointer;
   background: rgba(255, 255, 255, 0.14); color: inherit;
 }
-.bulkbar .bulk-go { background: #D9B981; color: #1B2030; }
-.bulkbar .bulk-x { min-height: 40px; min-width: 44px; background: transparent; font-size: 20px; }
-body.selecting #app { padding-bottom: calc(150px + env(safe-area-inset-bottom)); }
+.bulkbar .bulk-go { background: #10B981; border-color: #34D399; color: #FFFFFF; }
+.bulkbar .bulk-x { min-height: 40px; min-width: 44px; background: transparent; border: 0; font-size: 20px; }
+body.selecting #app { padding-bottom: calc(210px + env(safe-area-inset-bottom)); }
+body.selecting .tabs { display: none !important; }
 
 .chip.warnchip { background: var(--err-bg); color: var(--err-ink); font-weight: 800; }
 .chip.changed { background: var(--warn-bg); color: var(--warn-ink); font-weight: 800; }
@@ -1274,8 +1917,123 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
 .sum-table td.n, .sum-table th.n { text-align: right; white-space: nowrap; }
 .dlg-scroll { max-height: 46vh; overflow: auto; }
 .dlg-select {
-  min-height: var(--tap); border-radius: 12px; border: 2px solid var(--navy);
+  min-height: var(--tap); border-radius: 12px; border: 1.5px solid rgba(255, 255, 255, 0.24);
   background: var(--glass-strong); color: var(--navy); font: inherit; font-size: 17px; padding: 0 10px;
+}
+.dlg-label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+.dlg-label input {
+  min-height: 46px;
+  border-radius: 12px;
+  border: 1.5px solid var(--hairline);
+  background: var(--glass-strong);
+  color: var(--navy);
+  font: inherit;
+  font-size: 16px;
+  padding: 0 12px;
+}
+
+/* ==========================================================================
+   8f) ÖZEL AÇILIŞ EKRANI (SPLASH SCREEN): "Hoş geldin Mehmet / Kolay gelsin"
+   Ultra-Saydam Glassmorphism (rgba(15, 23, 42, 0.30), blur 28px, saturate 190%)
+   ========================================================================== */
+.qv-splash {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background:
+    radial-gradient(circle at 50% 38%, rgba(212, 175, 55, 0.20), transparent 55%),
+    radial-gradient(circle at 20% 80%, rgba(16, 185, 129, 0.16), transparent 50%),
+    rgba(15, 23, 42, 0.32);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  backdrop-filter: blur(28px) saturate(190%);
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1), visibility 0.55s ease;
+}
+.qv-splash.hide {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+.qv-splash-card {
+  position: relative;
+  width: min(88vw, 360px);
+  padding: 32px 26px 28px;
+  border-radius: 28px;
+  background: rgba(15, 23, 42, 0.30);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 28px 64px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.32), inset 0 0 0 1px rgba(212, 175, 55, 0.12);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  backdrop-filter: blur(28px) saturate(190%);
+  text-align: center;
+  animation: qvSplashRise 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.qv-splash-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 22px;
+  right: 22px;
+  height: 1.5px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.7), rgba(212, 175, 55, 0.75), transparent);
+  border-radius: 999px;
+}
+.qv-splash-logo {
+  width: 78px;
+  height: 78px;
+  margin: 0 auto 18px;
+  border-radius: 22px;
+  background: linear-gradient(145deg, #EF4444 0%, #DC2626 60%, #991B1B 100%);
+  border: 1.5px solid rgba(255, 255, 255, 0.42);
+  box-shadow:
+    0 0 0 8px rgba(156, 122, 75, 0.18),
+    0 0 36px rgba(212, 175, 55, 0.42),
+    0 12px 28px rgba(220, 38, 38, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.45);
+  display: grid;
+  place-items: center;
+  font-family: var(--font-head);
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  color: #FFFFFF;
+}
+.qv-splash-title {
+  font-family: var(--font-head);
+  font-size: 26px;
+  font-weight: 800;
+  color: #FFFFFF;
+  letter-spacing: -0.01em;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+}
+.qv-splash-divider {
+  width: 64px;
+  height: 2px;
+  margin: 12px auto;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, #D4AF37, transparent);
+}
+.qv-splash-sub {
+  font-family: var(--font-body);
+  font-size: 18px;
+  font-weight: 600;
+  color: #FDE68A;
+  letter-spacing: 0.04em;
+}
+@keyframes qvSplashRise {
+  0% { opacity: 0; transform: translateY(18px) scale(0.96); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 /* Özet çıktısı (A4) */
@@ -1296,7 +2054,11 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     min-height: 0 !important;
     overflow: visible !important;
     background: #fff !important;
+    background-image: none !important;
+    color: #000 !important;
   }
+  /* Açılış ekranı ve arka plan ışık küreleri baskıda kesinlikle görünmez */
+  #qv-splash, .qv-splash, .ambient-orbs { display: none !important; visibility: hidden !important; }
   /* Yazdırma alanı doluysa uygulama arayüzünü tümüyle gizle */
   body.has-print > *:not(#print-root) { display: none !important; }
   body.has-print #print-root {
@@ -1317,10 +2079,15 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     margin: 0 !important;
     box-shadow: none !important;
     overflow: hidden !important;
+    background: #fff !important;
     break-inside: avoid;
     page-break-inside: avoid;
   }
-  .sheet { transform: scale(var(--paper, 1)) !important; }
+  .sheet {
+    transform: scale(var(--paper, 1)) !important;
+    background: #fff !important;
+    color: #000 !important;
+  }
   /* Sayfalar arasında kır; son sayfadan sonra KIRMA (boş sayfa çıkmasın) */
   .sheet-wrap { break-after: page; page-break-after: always; }
   .sheet-wrap:last-child { break-after: auto; page-break-after: auto; }
@@ -1328,11 +2095,35 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
   /* Toplu WayBill: her A4'e iki tane; yalnızca çiftin ikincisinden sonra sayfa kırılır */
   .sheet-wrap.half:not(.pair-end):not(:last-child) { break-after: auto !important; page-break-after: auto !important; }
   .sheet-wrap.half.pair-end { border-bottom: 0; }
-  .glass { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; box-shadow: none !important; }
+  /* Toplu WayBill + Form: her belge kendi A4 sayfasında, sayfa kırmalı */
+  .sheet-wrap.doc-break { break-after: page !important; page-break-after: always !important; }
+  .sheet-wrap.doc-break:last-child { break-after: auto !important; page-break-after: auto !important; }
+  .glass, .card, .daypanel, .tabs {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    box-shadow: none !important;
+  }
 }
 </style>
 </head>
 <body>
+
+<!-- ARKADAKİ YUMUŞAK ALTIN / ZÜMRÜT IŞIK KÜRELERİ (AMBIENT GLOW ORBS) -->
+<div class="ambient-orbs" aria-hidden="true">
+  <div class="orb orb-gold"></div>
+  <div class="orb orb-emerald"></div>
+  <div class="orb orb-amber"></div>
+</div>
+
+<!-- ÖZEL AÇILIŞ EKRANI (SPLASH SCREEN): "Hoş geldin Mehmet / Kolay gelsin" -->
+<div id="qv-splash" class="qv-splash" role="status" aria-live="polite" aria-label="Hoş geldin Mehmet, Kolay gelsin">
+  <div class="qv-splash-card">
+    <div class="qv-splash-logo" aria-hidden="true">QV</div>
+    <div class="qv-splash-title">Hoş geldin Mehmet</div>
+    <div class="qv-splash-divider" aria-hidden="true"></div>
+    <div class="qv-splash-sub">Kolay gelsin</div>
+  </div>
+</div>
 
 <!-- ÜST ÇUBUK -->
 <header class="topbar">
@@ -1360,6 +2151,7 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
   <button type="button" class="nav-item" id="nav-deliveries" data-nav-tab="deliveries">📦 Verilecekler <b id="nav-n-deliveries">0</b></button>
   <button type="button" class="nav-item" id="nav-returns" data-nav-tab="returns">🔄 Alınacaklar <b id="nav-n-returns">0</b></button>
   <button type="button" class="nav-item warn" id="nav-overdue" hidden>⚠️ Geciken iadeler <b id="nav-n-overdue">0</b></button>
+  <button type="button" class="nav-item" id="btn-drawer-prep">🎒 Çanta Hazırlık Modu</button>
   <div class="drawer-sec">Gün</div>
   <div class="nav-days">
     <button type="button" class="filter" data-nav-filter="today">Bugün</button>
@@ -1384,19 +2176,29 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
   <!-- Uyarı bantları (örnek veri, oturum hatası, eski veri, çevrimdışı) -->
   <div class="banners" id="banners" role="status" aria-live="polite"></div>
 
-  <!-- Bugünün paneli -->
+  <!-- Bugünün paneli (Komuta Merkezi) -->
   <section class="glass daypanel" id="daypanel" aria-labelledby="day-h">
     <h2 id="day-h">Bugün</h2>
     <button type="button" class="tile" id="tile-deliveries" data-tab="deliveries">
       <div class="n" id="tile-n-deliveries">0</div><div class="t">📦 Verilecek</div><div class="s" id="tile-s-deliveries"></div>
+      <div class="tile-prog" aria-hidden="true"><div class="tile-prog-fill" id="prog-deliveries"></div></div>
     </button>
     <button type="button" class="tile alt" id="tile-returns" data-tab="returns">
       <div class="n" id="tile-n-returns">0</div><div class="t">🔄 Alınacak</div><div class="s" id="tile-s-returns"></div>
+      <div class="tile-prog" aria-hidden="true"><div class="tile-prog-fill" id="prog-returns"></div></div>
     </button>
     <button type="button" class="tile warn" id="tile-overdue" hidden>
       <div class="n" id="tile-n-overdue">0</div><div class="t">⚠️ Geciken iade — almayı unutma</div>
     </button>
-    <button type="button" class="tomorrow-line" id="tomorrow-line">🔔 Yarın: —</button>
+    <div class="day-actions">
+      <button type="button" class="day-btn" id="btn-speak" aria-pressed="false">🔊 Sesli Dinle</button>
+      <button type="button" class="day-btn" id="btn-day-remind">⏰ Hatırlatıcı Kur</button>
+      <button type="button" class="day-btn" id="btn-day-prep">🎒 Çanta Hazırlık</button>
+    </div>
+    <div class="tomorrow-row">
+      <button type="button" class="tomorrow-line" id="tomorrow-line">🔔 Yarın: —</button>
+      <button type="button" class="btn-prep-inline" id="btn-tomorrow-prep" title="Yarınki tüm otellerin çanta hazırlık özeti">🎒 Çanta Özeti</button>
+    </div>
   </section>
 
   <!-- Yarın hatırlatıcısı -->
@@ -1406,13 +2208,16 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     <div class="rem-rows" id="rem-rows"></div>
   </section>
 
-  <!-- Ana sekmeler -->
+  <!-- Ana sekmeler (Yüzen Alt Pill-Tab Çubuğu) -->
   <div class="glass tabs" role="tablist" aria-label="Sipariş türü">
     <button type="button" class="tab" role="tab" id="tab-deliveries" data-tab="deliveries" aria-controls="list" aria-selected="true">
       <span>📦 Verilecekler</span><span class="badge" id="badge-deliveries">0</span>
     </button>
     <button type="button" class="tab" role="tab" id="tab-returns" data-tab="returns" aria-controls="list" aria-selected="false" tabindex="-1">
       <span>🔄 Alınacaklar</span><span class="badge" id="badge-returns">0</span>
+    </button>
+    <button type="button" class="tab tab-prep" id="tab-prep" aria-label="Atölye Çanta Hazırlık Modu">
+      <span>🎒 Hazırlık</span>
     </button>
   </div>
 
@@ -1443,6 +2248,7 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     </div>
     <div class="tool-row">
       <button type="button" class="tool" id="btn-select" aria-pressed="false">☑ Seç</button>
+      <button type="button" class="tool" id="btn-prep">🎒 Hazırlık</button>
       <button type="button" class="tool" id="btn-summary">📊 Özet</button>
       <button type="button" class="tool" id="btn-route">🗺️ Rota</button>
     </div>
@@ -1464,6 +2270,7 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     <button type="button" class="bulk-x" id="bulk-close" aria-label="Seçimi kapat">✕</button></div>
   <button type="button" id="bulk-all">Tümünü seç</button>
   <button type="button" id="bulk-wb">🖨️ WayBill (2'şer)</button>
+  <button type="button" id="bulk-both" style="grid-column: 1 / -1">🖨️ Toplu Yazdır (WayBill + Form)</button>
   <button type="button" class="bulk-go" id="bulk-send" style="grid-column: 1 / -1">Quietvox'a gönder</button>
 </div>
 
@@ -1521,10 +2328,12 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
   var LS_THEME = 'qv.theme.v1';               // 'dark' | 'light' (boşsa telefonun ayarı izlenir)
   var LS_GITHUB = 'qv.github.v1';             // GitHub erişim anahtarı (yalnızca bu cihazda)
   var LS_PENDING = 'qv.pending.v1';           // Quietvox'a gönderilmiş, sonucu beklenen işlemler
+  var LS_QUEUE = 'qv.queue.v1';               // Çevrimdışıyken kuyruğa alınan işlemler (bağlantı gelince gönderilir)
   var PENDING_FAIL_MS = 12 * 60 * 1000;       // Bu süre sonunda durum değişmediyse "olmadı" say
   var ACTION_WORKFLOW = 'action.yml';
   var CONSUMABLE_PERCENT = 3;                 // Sarf kalemlerinde iade adedi: teslimin en fazla %3'ü
   var CONSUMABLE_RE = /QV1\.38\b|battery\s+aa|QV1\.2S\b|earphone\s+3[.,]5\s*mm\s+new\s+style/i;
+  var NOTE_PRESETS = ['Resepsiyon Ahmet Bey', 'Resepsiyon', 'Bellboy', 'Tur Rehberi', 'Güvenlik'];
   var STATUS_LABELS = {
     reserved: 'Rezerve', confirmed: 'Onaylı', delivered: 'Teslim edildi',
     returned: 'İade alındı', cancelled: 'İptal', lost: 'Kayıp', duplicated: 'Mükerrer'
@@ -1557,9 +2366,11 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     onlyChanged: false,    // yalnızca son 3 günde değişen siparişler (bildirimden açılınca)
     selecting: false,      // toplu seçim kipi
     selected: {},          // { işaret anahtarı: true }
+    voiceAuto: false,      // sesli komutla (?voice=1) açıldıysa veri yüklenince sesli oku
     pending: {},           // { "delivery:2000…": { action, ts } }
+    queue: {},             // { "delivery:2000…": { action, order_id, order_date, title, ts } }
     token: '',             // GitHub erişim anahtarı
-    marks: {},             // { "delivery:QV-1": { prepared, done, ts } }
+    marks: {},             // { "delivery:QV-1": { prepared, done, note, items, ts } }
     today: '',
     tomorrow: ''
   };
@@ -1676,7 +2487,7 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     }
   }
 
-  // Kayıtlı işaretleri oku; 30 günden eskileri ayıkla
+  // Kayıtlı işaretleri oku; 30 günden eskileri ayıkla (not ve çanta checklist kalemlerini korur)
   function loadMarks() {
     var saved = lsRead(LS_MARKS);
     if (!saved || typeof saved !== 'object') return {};
@@ -1686,13 +2497,25 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     Object.keys(saved).forEach(function (key) {
       var m = saved[key];
       if (m && typeof m === 'object' && typeof m.ts === 'number' && now - m.ts < MARK_TTL_MS) {
-        fresh[key] = { prepared: m.prepared === true, done: m.done === true, ts: m.ts };
+        fresh[key] = {
+          prepared: m.prepared === true,
+          done: m.done === true,
+          note: str(m.note),
+          items: (m.items && typeof m.items === 'object' && !Array.isArray(m.items)) ? m.items : {},
+          ts: m.ts
+        };
       } else {
         changed = true;
       }
     });
     if (changed) lsWrite(LS_MARKS, fresh);
     return fresh;
+  }
+
+  function hasMarkData(m) {
+    if (!m) return false;
+    var hasItems = m.items && Object.keys(m.items).some(function (k) { return m.items[k] === true; });
+    return Boolean(m.prepared || m.done || str(m.note) || hasItems);
   }
 
   function showToast(message) {
@@ -1726,6 +2549,8 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
       title: str(o.title),
       location_name: str(o.location_name),
       status: str(o.status),
+      qv_done: o.qv_done === true,
+      qv_color: str(o.qv_color),
       changes: Array.isArray(o.changes) ? o.changes.filter(function (c) { return c && c.text; })
         .map(function (c) { return { at: str(c.at), text: str(c.text) }; }) : [],
       waybill: {
@@ -1823,6 +2648,10 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
         loading = false;
         btn.setAttribute('aria-busy', 'false');
         render();
+        if (state.voiceAuto && state.data) {
+          setState({ voiceAuto: false });
+          speakDailySummary();
+        }
       });
   }
 
@@ -1850,9 +2679,22 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     return ordersOf(tab).filter(function (o) { return o.date >= state.today; });
   }
 
-  // Günü geçtiği hâlde Quietvox'ta hâlâ "Delivered" duran iadeler
+  // Quietvox'ta yeşil / Returned işaretli ya da iade adedi girilmiş siparişler tamamlanmış sayılır
+  function isPickedUp(o) {
+    if (!o) return false;
+    if (o.status === 'returned' || o.qv_done === true) return true;
+    var items = (o.dr_form && o.dr_form.equipment) || [];
+    return items.some(function (e) {
+      var q = str(e.return_quantity);
+      return q && q !== '0' && q !== '0.0' && q !== '0.00' && q !== '-' && q !== '—';
+    });
+  }
+
+  // Günü geçtiği hâlde Quietvox'ta hâlâ "Delivered" duran (tamamlanmamış) iadeler
   function overdueReturns() {
-    return ordersOf('returns').filter(function (o) { return o.date < state.today && o.status === 'delivered'; });
+    return ordersOf('returns').filter(function (o) {
+      return o.date < state.today && o.status === 'delivered' && !isPickedUp(o);
+    });
   }
 
   // Tarih filtresinden geçen siparişler (otel filtresi uygulanmadan)
@@ -1929,7 +2771,7 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
   }
 
   function markOf(key) {
-    return state.marks[key] || { prepared: false, done: false, ts: 0 };
+    return state.marks[key] || { prepared: false, done: false, note: '', items: {}, ts: 0 };
   }
 
   function clientName(order) {
@@ -2096,7 +2938,7 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     box.replaceChildren.apply(box, chips);
   }
 
-  // Bugünün paneli: kaç iş var, kaçı Quietvox'ta tamamlanmış
+  // Bugünün paneli (Komuta Merkezi): kaç iş var, kaçı tamamlanmış + ilerleme çubuğu
   function renderDayPanel() {
     Object.keys(TAB_INFO).forEach(function (tab) {
       // İptal ve kayıp siparişler yapılacak iş sayılmaz
@@ -2104,6 +2946,11 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
       var done = orders.filter(function (o) { return isDone(o, tab); }).length;
       $('#tile-n-' + tab).textContent = orders.length;
       $('#tile-s-' + tab).textContent = orders.length ? done + ' tamam · ' + (orders.length - done) + ' bekliyor' : 'iş yok';
+      var prog = $('#prog-' + tab);
+      if (prog) {
+        var pct = orders.length ? Math.round((done / orders.length) * 100) : 0;
+        prog.style.width = pct + '%';
+      }
     });
     $('#day-h').textContent = 'Bugün · ' + longDate(state.today);
     var overdue = overdueReturns().length;
@@ -2203,7 +3050,7 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
       var next = Object.assign({}, current, { ts: Date.now() });
       next[field] = !current[field];
       var marks = Object.assign({}, state.marks);
-      if (!next.prepared && !next.done) delete marks[key];
+      if (!hasMarkData(next)) delete marks[key];
       else marks[key] = next;
       setState({ marks: marks });
       var saved = lsWrite(LS_MARKS, marks);
@@ -2219,10 +3066,121 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     var next = Object.assign({}, markOf(key), { ts: Date.now() });
     next[field] = value;
     var marks = Object.assign({}, state.marks);
-    if (!next.prepared && !next.done) delete marks[key];
+    if (!hasMarkData(next)) delete marks[key];
     else marks[key] = next;
     setState({ marks: marks });
     if (!lsWrite(LS_MARKS, marks)) showToast('İşaret bu cihaza kaydedilemedi');
+  }
+
+  function setNote(key, noteText) {
+    var next = Object.assign({}, markOf(key), { note: str(noteText), ts: Date.now() });
+    var marks = Object.assign({}, state.marks);
+    if (!hasMarkData(next)) delete marks[key];
+    else marks[key] = next;
+    setState({ marks: marks });
+    if (!lsWrite(LS_MARKS, marks)) showToast('Not bu cihaza kaydedilemedi');
+  }
+
+  // Çanta içi tüm ekipman kalemleri tiklendi mi?
+  function isBagReady(order, key) {
+    var eq = (order && order.dr_form && order.dr_form.equipment) || [];
+    if (!eq.length) return false;
+    var checked = (markOf(key).items && typeof markOf(key).items === 'object') ? markOf(key).items : {};
+    return eq.every(function (_, idx) { return checked[idx] === true; });
+  }
+
+  function shortEquipLabel(rawItem) {
+    var s = str(rawItem);
+    if (/QV9\s*RX/i.test(s) || /\bRX\b/i.test(s)) return '📻 RX Cihaz';
+    if (/QV9\s*TX/i.test(s) || /\bTX\b/i.test(s)) return '🎙️ TX Mikrofon';
+    if (/battery\s*aa|QV1\.38/i.test(s)) return '🔋 AA Pil';
+    if (/earphone|kulakl|QV1\.2S/i.test(s)) return '🎧 Kulaklık';
+    if (/charger|şarj/i.test(s)) return '🔌 Şarj';
+    if (/bag|case|çanta/i.test(s)) return '🎒 Çanta';
+    return s.split('(')[0].trim() || s;
+  }
+
+  // Saha Özelliği 1: Kart üzerinde dokunmatik Çanta İçi Hızlı Kontrol (Checklist)
+  function buildChecklist(order, key, card, tab) {
+    var eq = (order.dr_form && order.dr_form.equipment) || [];
+    if (!eq.length || INACTIVE_STATUSES[order.status]) return null;
+    var m = markOf(key);
+    var checkedMap = (m.items && typeof m.items === 'object') ? Object.assign({}, m.items) : {};
+    var total = eq.length;
+    var countChecked = function () {
+      return eq.filter(function (_, idx) { return checkedMap[idx] === true; }).length;
+    };
+
+    var box = el('div', 'bag-checklist' + (countChecked() === total ? ' all-packed' : ''));
+    var head = el('div', 'chk-head');
+    var titleSpan = el('span', '');
+    var toggleAllBtn = el('button', 'chk-all-btn');
+    toggleAllBtn.type = 'button';
+
+    var grid = el('div', 'chk-grid');
+    var itemButtons = [];
+
+    function syncHeaderAndPrimary() {
+      var c = countChecked();
+      var allDone = c === total;
+      box.classList.toggle('all-packed', allDone);
+      titleSpan.textContent = allDone
+        ? ('✓ Çanta Hazır (' + c + '/' + total + ' kalem tam)')
+        : ('🎒 Çanta Kontrolü (' + c + '/' + total + ')');
+      toggleAllBtn.textContent = allDone ? 'Sıfırla' : '✓ Tümünü Seç';
+      var remoteBtn = card.querySelector('.primary .check');
+      if (remoteBtn && tab === 'deliveries') {
+        remoteBtn.classList.toggle('ready-emerald', allDone && !reached(order, 'delivered'));
+      }
+    }
+
+    function persistItems() {
+      var current = markOf(key);
+      var next = Object.assign({}, current, { items: Object.assign({}, checkedMap), ts: Date.now() });
+      var marks = Object.assign({}, state.marks);
+      if (!hasMarkData(next)) delete marks[key];
+      else marks[key] = next;
+      setState({ marks: marks });
+      lsWrite(LS_MARKS, marks);
+      syncHeaderAndPrimary();
+    }
+
+    eq.forEach(function (item, idx) {
+      var isOn = checkedMap[idx] === true;
+      var btn = el('button', 'chk-item');
+      btn.type = 'button';
+      btn.setAttribute('aria-pressed', isOn ? 'true' : 'false');
+      var chkBox = el('span', 'chk-box', '✓');
+      chkBox.setAttribute('aria-hidden', 'true');
+      var lbl = el('span', '', shortEquipLabel(item.item));
+      var qty = el('span', 'chk-qty', orDash(item.quantity));
+      append(btn, chkBox, lbl, qty);
+      btn.addEventListener('click', function () {
+        checkedMap[idx] = !checkedMap[idx];
+        if (!checkedMap[idx]) delete checkedMap[idx];
+        btn.setAttribute('aria-pressed', checkedMap[idx] ? 'true' : 'false');
+        persistItems();
+      });
+      itemButtons.push(btn);
+      append(grid, btn);
+    });
+
+    toggleAllBtn.addEventListener('click', function () {
+      var makeAll = countChecked() < total;
+      checkedMap = {};
+      if (makeAll) {
+        eq.forEach(function (_, idx) { checkedMap[idx] = true; });
+      }
+      itemButtons.forEach(function (b, idx) {
+        b.setAttribute('aria-pressed', checkedMap[idx] ? 'true' : 'false');
+      });
+      persistItems();
+    });
+
+    append(head, titleSpan, toggleAllBtn);
+    append(box, head, grid);
+    syncHeaderAndPrimary();
+    return box;
   }
 
   // Quietvox'a yazan buton ("Hazırlandı" → Delivered, "Teslim Alındı" → Returned)
@@ -2231,21 +3189,29 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     // Buton YALNIZCA Quietvox'taki gerçek duruma göre "tamam" görünür. Gönderilmiş ama
     // Quietvox'a düşmemiş işlem asla tamamlanmış gibi gösterilmez; tekrar gönderilebilir.
     var done = reached(order, action);
+    var queued = !done && Boolean(state.queue[key] && state.queue[key].action === action);
     var entry = state.pending[key] && state.pending[key].action === action ? state.pending[key] : null;
-    var waiting = !done && entry && Date.now() - entry.ts <= PENDING_FAIL_MS;
-    var failed = !done && entry && !waiting;
-    var localOnly = !done && !entry && markOf(key)[info.field] === true;
-    var btn = el('button', 'check' + (failed || localOnly ? ' failed' : '') + (waiting ? ' waiting' : ''));
+    var waiting = !done && !queued && entry && Date.now() - entry.ts <= PENDING_FAIL_MS;
+    var failed = !done && !queued && entry && !waiting;
+    var localOnly = !done && !queued && !entry && markOf(key)[info.field] === true;
+    var bagReady = !done && action === 'delivered' && isBagReady(order, key);
+    var classes = 'check' +
+      (queued ? ' queued' : '') +
+      (failed || localOnly ? ' failed' : '') +
+      (waiting ? ' waiting' : '') +
+      (bagReady ? ' ready-emerald' : '');
+    var btn = el('button', classes);
     btn.type = 'button';
     btn.setAttribute('aria-pressed', done ? 'true' : 'false');
     var text = el('span', '');
-    var sub = 'Quietvox\'a yazar';
+    var sub = bagReady ? '✓ Çanta tam — Quietvox\'a göndermek için dokun' : 'Quietvox\'a yazar';
     if (done) sub = 'Quietvox: ' + info.quietvox + ' ✓';
+    else if (queued) sub = '📡 İnternet bekleniyor (Kuyrukta — otomatik gönderilecek)';
     else if (waiting) sub = 'Gönderildi, Quietvox bekleniyor…';
     else if (failed) sub = '⚠️ Quietvox\'a düşmedi — tekrar gönder';
     else if (localOnly) sub = '⚠️ Yalnızca bu telefonda — Quietvox\'a gönder';
     append(text, document.createTextNode(info.label), el('span', 'sub', sub));
-    append(btn, el('span', 'box', done ? '✓' : (waiting ? '⏳' : '')), text);
+    append(btn, el('span', 'box', done ? '✓' : (queued ? '📡' : (waiting ? '⏳' : (bagReady ? '✓' : '')))), text);
     btn.querySelector('.box').setAttribute('aria-hidden', 'true');
     btn.addEventListener('click', function () {
       if (done) { showToast('Quietvox\'ta zaten ' + info.quietvox); return; }
@@ -2414,6 +3380,39 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
       .replace(' ,', ',');
   }
 
+  function openNoteEditDialog(order, key) {
+    var currentNote = str(markOf(key).note);
+    var title = el('h2', '', '📝 Teslim Kanıt Notu');
+    title.id = 'dlg-title';
+    var who = el('p', 'dlg-note', (order.location_name || order.title) + ' · ' + (order.dr_form.qv_booking_id || order.id));
+    var input = el('input', 'dlg-input');
+    input.type = 'text';
+    input.placeholder = 'Örn: Resepsiyon Ahmet Bey, Bellboy…';
+    input.value = currentNote;
+    var chips = el('div', 'note-chips');
+    NOTE_PRESETS.forEach(function (preset) {
+      var chip = el('button', 'note-chip' + (currentNote === preset ? ' active' : ''), preset);
+      chip.type = 'button';
+      chip.addEventListener('click', function () {
+        input.value = preset;
+        chips.querySelectorAll('.note-chip').forEach(function (c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        input.focus();
+      });
+      append(chips, chip);
+    });
+    var buttons = el('div', 'dlg-btns');
+    append(buttons,
+      dialogButton('btn-ghost', 'Vazgeç', closeDialog),
+      dialogButton('btn-print', '💾 Kaydet', function () {
+        setNote(key, input.value);
+        closeDialog();
+        render(true);
+        showToast(input.value.trim() ? 'Teslim notu kaydedildi ✓' : 'Teslim notu silindi');
+      }));
+    showDialog([title, who, chips, input, buttons]);
+  }
+
   function buildCard(order, tab) {
     var info = TAB_INFO[tab];
     var key = orderKey(order, info.kind);
@@ -2421,23 +3420,42 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     // Alınacaklarda kart yalnızca Quietvox'ta Returned olunca tamamlanmış görünür;
     // Verileceklerde "Teslim Edildi" bu telefondaki el işaretidir.
     var finished = isDone(order, tab) || (tab === 'deliveries' && markOf(key).done);
-    var card = el('article', 'glass card' + (finished ? ' done' : ''));
+    var isOverdueCard = tab === 'returns' && order.date < state.today && order.status === 'delivered' && !isPickedUp(order);
+    var stripeClass = isOverdueCard ? ' kind-overdue' : (tab === 'returns' ? ' kind-return' : ' kind-delivery');
+    var card = el('article', 'glass card' + stripeClass + (finished ? ' done' : ''));
     var hotelName = order.location_name || order.title || 'Adı belirtilmemiş';
 
     var main = el('div', 'card-main');
     append(main, cardChips(order), el('h3', 'hotel', hotelName), cardSummary(order));
+    var queued = state.queue[key];
     var pending = state.pending[key];
-    if (pending && !isDone(order, tab)) {
+    if (queued && !isDone(order, tab)) {
+      append(main.querySelector('.chips'), el('span', 'chip queued', '📡 İnternet bekleniyor (Kuyrukta)'));
+    } else if (pending && !isDone(order, tab)) {
       var late = Date.now() - pending.ts > PENDING_FAIL_MS;
       append(main.querySelector('.chips'), el('span', 'chip pending' + (late ? ' late' : ''),
         late ? '⚠️ Quietvox\'a düşmedi' : '⏳ Quietvox\'a gönderildi'));
+    }
+
+    // Saha Özelliği 2: Kayıtlı Teslim Kanıt Notu varsa kartta göster
+    var savedNote = str(markOf(key).note);
+    var noteBar = null;
+    if (savedNote) {
+      noteBar = el('div', 'delivery-note-bar');
+      var editBtn = el('button', '', '✏️ Düzenle');
+      editBtn.type = 'button';
+      editBtn.addEventListener('click', function () { openNoteEditDialog(order, key); });
+      append(noteBar, el('span', '', '📝 Teslim Notu: ' + savedNote), editBtn);
     }
 
     // Ana işlem: Quietvox'a yazan tek büyük düğme
     var primary = el('div', 'primary');
     append(primary, remoteButton(order, key, tab === 'deliveries' ? 'delivered' : 'returned'));
 
-    // Dört küçük düğme: Ara · WhatsApp · Harita · Yazdır
+    // Saha Özelliği 1: Çanta İçi Hızlı Kontrol (Checklist)
+    var checklist = buildChecklist(order, key, card, tab);
+
+    // Beş küçük düğme: Ara · WhatsApp · Harita · Yazdır · Hatırlatıcı
     var phone = normalizePhone(w.tour_manager_phone);
     var address = tab === 'returns'
       ? (w.return_location || w.delivery_location || order.location_name)
@@ -2452,9 +3470,11 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     if (!address) map.classList.add('off');
     var print = quickButton('🖨️', 'Yazdır', '', false);
     print.addEventListener('click', function () { openPrintDialog(order, print); });
-    append(quick, call, wa, map, print);
+    var remind = quickButton('⏰', 'Hatırlatıcı', '', false);
+    remind.addEventListener('click', function () { openReminderDialog(order, tab); });
+    append(quick, call, wa, map, print, remind);
 
-    // Ayrıntılar: otel telefonu, el işareti, adresler, ekipman
+    // Ayrıntılar: otel telefonu, el işareti, teslim notu ekle/düzenle, adresler, ekipman
     var details = cardDetails(order, key);
     var extra = el('div', 'more-extra');
     var hotelTel = normalizePhone(w.delivery_phone);
@@ -2462,6 +3482,10 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
       append(extra, el('p', 'change-note', '🔁 ' + c.text + (c.at ? ' (' + changeTime(c.at) + ')' : '')));
     });
     if (hotelTel) append(extra, linkButton('btn-ghost', '📞 Oteli Ara', 'tel:+' + hotelTel, false));
+    var noteBtn = el('button', 'btn btn-ghost', savedNote ? '📝 Teslim Notunu Düzenle' : '📝 Teslim Kanıt Notu Ekle');
+    noteBtn.type = 'button';
+    noteBtn.addEventListener('click', function () { openNoteEditDialog(order, key); });
+    append(extra, noteBtn);
     if (tab === 'deliveries') append(extra, checkButton(key, 'done', info.finalLabel, card));
     if (extra.childNodes.length) details.querySelector('.more-body').prepend(extra);
 
@@ -2476,7 +3500,7 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
       selectBox.setAttribute('aria-label', 'Seç: ' + hotelName);
       selectBox.addEventListener('click', function () { toggleSelected(key); });
     }
-    return append(card, selectBox, el('div', 'done-flag', '✓ ' + info.finalLabel), main, primary, quick, details);
+    return append(card, selectBox, el('div', 'done-flag', '✓ ' + info.finalLabel), main, noteBar, checklist, primary, quick, details);
   }
 
   function emptyMessage() {
@@ -2554,7 +3578,7 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     });
     var signature = JSON.stringify([state.data, state.tab, state.filter, state.date, state.hotel, state.today,
       state.search, state.onlyChanged, state.selecting, state.selected,
-      state.loadError, state.pending, latePending, state.token !== '']);
+      state.loadError, state.pending, state.queue, latePending, state.token !== '']);
     if (force || signature !== lastSignature) {
       lastSignature = signature;
       renderReminder();
@@ -2801,9 +3825,9 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
       }
     });
 
-    var wrap = root.querySelector('.dr-eq-wrap');
-    var box = root.querySelector('.dr-eq-box');
-    if (wrap && box) {
+    root.querySelectorAll('.dr-eq-wrap').forEach(function (wrap) {
+      var box = wrap.querySelector('.dr-eq-box');
+      if (!box) return;
       var rows = Number(box.getAttribute('data-rows')) || 0;
       // İki sütunlu düzende her tabloda satırların yarısı vardır
       var pt = equipmentStartPt(box.classList.contains('two') ? Math.ceil(rows / 2) : rows);
@@ -2812,7 +3836,7 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
         pt = Math.max(EQUIP_MIN_PT, pt * 0.95);
         box.style.fontSize = pt + 'pt';
       }
-    }
+    });
   }
 
   // which: 'waybill' (A5) ya da 'form' (A4). Sayfa boyutu yazdırmadan önce ayarlanır.
@@ -2901,20 +3925,19 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
   }
 
   /* ========================================================================
-     TEMA (açık / koyu)
-     Seçim bu cihazda saklanır; seçim yoksa telefonun kendi ayarı izlenir.
+     TEMA (Midnight Obsidian Glass varsayılan koyu mod / isteğe bağlı açık mod)
      ======================================================================== */
   function currentTheme() {
     var saved = lsRead(LS_THEME);
-    if (saved === 'dark' || saved === 'light') return saved;
-    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    if (saved === 'light' || saved === 'dark') return saved;
+    return 'dark';
   }
 
   function applyTheme() {
     var theme = currentTheme();
     document.documentElement.setAttribute('data-theme', theme);
     var meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.setAttribute('content', theme === 'dark' ? '#0B0E16' : '#1B2030');
+    if (meta) meta.setAttribute('content', theme === 'dark' ? '#0B1120' : '#1B2030');
     var btn = $('#btn-theme');
     btn.textContent = theme === 'dark' ? '☀️ Açık mod' : '🌙 Koyu mod';
   }
@@ -2922,6 +3945,16 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
   function toggleTheme() {
     lsWrite(LS_THEME, currentTheme() === 'dark' ? 'light' : 'dark');
     applyTheme();
+  }
+
+  function initSplash() {
+    var splash = $('#qv-splash');
+    if (!splash) return;
+    var dismiss = function () {
+      splash.classList.add('hide');
+    };
+    splash.addEventListener('click', dismiss);
+    window.setTimeout(dismiss, reducedMotion() ? 200 : 1850);
   }
 
   /* ========================================================================
@@ -2981,8 +4014,10 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     var n = selectedOrders().length;
     $('#bulk-n').textContent = n + ' sipariş seçildi';
     $('#bulk-send').textContent = (state.tab === 'returns' ? '🔄 Teslim Alındı' : '📦 Hazırlandı') + ' → Quietvox (' + n + ')';
+    $('#bulk-both').textContent = '🖨️ Toplu Yazdır (WayBill + Form)' + (n ? ' · ' + n : '');
     $('#bulk-send').disabled = n === 0;
     $('#bulk-wb').disabled = n === 0;
+    $('#bulk-both').disabled = n === 0;
   }
 
   function selectAllVisible() {
@@ -3029,34 +4064,55 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     showDialog([title, el('p', 'dlg-note', note), scroll, buttons]);
   }
 
-  // Siparişleri sırayla gönderir (her biri Quietvox'ta ayrı iş olarak paralel işlenir)
+  // Siparişleri sırayla gönderir (her biri Quietvox'ta ayrı iş olarak paralel işlenir; çevrimdışıysa kuyruğa alır)
   function runBulk(todo, action, kind) {
+    if (!navigator.onLine) {
+      todo.forEach(function (order) {
+        enqueueAction(order, orderKey(order, kind), action, true);
+      });
+      setSelecting(false);
+      showToast('📡 İnternet yok: ' + todo.length + ' sipariş kuyruğa alındı, bağlantı gelince otomatik gönderilecek');
+      render(true);
+      return;
+    }
     var sent = 0;
+    var queuedCount = 0;
     var failed = 0;
     var index = 0;
     var next = function () {
       if (index >= todo.length) {
-        showToast(sent + ' sipariş gönderildi' + (failed ? ', ' + failed + ' gönderilemedi' : '') +
-          '. Quietvox\'ta birkaç dakika içinde görünecek.');
+        var msg = sent + ' sipariş gönderildi';
+        if (queuedCount) msg += ', ' + queuedCount + ' kuyruğa alındı (📡)';
+        if (failed) msg += ', ' + failed + ' gönderilemedi';
+        showToast(msg + '.');
         setSelecting(false);
-        [150000, 300000, 480000].forEach(function (ms) { window.setTimeout(function () { loadData(false); }, ms); });
+        render(true);
+        if (sent > 0) {
+          [150000, 300000, 480000].forEach(function (ms) { window.setTimeout(function () { loadData(false); }, ms); });
+        }
         return;
       }
       var order = todo[index];
+      var key = orderKey(order, kind);
       index += 1;
       showToast('Gönderiliyor: ' + index + ' / ' + todo.length);
       dispatchOne(order, action).then(function (ok) {
         if (ok) {
           sent += 1;
           var pending = Object.assign({}, state.pending);
-          pending[orderKey(order, kind)] = { action: action, ts: Date.now() };
+          pending[key] = { action: action, ts: Date.now() };
           savePending(pending);
         } else {
           failed += 1;
         }
       }).catch(function (err) {
-        failed += 1;
-        if (err.message === 'auth') index = todo.length; // yetki yoksa diğerlerini deneme
+        if (err.message === 'auth') {
+          failed += 1;
+          index = todo.length; // yetki yoksa diğerlerini deneme
+        } else {
+          enqueueAction(order, key, action, true);
+          queuedCount += 1;
+        }
       }).then(function () { window.setTimeout(next, BULK_DELAY_MS); });
     };
     next();
@@ -3075,6 +4131,72 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     setPageSize('waybill');
     document.body.classList.add('has-print');
     printWhenReady();
+  }
+
+  // Seçilen siparişler için peş peşe WayBill + D&R Form sayfalarını hazırlar (her belge ayrı A4 sayfasında)
+  function fillBulkBothPrintArea(orders) {
+    var sheets = [];
+    orders.forEach(function (o) {
+      var wb = buildWaybillSheet(o);
+      wb.classList.add('pair-end', 'doc-break');
+      var form = buildFormSheet(o);
+      form.classList.add('doc-break');
+      sheets.push(wb, form);
+    });
+    var container = $('#print-sheets');
+    container.replaceChildren.apply(container, sheets);
+    setPageSize('form');
+    document.body.classList.add('has-print');
+    fitPrintSheets(container);
+  }
+
+  function openBulkPreview(orders) {
+    fillBulkBothPrintArea(orders);
+    previewReturnFocus = $('#bulk-both') || null;
+    var root = $('#print-root');
+    document.body.classList.add('pv-open');
+    root.setAttribute('aria-hidden', 'false');
+    root.setAttribute('role', 'dialog');
+    root.setAttribute('aria-modal', 'true');
+    root.setAttribute('aria-labelledby', 'pv-title');
+    $('#pv-title').textContent = 'Toplu Yazdır · ' + orders.length + ' sipariş · ' + (orders.length * 2) + ' sayfa';
+    updatePreviewScale();
+    root.scrollTop = 0;
+    $('#pv-close').focus();
+  }
+
+  function openBulkPrintDialog() {
+    var orders = selectedOrders();
+    if (!orders.length) return;
+    var n = orders.length;
+    var totalPages = n * 2;
+    var title = el('h2', '', '🖨️ Toplu Yazdır — ' + n + ' sipariş (' + totalPages + ' sayfa)');
+    title.id = 'dlg-title';
+    var summary = el('p', 'dlg-note',
+      n + ' WayBill + ' + n + ' Delivery & Return Form = toplam ' + totalPages + ' sayfa (A4). ' +
+      'Sayfa düzeni: A4 · Ölçek: %100 · Üstbilgi/altbilgi: kapalı.');
+    var list = el('ul', 'dlg-list');
+    orders.forEach(function (o, idx) {
+      var row = el('li');
+      var label = (idx + 1) + '. ' + (o.location_name || o.title) + (o.date ? ' (' + shortDate(o.date) + ')' : '');
+      append(row, el('span', '', label), el('b', '', (o.dr_form.qv_booking_id || o.id) + ' · 2 syf'));
+      append(list, row);
+    });
+    var scroll = el('div', 'dlg-scroll');
+    append(scroll, list);
+    var buttons = el('div', 'dlg-btns');
+    append(buttons,
+      dialogButton('btn-ghost', 'Vazgeç', closeDialog),
+      dialogButton('btn-ghost', 'Önizle (' + totalPages + ' syf)', function () {
+        closeDialog();
+        openBulkPreview(orders);
+      }),
+      dialogButton('btn-print', '🖨️ Yazdır (' + totalPages + ' syf)', function () {
+        closeDialog();
+        fillBulkBothPrintArea(orders);
+        printWhenReady();
+      }));
+    showDialog([title, summary, scroll, buttons]);
   }
 
   /* ========================================================================
@@ -3148,6 +4270,141 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     setPageSize('form');
     document.body.classList.add('has-print');
     printWhenReady();
+  }
+
+  /* ========================================================================
+     SAHA ÖZELLİĞİ 4: ATÖLYE / ÇANTA HAZIRLIK ÖZETİ EKRANI
+     Yarınki (veya seçili gündeki) tüm otellerin toplam ekipman ihtiyacını
+     büyük, yüksek kontrastlı kartlarda ve çanta bazında gösterir.
+     ======================================================================== */
+  function prepStatsForDate(dateStr) {
+    var orders = activeOrders(ordersOn('deliveries', dateStr));
+    var totals = { bags: orders.length, pax: 0, rx: 0, tx: 0, battery: 0, earphone: 0, other: 0 };
+    var rawItems = {};
+    var rawOrder = [];
+    orders.forEach(function (o) {
+      if (/^\d+$/.test(o.dr_form.clients)) totals.pax += parseInt(o.dr_form.clients, 10);
+      o.dr_form.equipment.forEach(function (e) {
+        var q = /^\d+$/.test(e.quantity) ? parseInt(e.quantity, 10) : 0;
+        var item = str(e.item);
+        var cleanName = item.split('(')[0].trim() || item;
+        if (!(cleanName in rawItems)) { rawItems[cleanName] = 0; rawOrder.push(cleanName); }
+        rawItems[cleanName] += q;
+        if (/\bRX\b/i.test(item)) totals.rx += q;
+        else if (/\bTX\b/i.test(item)) totals.tx += q;
+        else if (/battery\s*aa|QV1\.38|pil/i.test(item)) totals.battery += q;
+        else if (/earphone|kulakl|QV1\.2S/i.test(item)) totals.earphone += q;
+        else totals.other += q;
+      });
+    });
+    return {
+      date: dateStr,
+      orders: orders,
+      totals: totals,
+      items: rawOrder.map(function (n) { return [n, rawItems[n]]; })
+    };
+  }
+
+  function openPrepMode(initialDate) {
+    var targetDate = ISO_DATE.test(initialDate) ? initialDate
+      : (state.filter === 'today' ? state.today : state.tomorrow);
+    var stats = prepStatsForDate(targetDate);
+    var isTomorrow = targetDate === state.tomorrow;
+    var isToday = targetDate === state.today;
+    var dayTitle = isTomorrow ? ('Yarın (' + shortDate(targetDate) + ')')
+      : (isToday ? ('Bugün (' + shortDate(targetDate) + ')') : longDate(targetDate));
+
+    var heading = el('h2', '', '🎒 Çanta Hazırlık Modu');
+    heading.id = 'dlg-title';
+
+    // Gün geçiş düğmeleri (Yarın / Bugün)
+    var daySwitch = el('div', 'time-chips');
+    [
+      [state.tomorrow, '🔔 Yarın (' + activeOrders(ordersOn('deliveries', state.tomorrow)).length + ' çanta)'],
+      [state.today, '📦 Bugün (' + activeOrders(ordersOn('deliveries', state.today)).length + ' çanta)']
+    ].forEach(function (pair) {
+      var chip = el('button', 'time-chip' + (targetDate === pair[0] ? ' active' : ''), pair[1]);
+      chip.type = 'button';
+      chip.addEventListener('click', function () { openPrepMode(pair[0]); });
+      append(daySwitch, chip);
+    });
+
+    // Yüksek kontrastlı KPI kartları
+    var kpiGrid = el('div', 'prep-kpi-grid');
+    [
+      ['🎒 Toplam Çanta', stats.totals.bags + ' adet', 'highlight'],
+      ['📻 Toplam RX', String(stats.totals.rx), 'highlight-blue'],
+      ['🎙️ Toplam TX', String(stats.totals.tx), ''],
+      ['🔋 Toplam AA Pil', String(stats.totals.battery), ''],
+      ['🎧 Toplam Kulaklık', String(stats.totals.earphone), ''],
+      ['👥 Toplam Kişi', String(stats.totals.pax), '']
+    ].forEach(function (k) {
+      var card = el('div', 'prep-kpi' + (k[2] ? ' ' + k[2] : ''));
+      append(card, el('span', 'kpi-val', k[1]), el('span', 'kpi-lbl', k[0]));
+      append(kpiGrid, card);
+    });
+
+    // Otel bazlı çanta dizilim listesi
+    var bagList = el('div', 'prep-bag-list');
+    if (!stats.orders.length) {
+      append(bagList, el('p', 'dlg-note', dayTitle + ' için hazırlanacak aktif teslimat çantası görünmüyor.'));
+    } else {
+      stats.orders.forEach(function (o, idx) {
+        var key = orderKey(o, 'delivery');
+        var packed = isBagReady(o, key) || reached(o, 'delivered');
+        var bagCard = el('div', 'prep-bag-card');
+        var bagHead = el('div', 'prep-bag-head');
+        append(bagHead,
+          el('span', '', (idx + 1) + '. ' + hotelOf(o)),
+          el('span', '', packed ? '✅ Hazır' : ('#' + (o.dr_form.qv_booking_id || o.id))));
+        var eqSummary = o.dr_form.equipment.map(function (e) {
+          return shortEquipLabel(e.item) + ': ' + orDash(e.quantity);
+        }).join(' · ') || 'Ekipman bilgisi yok';
+        append(bagCard, bagHead, el('div', 'prep-bag-items', eqSummary));
+        append(bagList, bagCard);
+      });
+    }
+
+    var buttons = el('div', 'dlg-btns');
+    append(buttons,
+      dialogButton('btn-ghost', 'Kapat', closeDialog),
+      dialogButton('btn-ghost', '📋 Listeye Git', function () {
+        closeDialog();
+        setState({
+          tab: 'deliveries',
+          filter: isTomorrow ? 'tomorrow' : (isToday ? 'today' : 'date'),
+          date: targetDate,
+          filterChosen: true,
+          hotel: ''
+        });
+        render(true);
+      }));
+    var printBtn = dialogButton('btn-print', '🖨️ Hazırlık Listesini Yazdır (A4)', function () {
+      closeDialog();
+      var summaryObj = {
+        orders: stats.orders,
+        pax: stats.totals.pax,
+        items: stats.items,
+        hotels: stats.orders.map(function (o) {
+          var rxItem = o.dr_form.equipment.filter(function (e) { return /\bRX\b/i.test(e.item); })[0];
+          return [hotelOf(o), {
+            n: 1,
+            pax: /^\d+$/.test(o.dr_form.clients) ? parseInt(o.dr_form.clients, 10) : 0,
+            rx: rxItem && /^\d+$/.test(rxItem.quantity) ? parseInt(rxItem.quantity, 10) : 0
+          }];
+        })
+      };
+      printSummary(summaryObj, 'Çanta Hazırlık · ' + dayTitle);
+    });
+    showDialog([
+      heading,
+      el('p', 'dlg-note', dayTitle + ' akşamdan çanta dizilimi ve toplam ekipman ihtiyacı:'),
+      daySwitch,
+      kpiGrid,
+      bagList,
+      printBtn,
+      buttons
+    ]);
   }
 
   /* ========================================================================
@@ -3287,12 +4544,32 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     var patch = {};
     var tab = params.get('tab');
     var filter = params.get('filter');
-    if (tab === 'deliveries' || tab === 'returns') patch.tab = tab;
+    var feature = foldText(params.get('feature') || '');
+    if (feature) {
+      if (/gecik|overdue|unut/.test(feature)) {
+        tab = 'returns';
+        filter = 'overdue';
+      } else if (/iade|alin|return/.test(feature)) {
+        tab = 'returns';
+        filter = filter || 'today';
+      } else {
+        tab = 'deliveries';
+        filter = filter || 'today';
+      }
+    }
+    if (tab === 'deliveries' || tab === 'returns') {
+      patch.tab = tab;
+    } else if (tab === 'overdue') {
+      patch.tab = 'returns';
+      patch.filter = 'overdue';
+      patch.filterChosen = true;
+    }
     if (['today', 'tomorrow', 'all', 'overdue'].indexOf(filter) !== -1) {
       patch.filter = filter;
       patch.filterChosen = true;
       if (filter === 'overdue') patch.tab = 'returns';
     }
+    if (params.get('voice') === '1' || feature) patch.voiceAuto = true;
     if (params.get('changed') === '1') patch.onlyChanged = true;
     if (params.get('q')) patch.search = params.get('q').slice(0, 60);
     setState(patch);
@@ -3303,6 +4580,192 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     if (window.history && window.history.replaceState) {
       window.history.replaceState(null, '', window.location.pathname);
     }
+  }
+
+  /* ========================================================================
+     SESLİ ÖZET (Web Speech API) VE TEK TIKLA HATIRLATICI / ALARM KURMA
+     ======================================================================== */
+  function buildSpeechText() {
+    var active = function (o) { return !INACTIVE_STATUSES[o.status]; };
+    var dAll = ordersOn('deliveries', state.today).filter(active);
+    var dPending = dAll.filter(function (o) { return !isDone(o, 'deliveries'); });
+    var rAll = ordersOn('returns', state.today).filter(active);
+    var rPending = rAll.filter(function (o) { return !isDone(o, 'returns'); });
+    var overdue = overdueReturns();
+    var parts = ['Quietvox bugün özeti, ' + longDate(state.today) + '.'];
+
+    if (!dAll.length && !rAll.length) {
+      parts.push('Bugün için kayıtlı teslimat veya iade bulunmuyor.');
+    } else {
+      if (dAll.length) {
+        parts.push('Bugün toplam ' + dAll.length + ' teslimat var, ' + dPending.length + ' tanesi bekliyor.');
+        if (dPending.length) {
+          var dHotels = [];
+          dPending.forEach(function (o) {
+            var h = o.location_name || o.title;
+            if (h && dHotels.indexOf(h) === -1) dHotels.push(h);
+          });
+          if (dHotels.length) parts.push('Verilecek oteller: ' + dHotels.slice(0, 4).join(', ') + '.');
+        }
+      }
+      if (rAll.length) {
+        parts.push('Bugün toplam ' + rAll.length + ' iade alımı var, ' + rPending.length + ' tanesi bekliyor.');
+        if (rPending.length) {
+          var rHotels = [];
+          rPending.forEach(function (o) {
+            var h = o.location_name || o.title;
+            if (h && rHotels.indexOf(h) === -1) rHotels.push(h);
+          });
+          if (rHotels.length) parts.push('Alınacak oteller: ' + rHotels.slice(0, 4).join(', ') + '.');
+        }
+      }
+    }
+    if (overdue.length) {
+      parts.push('Dikkat: geçmiş günlerden ' + overdue.length + ' geciken iade görünüyor.');
+    }
+    return parts.join(' ');
+  }
+
+  function updateSpeakButton(speaking) {
+    var btn = $('#btn-speak');
+    if (!btn) return;
+    btn.setAttribute('aria-pressed', speaking ? 'true' : 'false');
+    btn.textContent = speaking ? '⏹️ Sesli Özeti Durdur' : '🔊 Sesli Dinle';
+  }
+
+  function speakDailySummary() {
+    var synth = window.speechSynthesis;
+    if (!synth || typeof window.SpeechSynthesisUtterance !== 'function') {
+      showToast('Bu cihazda sesli okuma desteklenmiyor');
+      return;
+    }
+    if (synth.speaking) {
+      synth.cancel();
+      updateSpeakButton(false);
+      return;
+    }
+    var text = buildSpeechText();
+    var utter = new window.SpeechSynthesisUtterance(text);
+    utter.lang = 'tr-TR';
+    utter.rate = 1.0;
+    var voices = synth.getVoices ? synth.getVoices() : [];
+    var trVoice = voices.filter(function (v) { return /^tr/i.test(v.lang); })[0];
+    if (trVoice) utter.voice = trVoice;
+    utter.onstart = function () { updateSpeakButton(true); };
+    utter.onend = function () { updateSpeakButton(false); };
+    utter.onerror = function () { updateSpeakButton(false); };
+    updateSpeakButton(true);
+    synth.speak(utter);
+  }
+
+  function googleCalendarUrl(title, details, location, dateStr, timeStr) {
+    var d = (ISO_DATE.test(dateStr) ? dateStr : state.today).replace(/-/g, '');
+    var parts = (timeStr || '08:00').split(':');
+    var hh = Math.max(0, Math.min(23, parseInt(parts[0], 10) || 8));
+    var mm = Math.max(0, Math.min(59, parseInt(parts[1], 10) || 0));
+    var pad = function (n) { return (n < 10 ? '0' : '') + n; };
+    var start = d + 'T' + pad(hh) + pad(mm) + '00';
+    var endH = (hh + 1) % 24;
+    var end = d + 'T' + pad(endH) + pad(mm) + '00';
+    return 'https://calendar.google.com/calendar/render?action=TEMPLATE' +
+      '&text=' + encodeURIComponent(title) +
+      '&dates=' + encodeURIComponent(start + '/' + end) +
+      '&details=' + encodeURIComponent(details) +
+      (location ? '&location=' + encodeURIComponent(location) : '') +
+      '&ctz=' + encodeURIComponent(TZ);
+  }
+
+  function androidAlarmIntentUrl(message, timeStr, fallbackUrl) {
+    var parts = (timeStr || '08:00').split(':');
+    var hh = Math.max(0, Math.min(23, parseInt(parts[0], 10) || 8));
+    var mm = Math.max(0, Math.min(59, parseInt(parts[1], 10) || 0));
+    return 'intent:#Intent;action=android.intent.action.SET_ALARM;' +
+      'i.android.intent.extra.alarm.HOUR=' + hh + ';' +
+      'i.android.intent.extra.alarm.MINUTES=' + mm + ';' +
+      'S.android.intent.extra.alarm.MESSAGE=' + encodeURIComponent(message) + ';' +
+      'B.android.intent.extra.alarm.SKIP_UI=false;' +
+      'S.browser_fallback_url=' + encodeURIComponent(fallbackUrl) + ';end';
+  }
+
+  function openReminderDialog(order, tab) {
+    var isOrder = Boolean(order && order.id);
+    var defaultTime = (isOrder && /^\d{2}:\d{2}$/.test(order.time)) ? order.time : (tab === 'returns' ? '09:00' : '08:00');
+    var defaultDate = (isOrder && ISO_DATE.test(order.date)) ? order.date : (viewDate() || state.today);
+    var hotel = isOrder ? (order.location_name || order.title || 'Sipariş') : '';
+    var defaultTitle = isOrder
+      ? (defaultTime + ' - ' + hotel + (tab === 'returns' ? ' iadesi alınacak' : ' siparişi hazırlanacak'))
+      : ('Quietvox: Bugün ' + ordersOn('deliveries', defaultDate).length + ' teslimat · ' +
+         ordersOn('returns', defaultDate).length + ' iade');
+    var details = isOrder
+      ? ('QV ID: ' + (order.dr_form.qv_booking_id || order.id) +
+         (order.dr_form.clients ? ' · Kişi: ' + order.dr_form.clients : '') +
+         (order.waybill.tour_manager_name ? ' · Rehber: ' + order.waybill.tour_manager_name : ''))
+      : ('Quietvox Sipariş Takip (' + longDate(defaultDate) + ')');
+    var location = isOrder
+      ? (tab === 'returns'
+          ? (order.waybill.return_location || order.waybill.delivery_location || hotel)
+          : (order.waybill.delivery_location || order.waybill.return_location || hotel))
+      : '';
+
+    var heading = el('h2', '', '⏰ Hatırlatıcı / Alarm Kur');
+    heading.id = 'dlg-title';
+
+    var timeLabel = el('label', 'dlg-label', 'Hatırlatma saati');
+    var timeInput = el('input');
+    timeInput.type = 'time';
+    timeInput.value = defaultTime;
+    append(timeLabel, timeInput);
+
+    var chips = el('div', 'time-chips');
+    ['07:30', '08:00', '09:00', '12:00', '18:00'].forEach(function (preset) {
+      var chip = el('button', 'time-chip' + (preset === defaultTime ? ' active' : ''), preset);
+      chip.type = 'button';
+      chip.addEventListener('click', function () {
+        timeInput.value = preset;
+        chips.querySelectorAll('.time-chip').forEach(function (c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        syncTitleTime(preset);
+      });
+      append(chips, chip);
+    });
+
+    var titleLabel = el('label', 'dlg-label', 'Hatırlatma başlığı');
+    var titleInput = el('input');
+    titleInput.type = 'text';
+    titleInput.value = defaultTitle;
+    append(titleLabel, titleInput);
+
+    function syncTitleTime(newTime) {
+      if (isOrder) {
+        titleInput.value = newTime + ' - ' + hotel + (tab === 'returns' ? ' iadesi alınacak' : ' siparişi hazırlanacak');
+      }
+    }
+    timeInput.addEventListener('change', function () { syncTitleTime(timeInput.value || '08:00'); });
+
+    var note = el('p', 'dlg-note',
+      'Saat ve sipariş başlığı hazır dolu olarak Google Takvim\'de veya Android Saat/Alarm uygulamasında açılır.');
+    var buttons = el('div', 'dlg-btns');
+    append(buttons,
+      dialogButton('btn-ghost', 'Vazgeç', closeDialog),
+      dialogButton('btn-ghost', '⏰ Android Alarm', function () {
+        var t = timeInput.value || '08:00';
+        var msg = titleInput.value.trim() || defaultTitle;
+        var gcal = googleCalendarUrl(msg, details, location, defaultDate, t);
+        closeDialog();
+        if (/Android/i.test(navigator.userAgent || '')) {
+          window.location.href = androidAlarmIntentUrl(msg, t, gcal);
+        } else {
+          window.open(gcal, '_blank', 'noopener');
+        }
+      }),
+      dialogButton('btn-print', '📅 Google Takvim', function () {
+        var t = timeInput.value || '08:00';
+        var msg = titleInput.value.trim() || defaultTitle;
+        var gcal = googleCalendarUrl(msg, details, location, defaultDate, t);
+        closeDialog();
+        window.open(gcal, '_blank', 'noopener');
+      }));
+    showDialog([heading, note, timeLabel, chips, titleLabel, buttons]);
   }
 
   /* ========================================================================
@@ -3384,21 +4847,103 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     lsWrite(LS_PENDING, pending);
   }
 
-  // Durumu Quietvox'ta değişmiş işlemleri bekleyenler listesinden çıkar
+  function saveQueue(queue) {
+    setState({ queue: queue });
+    lsWrite(LS_QUEUE, queue);
+  }
+
+  // Saha Özelliği 5: Çevrimdışı (Offline) İşlem Kuyruğu
+  function enqueueAction(order, key, action, silent) {
+    var id = order.dr_form.qv_booking_id || order.id.split('_')[0];
+    var nextQueue = Object.assign({}, state.queue);
+    nextQueue[key] = {
+      action: action,
+      order_id: id,
+      order_date: order.date,
+      title: order.location_name || order.title,
+      ts: Date.now()
+    };
+    saveQueue(nextQueue);
+    if (!silent) {
+      showToast('📡 İnternet yok: İşlem kuyruğa alındı, bağlantı gelince otomatik gönderilecek.');
+      render(true);
+    }
+  }
+
+  var flushingQueue = false;
+  function flushOfflineQueue() {
+    if (flushingQueue || !navigator.onLine || !(state.token && repoSlug())) return;
+    var keys = Object.keys(state.queue || {});
+    if (!keys.length) return;
+    flushingQueue = true;
+    var sentCount = 0;
+    var idx = 0;
+
+    var step = function () {
+      if (idx >= keys.length) {
+        flushingQueue = false;
+        if (sentCount > 0) {
+          showToast('📡 Kuyruktaki ' + sentCount + ' işlem Quietvox\'a gönderildi ✓');
+          render(true);
+          [120000, 240000].forEach(function (ms) {
+            window.setTimeout(function () { loadData(false); }, ms);
+          });
+        }
+        return;
+      }
+      var key = keys[idx];
+      idx += 1;
+      var item = state.queue[key];
+      if (!item) { step(); return; }
+      var body = JSON.stringify({
+        ref: 'main',
+        inputs: { action: item.action, order_id: item.order_id, order_date: item.order_date }
+      });
+      githubRequest('/actions/workflows/' + ACTION_WORKFLOW + '/dispatches', { method: 'POST', body: body })
+        .then(function (res) {
+          if (res.ok) {
+            sentCount += 1;
+            var nextQ = Object.assign({}, state.queue);
+            delete nextQ[key];
+            saveQueue(nextQ);
+            var nextP = Object.assign({}, state.pending);
+            nextP[key] = { action: item.action, ts: Date.now() };
+            savePending(nextP);
+          }
+        })
+        .catch(function () { /* hala bağlantı yoksa kuyrukta kalır */ })
+        .then(function () { window.setTimeout(step, BULK_DELAY_MS); });
+    };
+    step();
+  }
+
+  // Durumu Quietvox'ta değişmiş işlemleri bekleyenler ve kuyruk listesinden çıkar
   function prunePending() {
     if (!state.data) return;
     var keys = Object.keys(state.pending);
-    if (!keys.length) return;
-    var next = {};
-    keys.forEach(function (key) {
-      var entry = state.pending[key];
-      var tab = entry.action === 'returned' ? 'returns' : 'deliveries';
-      var order = ordersOf(tab).filter(function (o) { return orderKey(o, TAB_INFO[tab].kind) === key; })[0];
-      // Başarısız işlemler 3 gün görünür kalır ki gözden kaçmasın
-      var stale = Date.now() - entry.ts > 3 * 24 * 60 * 60 * 1000;
-      if (order && !reached(order, entry.action) && !stale) next[key] = entry;
-    });
-    if (Object.keys(next).length !== keys.length) savePending(next);
+    if (keys.length) {
+      var next = {};
+      keys.forEach(function (key) {
+        var entry = state.pending[key];
+        var tab = entry.action === 'returned' ? 'returns' : 'deliveries';
+        var order = ordersOf(tab).filter(function (o) { return orderKey(o, TAB_INFO[tab].kind) === key; })[0];
+        // Başarısız işlemler 3 gün görünür kalır ki gözden kaçmasın
+        var stale = Date.now() - entry.ts > 3 * 24 * 60 * 60 * 1000;
+        if (order && !reached(order, entry.action) && !stale) next[key] = entry;
+      });
+      if (Object.keys(next).length !== keys.length) savePending(next);
+    }
+    var qKeys = Object.keys(state.queue || {});
+    if (qKeys.length) {
+      var nextQ = {};
+      qKeys.forEach(function (key) {
+        var entry = state.queue[key];
+        var tab = entry.action === 'returned' ? 'returns' : 'deliveries';
+        var order = ordersOf(tab).filter(function (o) { return orderKey(o, TAB_INFO[tab].kind) === key; })[0];
+        if (!order || !reached(order, entry.action)) nextQ[key] = entry;
+      });
+      if (Object.keys(nextQ).length !== qKeys.length) saveQueue(nextQ);
+    }
   }
 
   function sendAction(order, key, action) {
@@ -3406,11 +4951,20 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     var id = order.dr_form.qv_booking_id || order.id.split('_')[0];
     var body = JSON.stringify({ ref: 'main', inputs: { action: action, order_id: id, order_date: order.date } });
     closeDialog();
+    if (!navigator.onLine) {
+      enqueueAction(order, key, action, false);
+      return;
+    }
     showToast('Quietvox\'a gönderiliyor…');
     githubRequest('/actions/workflows/' + ACTION_WORKFLOW + '/dispatches', { method: 'POST', body: body })
       .then(function (res) {
         if (res.status === 401 || res.status === 403 || res.status === 404) throw new Error('auth');
         if (!res.ok) throw new Error('http');
+        if (state.queue[key]) {
+          var nextQ = Object.assign({}, state.queue);
+          delete nextQ[key];
+          saveQueue(nextQ);
+        }
         var pending = Object.assign({}, state.pending);
         pending[key] = { action: action, ts: Date.now() };
         savePending(pending);
@@ -3422,9 +4976,14 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
         });
       })
       .catch(function (err) {
-        showToast(err.message === 'auth'
-          ? 'Gönderilemedi: erişim anahtarı geçersiz ya da yetkisiz (⚙ Ayarlar)'
-          : 'Gönderilemedi: bağlantıyı kontrol edip tekrar deneyin');
+        if (err.message === 'auth') {
+          showToast('Gönderilemedi: erişim anahtarı geçersiz ya da yetkisiz (⚙ Ayarlar)');
+        } else if (err.message === 'http') {
+          showToast('Gönderilemedi: GitHub yanıt vermedi, tekrar deneyin');
+        } else {
+          // Otel bodrumu / zayıf şebeke: ağ hatasında işlemi çevrimdışı kuyruğa al
+          enqueueAction(order, key, action, false);
+        }
       });
   }
 
@@ -3446,7 +5005,36 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     title.id = 'dlg-title';
     var who = el('p', '', (order.location_name || order.title) + ' · ' + (order.dr_form.qv_booking_id || order.id));
     var canSend = state.token && repoSlug();
+
+    // Saha Özelliği 2: Teslim Kanıt Notu alanı (hazır hızlı seçim etiketleri + serbest metin)
+    var currentNote = str(markOf(key).note);
+    var noteBox = el('div', '');
+    var noteLabel = el('label', 'dlg-label', '📝 Teslim Kanıt Notu (İsteğe bağlı)');
+    var noteInput = el('input');
+    noteInput.type = 'text';
+    noteInput.placeholder = 'Örn: Resepsiyon Ahmet Bey, Bellboy…';
+    noteInput.value = currentNote;
+    append(noteLabel, noteInput);
+    var noteChips = el('div', 'note-chips');
+    NOTE_PRESETS.forEach(function (preset) {
+      var chip = el('button', 'note-chip' + (currentNote === preset ? ' active' : ''), preset);
+      chip.type = 'button';
+      chip.addEventListener('click', function () {
+        noteInput.value = preset;
+        noteChips.querySelectorAll('.note-chip').forEach(function (c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+      });
+      append(noteChips, chip);
+    });
+    append(noteBox, noteLabel, noteChips);
+
+    function persistNoteIfChanged() {
+      var val = noteInput.value.trim();
+      if (val !== currentNote) setNote(key, val);
+    }
+
     var markOnly = dialogButton('btn-ghost', 'Yalnızca burada işaretle', function () {
+      persistNoteIfChanged();
       setMark(key, info.field, true);
       closeDialog();
       render(true);
@@ -3457,15 +5045,22 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     } else {
       nodes.push(el('p', 'dlg-note', 'Durum Delivered yapılacak; Self Delivery ve Self Return işaretlenecek.'));
     }
+    nodes.push(noteBox);
     if (canSend) {
       var buttons = el('div', 'dlg-btns');
       append(buttons, dialogButton('btn-ghost', 'Vazgeç', closeDialog),
-        dialogButton('btn-print', 'Onayla ve gönder', function () { sendAction(order, key, action); }));
+        dialogButton('btn-print', navigator.onLine ? 'Onayla ve gönder' : '📡 Kuyruğa al (Çevrimdışı)', function () {
+          persistNoteIfChanged();
+          sendAction(order, key, action);
+        }));
       nodes.push(buttons, markOnly);
     } else {
       nodes.push(el('p', '', 'Quietvox\'a yazmak için önce ⚙ Ayarlar\'dan erişim anahtarını girin.'));
       var fallback = el('div', 'dlg-btns');
-      append(fallback, markOnly, dialogButton('btn-print', '⚙ Ayarlar', openSettings));
+      append(fallback, markOnly, dialogButton('btn-print', '⚙ Ayarlar', function () {
+        persistNoteIfChanged();
+        openSettings();
+      }));
       nodes.push(fallback, dialogButton('btn-link', 'Vazgeç', closeDialog));
     }
     showDialog(nodes);
@@ -3491,7 +5086,7 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
         if (!token) { showToast('Anahtar silindi'); closeDialog(); render(true); return; }
         githubRequest('/actions/workflows/' + ACTION_WORKFLOW).then(function (res) {
           showToast(res.ok ? 'Anahtar çalışıyor ✓' : 'Anahtar kabul edilmedi (' + res.status + ')');
-          if (res.ok) closeDialog();
+          if (res.ok) { closeDialog(); flushOfflineQueue(); }
           render(true);
         }).catch(function () { showToast('Denenemedi: bağlantı yok'); });
       }));
@@ -3515,7 +5110,7 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
   }
 
   function bindEvents() {
-    document.querySelectorAll('.tab').forEach(function (btn) {
+    document.querySelectorAll('.tab[data-tab]').forEach(function (btn) {
       btn.addEventListener('click', function () { selectTab(btn.getAttribute('data-tab'), false); });
       // Sekmeler arasında ok tuşlarıyla gezinme
       btn.addEventListener('keydown', function (ev) {
@@ -3524,6 +5119,7 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
         selectTab(state.tab === 'deliveries' ? 'returns' : 'deliveries', true);
       });
     });
+    $('#tab-prep').addEventListener('click', function () { openPrepMode(state.tomorrow); });
 
     document.querySelectorAll('.filter[data-filter]').forEach(function (btn) {
       btn.addEventListener('click', function () {
@@ -3533,9 +5129,10 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
       });
     });
 
-    $('#btn-refresh').addEventListener('click', function () { loadData(true); });
+    $('#btn-refresh').addEventListener('click', function () { loadData(true); flushOfflineQueue(); });
     $('#btn-settings').addEventListener('click', function () { closeDrawer(false); openSettings(); });
     $('#btn-report').addEventListener('click', function () { closeDrawer(false); openReport(); });
+    $('#btn-drawer-prep').addEventListener('click', function () { closeDrawer(false); openPrepMode(state.tomorrow); });
     document.querySelectorAll('[data-font]').forEach(function (btn) {
       btn.addEventListener('click', function () { lsWrite(LS_FONT, btn.getAttribute('data-font')); applyFont(); });
     });
@@ -3558,12 +5155,16 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
 
     // Araçlar ve toplu seçim
     $('#btn-select').addEventListener('click', function () { setSelecting(!state.selecting); });
+    $('#btn-prep').addEventListener('click', function () { openPrepMode(viewDate() || state.tomorrow); });
+    $('#btn-day-prep').addEventListener('click', function () { openPrepMode(state.tomorrow); });
+    $('#btn-tomorrow-prep').addEventListener('click', function () { openPrepMode(state.tomorrow); });
     $('#btn-summary').addEventListener('click', openSummary);
     $('#btn-route').addEventListener('click', openRoute);
     $('#bulk-close').addEventListener('click', function () { setSelecting(false); });
     $('#bulk-all').addEventListener('click', selectAllVisible);
     $('#bulk-send').addEventListener('click', bulkSend);
     $('#bulk-wb').addEventListener('click', bulkPrintWaybills);
+    $('#bulk-both').addEventListener('click', openBulkPrintDialog);
     $('#btn-menu').addEventListener('click', openDrawer);
     $('#drawer-close').addEventListener('click', function () { closeDrawer(true); });
     $('#scrim').addEventListener('click', function () { closeDrawer(true); });
@@ -3599,6 +5200,8 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
       render(true);
       $('#list').scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'start' });
     });
+    $('#btn-speak').addEventListener('click', speakDailySummary);
+    $('#btn-day-remind').addEventListener('click', function () { openReminderDialog(null, state.tab); });
 
     // Tarih çubuğu
     $('#date-input').addEventListener('change', function (ev) { goToDate(ev.target.value); });
@@ -3637,13 +5240,20 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     document.addEventListener('visibilitychange', function () {
       if (document.visibilityState === 'visible' && Date.now() - lastLoadAt > MIN_REFRESH_GAP_MS) {
         loadData(false);
+        flushOfflineQueue();
       }
     });
-    window.addEventListener('online', function () { loadData(false); });
+    window.addEventListener('online', function () {
+      loadData(false);
+      flushOfflineQueue();
+    });
 
     // ~5 dakikada bir otomatik yenile (gün değişimi de burada yakalanır)
     window.setInterval(function () {
-      if (document.visibilityState === 'visible') loadData(false);
+      if (document.visibilityState === 'visible') {
+        loadData(false);
+        flushOfflineQueue();
+      }
     }, REFRESH_MS);
   }
 
@@ -3662,18 +5272,22 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
   function init() {
     var today = istanbulDate(new Date());
     applyTheme();
+    initSplash();
     var github = lsRead(LS_GITHUB);
     var pending = lsRead(LS_PENDING);
+    var queue = lsRead(LS_QUEUE);
     setState({
       today: today, tomorrow: addDays(today, 1), marks: loadMarks(),
       token: github && typeof github.token === 'string' ? github.token : '',
-      pending: pending && typeof pending === 'object' && !Array.isArray(pending) ? pending : {}
+      pending: pending && typeof pending === 'object' && !Array.isArray(pending) ? pending : {},
+      queue: queue && typeof queue === 'object' && !Array.isArray(queue) ? queue : {}
     });
     applyFont();
     applyUrlParams();
     bindEvents();
     render(true);
     loadData(false);
+    flushOfflineQueue();
     registerServiceWorker();
   }
 

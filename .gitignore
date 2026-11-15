@@ -13,3 +13,6 @@ android-signing/
 android/.gradle/
 android/app/build/
 android/build/
+
+# Yerel yedek klasörü (public repoya yüklenmez)
+_backup_before_updates/

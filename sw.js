@@ -12,7 +12,7 @@
 'use strict';
 
 // Kabukta değişiklik yapınca bu sürümü artırın: eski önbellekler silinir.
-const VERSION = 'v4';
+const VERSION = 'v7';
 const SHELL_CACHE = 'qv-shell-' + VERSION;
 const DATA_CACHE = 'qv-data-' + VERSION;
 const CDN_CACHE = 'qv-cdn-' + VERSION;
@@ -22,6 +22,7 @@ const SHELL_FILES = [
   './',
   './index.html',
   './manifest.webmanifest',
+  './icons/favicon-32.png',
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/icon-maskable-192.png',
