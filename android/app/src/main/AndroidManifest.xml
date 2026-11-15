@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- Mikrofon izni (Uygulama içi Sesli Asistan / Komut dinleme) -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
     <!-- Cihazdaki Chrome (ya da uyumlu tarayıcı) ve Alarm/Takvim hizmetlerini görebilmek için -->
     <queries>
         <intent>

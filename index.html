@@ -1474,34 +1474,43 @@ dialog.dlg::backdrop {
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 8px;
+  align-items: center;
 }
 .tomorrow-line {
-  min-height: 46px;
-  border-radius: 14px;
+  min-height: 44px;
+  border-radius: 12px;
   border: 1px dashed rgba(212, 175, 55, 0.55);
   background: rgba(15, 23, 42, 0.26);
   font: inherit;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   color: #FDFBF7;
   cursor: pointer;
   text-align: left;
   padding: 8px 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
 }
 [data-theme="light"] .tomorrow-line { color: #1B2030; background: rgba(156, 122, 75, 0.10); }
 .btn-prep-inline {
-  min-height: 46px;
-  border-radius: 14px;
+  min-height: 44px;
+  border-radius: 12px;
   border: 1px solid rgba(52, 211, 153, 0.55);
   background: rgba(16, 185, 129, 0.24);
   color: #A7F3D0;
   font: inherit;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 800;
   cursor: pointer;
   padding: 8px 12px;
   white-space: nowrap;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 [data-theme="light"] .btn-prep-inline { color: #065F46; }
 
@@ -1786,24 +1795,39 @@ dialog.dlg::backdrop {
 
 .quick { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; margin-top: 10px; }
 html.fs-l .quick, html.fs-xl .quick { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.day-actions { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-@media (max-width: 400px) {
-  .day-actions { grid-template-columns: 1fr 1fr; }
-  .day-actions .day-btn:last-child { grid-column: 1 / -1; }
+.day-actions {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 8px;
 }
 .day-btn {
-  min-height: 44px;
-  border-radius: 14px;
+  min-height: 42px;
+  border-radius: 12px;
   font: inherit;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   cursor: pointer;
-  padding: 6px 10px;
+  padding: 6px 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  letter-spacing: -0.01em;
 }
 .day-btn[aria-pressed="true"] {
   background: linear-gradient(135deg, rgba(212, 175, 55, 0.85), rgba(156, 122, 75, 0.78));
   color: #0B1120;
   border-color: rgba(254, 240, 138, 0.55);
+}
+.day-btn#btn-voice-cmd.listening {
+  background: linear-gradient(135deg, rgba(220, 38, 38, 0.75), rgba(212, 175, 55, 0.65));
+  border-color: #EF4444;
+  color: #FFFFFF;
+  animation: voicePulse 1.2s infinite alternate ease-in-out;
 }
 .time-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 4px; }
 .time-chip {
@@ -2036,6 +2060,142 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
   100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 
+/* ==========================================================================
+   8g) UYGULAMA İÇİ TÜRKÇE SESLİ ASİSTAN (VOICE COMMAND & ASSISTANT)
+   Üst çubuk butonu, mikrofon nabız animasyonu ve cam bilgi kartı
+   ========================================================================== */
+.btn-voice-top {
+  border-color: rgba(212, 175, 55, 0.65) !important;
+  color: #FDE68A !important;
+}
+.btn-voice-top:active {
+  background: rgba(212, 175, 55, 0.20) !important;
+}
+.btn-voice-top.listening {
+  border-color: #EF4444 !important;
+  background: rgba(220, 38, 38, 0.35) !important;
+  box-shadow: 0 0 14px rgba(239, 68, 68, 0.6) !important;
+  animation: voicePulse 1.2s infinite alternate ease-in-out;
+}
+@media (max-width: 430px) {
+  .btn-voice-top .btn-text { display: none !important; }
+}
+
+/* Yüzen mikrofon butonu butonları kapatmaması için gizlendi (Komuta Merkezi ve Üst Çubuk butonları aktiftir) */
+.btn-voice-fab {
+  display: none !important;
+}
+@keyframes voicePulse {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5), 0 8px 24px rgba(220, 38, 38, 0.4); }
+  100% { transform: scale(1.08); box-shadow: 0 0 0 14px rgba(239, 68, 68, 0), 0 16px 36px rgba(212, 175, 55, 0.6); }
+}
+
+/* Sesli Asistan Dinleme Cam Bilgi Kartı */
+.voice-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 95;
+  background: rgba(6, 10, 20, 0.55);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 16px 14px calc(24px + env(safe-area-inset-bottom));
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.24s ease, visibility 0.24s ease;
+}
+.voice-overlay[hidden] {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  display: none;
+}
+.voice-card {
+  width: min(92vw, 440px);
+  padding: 20px 20px 18px;
+  border-radius: 24px;
+  background: rgba(15, 23, 42, 0.42);
+  border: 1px solid rgba(255, 255, 255, 0.20);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.70), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  backdrop-filter: blur(28px) saturate(190%);
+  color: #FFFFFF;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  animation: qvSplashRise 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.voice-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: #FDE68A;
+  text-transform: uppercase;
+}
+.voice-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #EF4444;
+  box-shadow: 0 0 12px #EF4444;
+  animation: voiceDotBlink 0.9s infinite alternate;
+}
+@keyframes voiceDotBlink {
+  0% { opacity: 0.35; transform: scale(0.85); }
+  100% { opacity: 1; transform: scale(1.2); }
+}
+.voice-transcript {
+  font-size: 19px;
+  font-weight: 700;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #FFFFFF;
+  line-height: 1.35;
+  padding: 4px 6px;
+  word-break: break-word;
+}
+.voice-transcript.empty {
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 16px;
+  font-style: italic;
+}
+.voice-tips {
+  font-size: 12.5px;
+  color: #CBD5E1;
+  background: rgba(15, 23, 42, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  padding: 8px 10px;
+  line-height: 1.45;
+  text-align: left;
+}
+.voice-tips b { color: #FDE68A; }
+.voice-btns {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+.btn-voice-cancel {
+  min-height: 42px;
+  padding: 0 18px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.12);
+  color: #FFFFFF;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+}
+
 /* Özet çıktısı (A4) */
 .sum-sheet { padding: 2mm; font-size: 11pt; }
 .sum-sheet h1 { font-family: var(--font-head); font-size: 18pt; margin: 0 0 1mm; }
@@ -2057,8 +2217,8 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     background-image: none !important;
     color: #000 !important;
   }
-  /* Açılış ekranı ve arka plan ışık küreleri baskıda kesinlikle görünmez */
-  #qv-splash, .qv-splash, .ambient-orbs { display: none !important; visibility: hidden !important; }
+  /* Açılış ekranı, sesli asistan butonu ve arka plan ışık küreleri baskıda kesinlikle görünmez */
+  #qv-splash, .qv-splash, .ambient-orbs, .btn-voice-fab, .voice-overlay { display: none !important; visibility: hidden !important; }
   /* Yazdırma alanı doluysa uygulama arayüzünü tümüyle gizle */
   body.has-print > *:not(#print-root) { display: none !important; }
   body.has-print #print-root {
@@ -2134,6 +2294,9 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     <div class="updated" id="updated">Son güncelleme: —</div>
   </div>
   <div class="top-actions">
+    <button type="button" class="btn-refresh btn-voice-top" id="btn-top-voice" aria-label="Sesli Asistan ile komut ver" title="🎙️ Sesli Komut">
+      <span aria-hidden="true">🎙️</span><span class="btn-text">Sesli</span>
+    </button>
     <button type="button" class="btn-refresh" id="btn-refresh" aria-label="Verileri yenile">
       <span class="spin" aria-hidden="true">↻</span><span>Yenile</span>
     </button>
@@ -2191,9 +2354,9 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
       <div class="n" id="tile-n-overdue">0</div><div class="t">⚠️ Geciken iade — almayı unutma</div>
     </button>
     <div class="day-actions">
+      <button type="button" class="day-btn" id="btn-voice-cmd">🎙️ Sesli Komut</button>
       <button type="button" class="day-btn" id="btn-speak" aria-pressed="false">🔊 Sesli Dinle</button>
-      <button type="button" class="day-btn" id="btn-day-remind">⏰ Hatırlatıcı Kur</button>
-      <button type="button" class="day-btn" id="btn-day-prep">🎒 Çanta Hazırlık</button>
+      <button type="button" class="day-btn" id="btn-day-remind">⏰ Hatırlatıcı</button>
     </div>
     <div class="tomorrow-row">
       <button type="button" class="tomorrow-line" id="tomorrow-line">🔔 Yarın: —</button>
@@ -2263,6 +2426,27 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
 </main>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<!-- SESLİ ASİSTAN CAM BİLGİ DİYALOĞU -->
+<div id="voice-overlay" class="voice-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="voice-status">
+  <div class="voice-card">
+    <div class="voice-status" id="voice-status">
+      <span class="voice-dot" aria-hidden="true"></span>
+      <span>🎙️ Dinleniyor...</span>
+    </div>
+    <div class="voice-transcript empty" id="voice-transcript">"Konuşun..."</div>
+    <div class="voice-tips">
+      <b>Örnek Komutlar:</b><br>
+      • <i>"Bugün ne var?"</i> / <i>"Özeti oku"</i><br>
+      • <i>"Verilecekler"</i> / <i>"Alınacaklar"</i> / <i>"Geciken iadeler"</i><br>
+      • <i>"Yarın ne var?"</i> / <i>"Hazırlık"</i><br>
+      • <i>"Saat 8'e Conrad hatırlatıcı kur"</i>
+    </div>
+    <div class="voice-btns">
+      <button type="button" class="btn-voice-cancel" id="btn-voice-cancel">Kapat</button>
+    </div>
+  </div>
+</div>
 
 <!-- Toplu seçim çubuğu -->
 <div class="bulkbar" id="bulkbar" hidden>
@@ -2961,7 +3145,7 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     var active = function (o) { return !INACTIVE_STATUSES[o.status]; };
     var tomorrowDeliveries = ordersOn('deliveries', state.tomorrow).filter(active).length;
     var tomorrowReturns = ordersOn('returns', state.tomorrow).filter(active).length;
-    $('#tomorrow-line').textContent = '🔔 Yarın: ' + tomorrowDeliveries + ' verilecek · ' + tomorrowReturns + ' alınacak';
+    $('#tomorrow-line').textContent = '🔔 Yarın: ' + tomorrowDeliveries + ' teslimat · ' + tomorrowReturns + ' iade';
   }
 
   function goToDate(dateStr) {
@@ -4658,6 +4842,318 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     synth.speak(utter);
   }
 
+  function speakText(text, onEnd) {
+    var synth = window.speechSynthesis;
+    if (!synth || typeof window.SpeechSynthesisUtterance !== 'function') {
+      if (typeof onEnd === 'function') onEnd();
+      return;
+    }
+    if (synth.speaking) synth.cancel();
+    var utter = new window.SpeechSynthesisUtterance(text);
+    utter.lang = 'tr-TR';
+    utter.rate = 1.0;
+    var voices = synth.getVoices ? synth.getVoices() : [];
+    var trVoice = voices.filter(function (v) { return /^tr/i.test(v.lang); })[0];
+    if (trVoice) utter.voice = trVoice;
+    utter.onend = function () { if (typeof onEnd === 'function') onEnd(); };
+    utter.onerror = function () { if (typeof onEnd === 'function') onEnd(); };
+    synth.speak(utter);
+  }
+
+  function speakVoiceToday() {
+    setState({ filter: 'today', filterChosen: true });
+    render(true);
+    var dAll = ordersOn('deliveries', state.today);
+    var rAll = ordersOn('returns', state.today);
+    var text = 'Bugün ' + dAll.length + ' teslimat ve ' + rAll.length + ' iade alımı var. ';
+    if (dAll.length) {
+      var dHotels = [];
+      dAll.forEach(function (o) {
+        var h = o.location_name || o.title;
+        if (h && dHotels.indexOf(h) === -1) dHotels.push(h);
+      });
+      if (dHotels.length) text += 'Teslimatlar: ' + dHotels.slice(0, 4).join(', ') + (dHotels.length > 4 ? ' ve diğerleri. ' : '. ');
+    }
+    if (rAll.length) {
+      var rHotels = [];
+      rAll.forEach(function (o) {
+        var h = o.location_name || o.title;
+        if (h && rHotels.indexOf(h) === -1) rHotels.push(h);
+      });
+      if (rHotels.length) text += 'İadeler: ' + rHotels.slice(0, 4).join(', ') + (rHotels.length > 4 ? ' ve diğerleri.' : '.');
+    }
+    speakText(text);
+  }
+
+  function speakVoiceDeliveries() {
+    selectTab('deliveries');
+    var dList = ordersOn('deliveries', viewDate() || state.today);
+    var text = 'Verilecekler sekmesi açıldı. ' + dList.length + ' teslimat siparişi bulunuyor. ';
+    var hotels = [];
+    dList.forEach(function (o) {
+      var h = o.location_name || o.title;
+      if (h && hotels.indexOf(h) === -1) hotels.push(h);
+    });
+    if (hotels.length) text += 'Oteller: ' + hotels.slice(0, 4).join(', ') + (hotels.length > 4 ? ' ve diğerleri.' : '.');
+    speakText(text);
+  }
+
+  function speakVoiceReturns() {
+    selectTab('returns');
+    var rList = ordersOn('returns', viewDate() || state.today);
+    var text = 'Alınacaklar sekmesi açıldı. ' + rList.length + ' iade siparişi bulunuyor. ';
+    var hotels = [];
+    rList.forEach(function (o) {
+      var h = o.location_name || o.title;
+      if (h && hotels.indexOf(h) === -1) hotels.push(h);
+    });
+    if (hotels.length) text += 'Oteller: ' + hotels.slice(0, 4).join(', ') + (hotels.length > 4 ? ' ve diğerleri.' : '.');
+    speakText(text);
+  }
+
+  function speakVoiceOverdue() {
+    setState({ tab: 'returns', filter: 'overdue', filterChosen: true, hotel: '' });
+    render(true);
+    var ov = overdueReturns();
+    var text = 'Geciken iadeler listesi açıldı. Toplam ' + ov.length + ' adet gecikmiş iade bulunuyor.';
+    speakText(text);
+  }
+
+  function speakVoicePrep() {
+    setState({ filter: 'tomorrow', filterChosen: true, hotel: '' });
+    render(true);
+    openPrepMode(state.tomorrow);
+    var stats = prepStatsForDate(state.tomorrow);
+    var text = 'Yarınki çanta hazırlık modu açıldı. Toplam ' + stats.orders.length + ' sipariş, ' + stats.bags + ' çanta ve ' + stats.rx + ' alıcı cihaz hazırlanacak.';
+    speakText(text);
+  }
+
+  function speakVoiceReminder(raw) {
+    var norm = (raw || '').toLocaleLowerCase('tr-TR');
+
+    var timeMatch = norm.match(/\b([01]?\d|2[0-3])[:.]([0-5]\d)\b/);
+    var hourMatch = norm.match(/(?:saat\s*)(\d{1,2})/);
+    var digitSuffixMatch = norm.match(/\b(\d{1,2})(?:['\s]*(?:e|a|ye|ya|de|da|te|ta))\b/);
+    var timeStr = '';
+
+    if (timeMatch) {
+      var h = parseInt(timeMatch[1], 10);
+      var m = parseInt(timeMatch[2], 10);
+      timeStr = (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m;
+    } else if (hourMatch) {
+      var h = parseInt(hourMatch[1], 10);
+      var m = /bu[çc]uk/.test(norm) ? 30 : 0;
+      timeStr = (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m;
+    } else if (digitSuffixMatch) {
+      var h = parseInt(digitSuffixMatch[1], 10);
+      var m = /bu[çc]uk/.test(norm) ? 30 : 0;
+      timeStr = (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m;
+    }
+
+    if (!timeStr) {
+      var hourWords = {
+        'bir': 1, 'bire': 1, 'birde': 1,
+        'iki': 2, 'ikiye': 2, 'ikide': 2,
+        'üç': 3, 'üçe': 3, 'üçte': 3, 'uc': 3, 'uce': 3, 'ucte': 3,
+        'dört': 4, 'dörde': 4, 'dörtte': 4, 'dort': 4, 'dorde': 4, 'dortte': 4,
+        'beş': 5, 'beşe': 5, 'beşte': 5, 'bes': 5, 'bese': 5, 'beste': 5,
+        'altı': 6, 'altıya': 6, 'altıda': 6, 'alti': 6, 'altiya': 6, 'altida': 6,
+        'yedi': 7, 'yediye': 7, 'yedide': 7,
+        'sekiz': 8, 'sekize': 8, 'sekizde': 8,
+        'dokuz': 9, 'dokuza': 9, 'dokuzda': 9,
+        'on': 10, 'ona': 10, 'onda': 10,
+        'on bir': 11, 'on bire': 11, 'on birde': 11,
+        'on iki': 12, 'on ikiye': 12, 'on ikide': 12
+      };
+      for (var word in hourWords) {
+        if (new RegExp('\\b' + word + '\\b').test(norm)) {
+          var hVal = hourWords[word];
+          var mVal = /bu[çc]uk/.test(norm) ? 30 : 0;
+          timeStr = (hVal < 10 ? '0' : '') + hVal + ':' + (mVal < 10 ? '0' : '') + mVal;
+          break;
+        }
+      }
+    }
+    if (!timeStr) timeStr = '08:00';
+
+    var allOrders = [].concat(ordersOf('deliveries') || [], ordersOf('returns') || []);
+    var matchedOrder = null;
+    var matchedTab = 'deliveries';
+
+    for (var i = 0; i < allOrders.length; i++) {
+      var ord = allOrders[i];
+      var name = (ord.location_name || ord.title || '').toLocaleLowerCase('tr-TR');
+      if (!name) continue;
+      var words = name.split(/\s+/).filter(function (w) {
+        return w.length > 3 && !/^(otel|hotel|suites|suite|istanbul|bosphorus|palace|resort)$/.test(w);
+      });
+      if (norm.indexOf(name) !== -1 || words.some(function (w) { return norm.indexOf(w) !== -1; })) {
+        matchedOrder = ord;
+        matchedTab = (ordersOf('returns') || []).indexOf(ord) !== -1 ? 'returns' : 'deliveries';
+        break;
+      }
+    }
+
+    var hotelName = matchedOrder ? (matchedOrder.location_name || matchedOrder.title) : '';
+    var customTitle = matchedOrder
+      ? (timeStr + ' - ' + hotelName + (matchedTab === 'returns' ? ' iadesi alınacak' : ' siparişi hazırlanacak'))
+      : (timeStr + ' - Quietvox Hatırlatıcı');
+
+    openReminderDialog(matchedOrder, matchedTab, timeStr, customTitle);
+
+    var confirmMsg = 'Saat ' + timeStr + (hotelName ? ' için ' + hotelName : '') + ' hatırlatıcısı ayarlandı.';
+    speakText(confirmMsg);
+  }
+
+  function handleVoiceCommand(transcript) {
+    if (!transcript) return;
+    var norm = transcript.toLocaleLowerCase('tr-TR');
+
+    if (/hat[ıi]rlat|alarm|takvim/.test(norm)) {
+      speakVoiceReminder(transcript);
+    } else if (/gecik|overdue/.test(norm)) {
+      speakVoiceOverdue();
+    } else if (/yar[ıi]n|haz[ıi]rl[ıi]k|[çc]anta/.test(norm)) {
+      speakVoicePrep();
+    } else if (/verilecek|teslim/.test(norm)) {
+      speakVoiceDeliveries();
+    } else if (/al[ıi]nacak|[ıi]ade/.test(norm)) {
+      speakVoiceReturns();
+    } else if (/bug[üu]n|[öo]zet|ne var/.test(norm)) {
+      speakVoiceToday();
+    } else {
+      speakText("Komut anlaşılamadı. Lütfen 'Bugün ne var', 'Verilecekler', 'Alınacaklar', 'Geciken iadeler', 'Hazırlık' veya 'Saat 8\\'e hatırlatıcı kur' demeyi deneyin.");
+    }
+  }
+
+  var voiceRecognition = null;
+  var isVoiceListening = false;
+
+  function setVoiceListening(listening) {
+    isVoiceListening = listening;
+    var topBtn = $('#btn-top-voice');
+    var cmdBtn = $('#btn-voice-cmd');
+    var overlay = $('#voice-overlay');
+    var transcriptEl = $('#voice-transcript');
+    if (topBtn) {
+      if (listening) topBtn.classList.add('listening');
+      else topBtn.classList.remove('listening');
+    }
+    if (cmdBtn) {
+      if (listening) {
+        cmdBtn.classList.add('listening');
+        cmdBtn.textContent = '⏹️ Dinleniyor';
+      } else {
+        cmdBtn.classList.remove('listening');
+        cmdBtn.textContent = '🎙️ Sesli Komut';
+      }
+    }
+    if (overlay) {
+      if (listening) {
+        overlay.removeAttribute('hidden');
+        if (transcriptEl) {
+          transcriptEl.textContent = 'Dinleniyor...';
+          transcriptEl.classList.add('empty');
+        }
+      } else {
+        overlay.setAttribute('hidden', '');
+      }
+    }
+  }
+
+  function toggleVoiceAssistant() {
+    var SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRec) {
+      showToast('Cihazınızda ses tanıma (SpeechRecognition) desteklenmiyor');
+      return;
+    }
+    if (isVoiceListening) {
+      if (voiceRecognition) {
+        try { voiceRecognition.stop(); } catch (e) {}
+      }
+      setVoiceListening(false);
+      return;
+    }
+
+    try {
+      var recognition = new SpeechRec();
+      voiceRecognition = recognition;
+      recognition.lang = 'tr-TR';
+      recognition.continuous = false;
+      recognition.interimResults = true;
+      recognition.maxAlternatives = 1;
+
+      var finalTranscript = '';
+
+      recognition.onstart = function () {
+        setVoiceListening(true);
+      };
+
+      recognition.onresult = function (event) {
+        var transcriptEl = $('#voice-transcript');
+        var text = '';
+        for (var i = 0; i < event.results.length; i++) {
+          text += event.results[i][0].transcript;
+        }
+        if (transcriptEl) {
+          transcriptEl.textContent = text || 'Dinleniyor...';
+          if (text) transcriptEl.classList.remove('empty');
+        }
+        finalTranscript = text;
+      };
+
+      recognition.onerror = function (event) {
+        console.warn('Ses tanıma hatası:', event.error);
+        setVoiceListening(false);
+        if (event.error === 'not-allowed') {
+          showToast('Mikrofon erişim izni verilmedi');
+        } else if (event.error !== 'no-speech' && event.error !== 'aborted') {
+          showToast('Ses algılanamadı: ' + event.error);
+        }
+      };
+
+      recognition.onend = function () {
+        setVoiceListening(false);
+        if (finalTranscript && finalTranscript.trim()) {
+          handleVoiceCommand(finalTranscript.trim());
+        }
+      };
+
+      recognition.start();
+    } catch (err) {
+      console.error('Ses tanıma başlatılamadı:', err);
+      showToast('Mikrofon başlatılamadı: ' + err.message);
+      setVoiceListening(false);
+    }
+  }
+
+  function initVoiceAssistant() {
+    var topBtn = $('#btn-top-voice');
+    if (topBtn) topBtn.addEventListener('click', toggleVoiceAssistant);
+    var btnCmd = $('#btn-voice-cmd');
+    if (btnCmd) btnCmd.addEventListener('click', toggleVoiceAssistant);
+    var btnCancel = $('#btn-voice-cancel');
+    if (btnCancel) {
+      btnCancel.addEventListener('click', function () {
+        if (voiceRecognition) {
+          try { voiceRecognition.abort(); } catch (e) {}
+        }
+        setVoiceListening(false);
+      });
+    }
+    var overlay = $('#voice-overlay');
+    if (overlay) {
+      overlay.addEventListener('click', function (ev) {
+        if (ev.target === overlay) {
+          if (voiceRecognition) {
+            try { voiceRecognition.abort(); } catch (e) {}
+          }
+          setVoiceListening(false);
+        }
+      });
+    }
+  }
+
   function googleCalendarUrl(title, details, location, dateStr, timeStr) {
     var d = (ISO_DATE.test(dateStr) ? dateStr : state.today).replace(/-/g, '');
     var parts = (timeStr || '08:00').split(':');
@@ -4687,15 +5183,15 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
       'S.browser_fallback_url=' + encodeURIComponent(fallbackUrl) + ';end';
   }
 
-  function openReminderDialog(order, tab) {
+  function openReminderDialog(order, tab, customTime, customTitle) {
     var isOrder = Boolean(order && order.id);
-    var defaultTime = (isOrder && /^\d{2}:\d{2}$/.test(order.time)) ? order.time : (tab === 'returns' ? '09:00' : '08:00');
+    var defaultTime = customTime || ((isOrder && /^\d{2}:\d{2}$/.test(order.time)) ? order.time : (tab === 'returns' ? '09:00' : '08:00'));
     var defaultDate = (isOrder && ISO_DATE.test(order.date)) ? order.date : (viewDate() || state.today);
     var hotel = isOrder ? (order.location_name || order.title || 'Sipariş') : '';
-    var defaultTitle = isOrder
+    var defaultTitle = customTitle || (isOrder
       ? (defaultTime + ' - ' + hotel + (tab === 'returns' ? ' iadesi alınacak' : ' siparişi hazırlanacak'))
       : ('Quietvox: Bugün ' + ordersOn('deliveries', defaultDate).length + ' teslimat · ' +
-         ordersOn('returns', defaultDate).length + ' iade');
+         ordersOn('returns', defaultDate).length + ' iade'));
     var details = isOrder
       ? ('QV ID: ' + (order.dr_form.qv_booking_id || order.id) +
          (order.dr_form.clients ? ' · Kişi: ' + order.dr_form.clients : '') +
@@ -5156,7 +5652,8 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     // Araçlar ve toplu seçim
     $('#btn-select').addEventListener('click', function () { setSelecting(!state.selecting); });
     $('#btn-prep').addEventListener('click', function () { openPrepMode(viewDate() || state.tomorrow); });
-    $('#btn-day-prep').addEventListener('click', function () { openPrepMode(state.tomorrow); });
+    var bdp = $('#btn-day-prep');
+    if (bdp) bdp.addEventListener('click', function () { openPrepMode(state.tomorrow); });
     $('#btn-tomorrow-prep').addEventListener('click', function () { openPrepMode(state.tomorrow); });
     $('#btn-summary').addEventListener('click', openSummary);
     $('#btn-route').addEventListener('click', openRoute);
@@ -5202,6 +5699,7 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     });
     $('#btn-speak').addEventListener('click', speakDailySummary);
     $('#btn-day-remind').addEventListener('click', function () { openReminderDialog(null, state.tab); });
+    initVoiceAssistant();
 
     // Tarih çubuğu
     $('#date-input').addEventListener('change', function (ev) { goToDate(ev.target.value); });

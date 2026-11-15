@@ -16,3 +16,4 @@ android/build/
 
 # Yerel yedek klasörü (public repoya yüklenmez)
 _backup_before_updates/
+_backup_before_voice/
