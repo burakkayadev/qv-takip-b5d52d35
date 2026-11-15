@@ -1,7 +1,7 @@
 # MODEL_BRIDGE — Uygulamalar Arası Ortak Hafıza
 
 > **Son Aktif Uygulama:** Claude Masaüstü  
-> **Son Güncelleme:** 15 Kasım 2026 (UTC+3) — **GitHub'a henüz gönderilmedi** (kullanıcı "push" yazınca gönderilecek)
+> **Son Güncelleme:** 15 Kasım 2026 (UTC+3) — **GitHub'a gönderildi** (commit `aafe0bc`; sürüm iş akışı build 4'ü `version.json`, `index.html` ve `sw.js`'e birlikte yazdı, canlıda doğrulandı)
 
 ---
 
