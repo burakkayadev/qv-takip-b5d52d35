@@ -918,6 +918,10 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
 }
 .hotel-chip[aria-pressed="true"] { background: var(--navy); border-color: var(--navy); color: var(--white); }
 .chip.pending { background: var(--warn-bg); color: var(--warn-ink); font-weight: 800; }
+.chip.pending.late { background: var(--err-bg); color: var(--err-ink); }
+/* Quietvox'a düşmemiş işlem: kırmızı çerçeve, gözden kaçmasın */
+.check.failed { border-color: var(--err-ink); background: var(--err-bg); color: var(--err-ink); }
+.check.waiting { border-style: dashed; }
 
 .checks.single { grid-template-columns: 1fr; }
 .check .sub { display: block; font-size: 12px; font-weight: 600; opacity: 0.85; }
@@ -1861,20 +1865,28 @@ dialog.dlg::backdrop { background: rgba(27, 32, 48, 0.55); }
   // Quietvox'a yazan buton ("Hazırlandı" → Delivered, "Teslim Alındı" → Returned)
   function remoteButton(order, key, action) {
     var info = ACTIONS[action];
+    // Buton YALNIZCA Quietvox'taki gerçek duruma göre "tamam" görünür. Gönderilmiş ama
+    // Quietvox'a düşmemiş işlem asla tamamlanmış gibi gösterilmez; tekrar gönderilebilir.
     var done = reached(order, action);
-    var pending = state.pending[key] && state.pending[key].action === action;
-    var marked = markOf(key)[info.field] === true;
-    var btn = el('button', 'check');
+    var entry = state.pending[key] && state.pending[key].action === action ? state.pending[key] : null;
+    var waiting = !done && entry && Date.now() - entry.ts <= PENDING_FAIL_MS;
+    var failed = !done && entry && !waiting;
+    var localOnly = !done && !entry && markOf(key)[info.field] === true;
+    var btn = el('button', 'check' + (failed || localOnly ? ' failed' : '') + (waiting ? ' waiting' : ''));
     btn.type = 'button';
-    btn.setAttribute('aria-pressed', done || marked ? 'true' : 'false');
+    btn.setAttribute('aria-pressed', done ? 'true' : 'false');
     var text = el('span', '');
-    var sub = done ? 'Quietvox: ' + info.quietvox : (pending ? 'Quietvox\'a gönderildi…' : 'Quietvox\'a yazar');
+    var sub = 'Quietvox\'a yazar';
+    if (done) sub = 'Quietvox: ' + info.quietvox + ' ✓';
+    else if (waiting) sub = 'Gönderildi, Quietvox bekleniyor…';
+    else if (failed) sub = '⚠️ Quietvox\'a düşmedi — tekrar gönder';
+    else if (localOnly) sub = '⚠️ Yalnızca bu telefonda — Quietvox\'a gönder';
     append(text, document.createTextNode(info.label), el('span', 'sub', sub));
-    append(btn, el('span', 'box', '✓'), text);
+    append(btn, el('span', 'box', done ? '✓' : (waiting ? '⏳' : '')), text);
     btn.querySelector('.box').setAttribute('aria-hidden', 'true');
     btn.addEventListener('click', function () {
       if (done) { showToast('Quietvox\'ta zaten ' + info.quietvox); return; }
-      if (marked && !pending) { setMark(key, info.field, false); render(true); return; }
+      if (waiting) { showToast('Gönderildi; Quietvox\'ta birkaç dakika içinde görünecek'); return; }
       openActionDialog(order, key, action);
     });
     return btn;
@@ -1953,7 +1965,9 @@ dialog.dlg::backdrop { background: rgba(27, 32, 48, 0.55); }
     var info = TAB_INFO[tab];
     var key = orderKey(order, info.kind);
     var w = order.waybill;
-    var finished = isDone(order, tab) || markOf(key).done;
+    // Alınacaklarda kart yalnızca Quietvox'ta Returned olunca tamamlanmış görünür;
+    // Verileceklerde "Teslim Edildi" bu telefondaki el işaretidir.
+    var finished = isDone(order, tab) || (tab === 'deliveries' && markOf(key).done);
     var card = el('article', 'glass card' + (finished ? ' done' : ''));
     var hotelName = order.location_name || order.title || 'Adı belirtilmemiş';
 
@@ -1981,10 +1995,10 @@ dialog.dlg::backdrop { background: rgba(27, 32, 48, 0.55); }
       append(checks, remoteButton(order, key, 'returned'));
     }
     var pending = state.pending[key];
-    if (pending) {
+    if (pending && !isDone(order, tab)) {
       var late = Date.now() - pending.ts > PENDING_FAIL_MS;
-      append(main.querySelector('.chips'), el('span', 'chip pending',
-        late ? '⚠️ Quietvox\'ta değişmedi' : '⏳ Quietvox\'a gönderildi'));
+      append(main.querySelector('.chips'), el('span', 'chip pending' + (late ? ' late' : ''),
+        late ? '⚠️ Quietvox\'a düşmedi' : '⏳ Quietvox\'a gönderildi'));
     }
 
     // Etiketler ayrı ayrı yazdırılır: WayBill yarım A4 (yatay), D&R Formu tam A4
@@ -2079,8 +2093,12 @@ dialog.dlg::backdrop { background: rgba(27, 32, 48, 0.55); }
     renderDayPanel();
     renderHotels();
 
+    // Süresi dolan (Quietvox'a düşmeyen) işler de yeniden çizimi tetikler
+    var latePending = Object.keys(state.pending).filter(function (k) {
+      return Date.now() - state.pending[k].ts > PENDING_FAIL_MS;
+    });
     var signature = JSON.stringify([state.data, state.tab, state.filter, state.date, state.hotel, state.today,
-      state.loadError, state.pending, state.token !== '']);
+      state.loadError, state.pending, latePending, state.token !== '']);
     if (force || signature !== lastSignature) {
       lastSignature = signature;
       renderReminder();
@@ -2510,7 +2528,8 @@ dialog.dlg::backdrop { background: rgba(27, 32, 48, 0.55); }
       var entry = state.pending[key];
       var tab = entry.action === 'returned' ? 'returns' : 'deliveries';
       var order = ordersOf(tab).filter(function (o) { return orderKey(o, TAB_INFO[tab].kind) === key; })[0];
-      var stale = Date.now() - entry.ts > 24 * 60 * 60 * 1000;
+      // Başarısız işlemler 3 gün görünür kalır ki gözden kaçmasın
+      var stale = Date.now() - entry.ts > 3 * 24 * 60 * 60 * 1000;
       if (order && !reached(order, entry.action) && !stale) next[key] = entry;
     });
     if (Object.keys(next).length !== keys.length) savePending(next);
@@ -2529,7 +2548,7 @@ dialog.dlg::backdrop { background: rgba(27, 32, 48, 0.55); }
         var pending = Object.assign({}, state.pending);
         pending[key] = { action: action, ts: Date.now() };
         savePending(pending);
-        setMark(key, info.field, true);
+        if (markOf(key)[info.field]) setMark(key, info.field, false); // yerel işaret yerine gerçek durum izlenir
         showToast('Gönderildi. Quietvox\'ta 2–3 dakika içinde ' + info.quietvox + ' olacak.');
         render(true);
         [120000, 210000, 330000].forEach(function (ms) {

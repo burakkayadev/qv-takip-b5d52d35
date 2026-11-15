@@ -1,4 +1,6 @@
 name: Quietvox İşlem
+# Her çalıştırma listede hangi sipariş için olduğuyla görünür (sorun takibi için)
+run-name: "${{ inputs.action }} · ${{ inputs.order_id }} · ${{ inputs.order_date }}"
 
 # Uygulamadaki "Hazırlandı" / "Teslim Alındı" butonları bu iş akışını tetikler.
 on:
@@ -21,17 +23,20 @@ on:
         default: false
 
 permissions:
-  contents: write
+  contents: read
+  actions: write   # işlem bitince senkronu tetiklemek için
 
-# Senkronla aynı grup: aynı anda iki iş Quietvox'a ya da data.json'a yazmasın
+# ÖNEMLİ: grup sipariş başınadır. GitHub bir grupta sırada bekleyen yalnızca BİR işi tutar
+# ve öncekileri iptal eder; ortak grup kullanıldığında arka arkaya basılan siparişler
+# kayboluyordu. Artık farklı siparişler paralel çalışır, aynı sipariş sıraya girer.
 concurrency:
-  group: quietvox-sync
+  group: quietvox-action-${{ inputs.order_id }}
   cancel-in-progress: false
 
 jobs:
   action:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     env:
       QV_USER: ${{ secrets.QV_USER }}
       QV_PASS: ${{ secrets.QV_PASS }}
@@ -54,33 +59,35 @@ jobs:
       - name: Playwright Chromium kur
         run: python -m playwright install --with-deps chromium
 
-      # Girdiler komut satırına gömülmez, ortam değişkeni olarak verilir (enjeksiyona karşı)
+      # Girdiler komut satırına gömülmez, ortam değişkeni olarak verilir (enjeksiyona karşı).
+      # Geçici bir hata (zaman aşımı, ağ) olursa 3 kereye kadar yeniden denenir; işlem
+      # aynı siparişte tekrarlansa da sonuç aynıdır (zaten Returned ise yine Returned kalır).
       - name: Siparişi Quietvox'ta güncelle
         env:
           QV_ACTION: ${{ inputs.action }}
           QV_ORDER_ID: ${{ inputs.order_id }}
           QV_ORDER_DATE: ${{ inputs.order_date }}
           DRY_RUN: ${{ inputs.dry_run && '1' || '0' }}
-        run: python qv_action.py
+          QV_NOTIFY_FAILURE: '0'
+        run: |
+          for attempt in 1 2 3; do
+            if [ "$attempt" = 3 ]; then export QV_NOTIFY_FAILURE=1; fi
+            set +e
+            python qv_action.py
+            code=$?
+            set -e
+            if [ "$code" = 0 ]; then exit 0; fi
+            # 2 = hatalı istek, 3 = giriş başarısız: tekrar denemenin anlamı yok
+            if [ "$code" = 2 ] || [ "$code" = 3 ]; then exit "$code"; fi
+            echo "Deneme $attempt başarısız (kod $code); 20 sn sonra yeniden denenecek."
+            sleep 20
+          done
+          exit 1
 
-      # İşlemden sonra veriyi tazele ki uygulama yeni durumu hemen görsün
-      - name: Veriyi yeniden senkronla
+      # Veriyi burada yazmak yerine senkron iş akışı tetiklenir: aynı anda birden fazla
+      # işlem bitse bile data.json'a tek bir yerden yazılır, çakışma olmaz.
+      - name: Senkronu tetikle
         if: always()
         env:
-          QV_PAST_DAYS: '31'
-          QV_WINDOW_DAYS: '32'
-        run: python scraper.py
-
-      - name: data.json değiştiyse commit et ve gönder
-        if: always()
-        run: |
-          git add data.json 2>/dev/null || true
-          if git diff --cached --quiet; then
-            echo "data.json değişmedi; commit atlanıyor."
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -m "chore: data.json güncellendi"
-          git pull --rebase --autostash origin "${GITHUB_REF_NAME}"
-          git push origin "HEAD:${GITHUB_REF_NAME}"
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run sync.yml -R "${GITHUB_REPOSITORY}" --ref "${GITHUB_REF_NAME}"

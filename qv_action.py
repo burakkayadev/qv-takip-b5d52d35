@@ -269,7 +269,10 @@ async def run(settings: scraper.Settings, spec: ActionSpec, order_id: str, day: 
             await browser.close()
     if problem:
         log.error("Sipariş %s '%s' yapılamadı: %s", order_id, spec.label, problem)
-        scraper.send_ntfy(settings, f"❌ Sipariş {order_id} {spec.label} yapılamadı: {problem[:200]}", priority="high")
+        # İş akışı geçici hatalarda yeniden dener; bildirim yalnızca son denemede gider
+        if (os.environ.get("QV_NOTIFY_FAILURE") or "1").strip() != "0":
+            scraper.send_ntfy(settings, f"❌ Sipariş {order_id} {spec.label} yapılamadı: {problem[:200]}",
+                              priority="high")
         return EXIT_FAILED
     if not dry_run:
         log.info("Sipariş %s '%s' yapıldı.", order_id, spec.label)
