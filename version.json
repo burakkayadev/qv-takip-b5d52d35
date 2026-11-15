@@ -1,7 +1,7 @@
 {
   "version": "4.0.1",
-  "build": 7,
-  "commit": "3785a3d",
-  "updated_at": "2026-11-15T20:01:56.384584+00:00",
+  "build": 8,
+  "commit": "844567a",
+  "updated_at": "2026-11-15T20:17:57.558463+00:00",
   "notes": "v4.0.1: Takvim ezilme ve barkod gibi boş çizgi hataları düzeltildi, Verilecek [📤 VER] ve Alınacak [📥 AL] rozetleri ile yön filtre butonları eklendi, otel ismi bulunamayan siparişlerin boş görünmesi engellendi."
 }
