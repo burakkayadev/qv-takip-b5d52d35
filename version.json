@@ -1,7 +1,7 @@
 {
   "version": "4.0.1",
-  "build": 3,
-  "commit": "1a31bb7",
-  "updated_at": "2026-11-15T16:24:05.177110+00:00",
-  "notes": "v4.0.1: Takvim ezilme ve barkod gibi bo\u015f \u00e7izgi hatalar\u0131 d\u00fczeltildi, Verilecek [\ud83d\udce4 VER] ve Al\u0131nacak [\ud83d\udce5 AL] rozetleri ile y\u00f6n filtre butonlar\u0131 eklendi, otel ismi bulunamayan sipari\u015flerin bo\u015f g\u00f6r\u00fcnmesi engellendi."
+  "build": 4,
+  "commit": "aafe0bc",
+  "updated_at": "2026-11-15T17:09:41.849527+00:00",
+  "notes": "v4.0.1: Takvim ezilme ve barkod gibi boş çizgi hataları düzeltildi, Verilecek [📤 VER] ve Alınacak [📥 AL] rozetleri ile yön filtre butonları eklendi, otel ismi bulunamayan siparişlerin boş görünmesi engellendi."
 }
