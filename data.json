@@ -3,7 +3,7 @@
   "demo": false,
   "status": "ok",
   "status_message": "",
-  "generated_at": "2026-11-15T02:05:46Z",
+  "generated_at": "2026-11-15T03:19:37Z",
   "timezone": "Europe/Istanbul",
   "window_days": 32,
   "deliveries": [
@@ -11789,7 +11789,7 @@
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "delivered"
+      "status": "returned"
     },
     {
       "id": "2000221686",
@@ -34208,54 +34208,54 @@
             "item": "QV9 TX EU(QV9.2)",
             "quantity": "1",
             "weight": "",
-            "return_quantity": ""
+            "return_quantity": "1"
           },
           {
             "item": "QV9 RX EU(QV9.1)",
             "quantity": "16",
             "weight": "",
-            "return_quantity": ""
+            "return_quantity": "16"
           },
           {
             "item": "Battery AA disposable(QV1.38)",
             "quantity": "6",
             "weight": "",
-            "return_quantity": ""
+            "return_quantity": "1"
           },
           {
             "item": "Earphone 3.5mm New Style 2017RP(QV1.2S)",
             "quantity": "24",
             "weight": "",
-            "return_quantity": ""
+            "return_quantity": "1"
           },
           {
             "item": "Microphone 3.5mm jack headset style(QV8.6.1)",
             "quantity": "2",
             "weight": "",
-            "return_quantity": ""
+            "return_quantity": "2"
           },
           {
             "item": "Carrying case small(QV1.14)",
             "quantity": "1",
             "weight": "",
-            "return_quantity": ""
+            "return_quantity": "1"
           },
           {
             "item": "Earphone over the Ear/hearing aid 3.5mm Jack(QV1.300)",
             "quantity": "3",
             "weight": "",
-            "return_quantity": ""
+            "return_quantity": "3"
           }
         ],
         "total_weight": "3.88 Kg / 8.55 Pounds"
       },
       "raw": {
         "Return Station": "Istanbul",
-        "Return weight": "0.00 Kg / 0.00 Pounds",
+        "Return weight": "3.42 Kg / 7.54 Pounds",
         "Customer service": "Email: support@quietvox.com",
         "return_phone": "+902123102525"
       },
-      "status": "delivered"
+      "status": "returned"
     },
     {
       "id": "2000221686",
