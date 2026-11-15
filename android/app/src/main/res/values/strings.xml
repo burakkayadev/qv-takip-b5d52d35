@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Quietvox Takip</string>
+    <string name="sc_deliveries">Bugün verilecekler</string>
+    <string name="sc_deliveries_short">Verilecekler</string>
+    <string name="sc_returns">Bugün alınacaklar</string>
+    <string name="sc_returns_short">Alınacaklar</string>
+    <string name="sc_overdue">Geciken iadeler</string>
+    <string name="sc_overdue_short">Geciken</string>
     <string name="asset_statements" translatable="false">
         [{ \"relation\": [\"delegate_permission/common.handle_all_urls\"],
            \"target\": { \"namespace\": \"web\", \"site\": \"https://burakkayadev.github.io\" } }]

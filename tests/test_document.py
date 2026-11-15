@@ -144,7 +144,9 @@ def test_write_if_changed_writes_utf8_and_then_leaves_file_alone(settings):
     document = {**scraper.empty_document(settings, NOW), "deliveries": [make_order("QV-1", "2026-11-25", location="Köşk")]}
     assert scraper.write_if_changed(settings, None, document, NOW) is True
     text = settings.output.read_text(encoding="utf-8")
-    assert '"location_name": "Köşk"' in text and text.endswith("}\n") and '\n  "demo": false' in text
+    # Sıkıştırılmış JSON: Türkçe karakterler kaçışsız, boşluksuz, tek satır
+    assert '"location_name":"Köşk"' in text and text.endswith("}\n") and '"demo":false' in text
+    assert text.count("\n") == 1
     saved = json.loads(text)
     assert saved["generated_at"] == "2026-11-25T09:00:00Z"
     later = NOW + timedelta(minutes=30)

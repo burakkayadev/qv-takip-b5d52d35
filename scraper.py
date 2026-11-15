@@ -264,6 +264,7 @@ class Settings:
     click_fallback: bool = True
     past_days: int = 0  # bugünden geriye kaç günün siparişi tutulur (geçmişe bakmak için)
     reminder: str = ""  # "evening" (yarın özeti) | "morning" | "noon" (bugün + unutulan iadeler)
+    app_url: str = ""  # bildirime dokununca açılacak uygulama adresi (ör. https://…github.io/repo/)
 
 
 def _env(env: Mapping[str, str], name: str, default: str = "") -> str:
@@ -336,6 +337,7 @@ def load_settings(env: Mapping[str, str] | None = None) -> Settings:
         click_fallback=_env_flag(env, "QV_CLICK_FALLBACK", base_url != DEFAULT_BASE_URL),
         past_days=max(0, _env_int(env, "QV_PAST_DAYS", 0)),
         reminder=_env(env, "REMINDER").lower() or ("evening" if _env_flag(env, "SEND_REMINDER", False) else ""),
+        app_url=_env(env, "APP_URL"),
     )
 
 
@@ -1281,7 +1283,8 @@ def write_json_atomic(path: Path, document: dict[str, Any]) -> None:
     handle, temp_name = tempfile.mkstemp(dir=str(path.parent), prefix=path.name + ".", suffix=".tmp")
     try:
         with os.fdopen(handle, "w", encoding="utf-8", newline="\n") as stream:
-            json.dump(document, stream, ensure_ascii=False, indent=2)
+            # Sıkıştırılmış yazım: 62 günlük veride dosya ~%35 küçülür (telefona daha hızlı iner)
+            json.dump(document, stream, ensure_ascii=False, separators=(",", ":"))
             stream.write("\n")
         os.replace(temp_name, path)
     except BaseException:
@@ -1339,12 +1342,20 @@ def write_status_only(settings: Settings, previous: dict[str, Any] | None, statu
     log.info("%s güncellendi: durum=%s.", settings.output.name, status)
 
 
-def send_ntfy(settings: Settings, message: str, priority: str = "default") -> bool:
-    """ntfy'ye UTF-8 gövdeli bildirim yollar; hata scraper'ı çökertmez. Başlıklar ASCII'dir."""
+def send_ntfy(settings: Settings, message: str, priority: str = "default", click: str = "") -> bool:
+    """ntfy'ye UTF-8 gövdeli bildirim yollar; hata scraper'ı çökertmez. Başlıklar ASCII'dir.
+
+    `click` uygulama adresine eklenecek sorgu metnidir (ör. "?tab=returns&filter=today");
+    bildirime dokununca uygulama doğrudan o listede açılır.
+    """
     if not settings.ntfy_topic:
         return False
     url = settings.ntfy_url.rstrip("/") + "/" + urllib.parse.quote(settings.ntfy_topic, safe="")
     headers = {"Title": "Quietvox", "Priority": priority, "Content-Type": "text/plain; charset=utf-8"}
+    if settings.app_url:
+        target = settings.app_url + click
+        if target.isascii():
+            headers["Click"] = target
     request = urllib.request.Request(url, data=message.encode("utf-8"), headers=headers, method="POST")
     try:
         with urllib.request.urlopen(request, timeout=NTFY_TIMEOUT_SECONDS) as response:
@@ -1429,7 +1440,127 @@ def maybe_send_reminder(settings: Settings, document: dict[str, Any]) -> bool:
     if not (settings.ntfy_topic and settings.reminder):
         return False
     messages = reminder_messages(settings.reminder, document, settings.today)
-    return any([send_ntfy(settings, message) for message in messages])
+    return any([send_ntfy(settings, message, click=reminder_click(settings.reminder, message))
+                for message in messages])
+
+
+def reminder_click(kind: str, message: str) -> str:
+    """Hatırlatma bildirimine dokununca açılacak liste."""
+    if message.startswith("⚠️"):
+        return "?tab=returns&filter=overdue"
+    if kind == "evening":
+        return "?filter=tomorrow"
+    return "?tab=returns&filter=today" if message.startswith("🔄") else "?tab=deliveries&filter=today"
+
+
+# --- Sipariş değişikliği uyarısı ---------------------------------------------
+# Etiket basıldıktan sonra Quietvox'ta kişi sayısı, ekipman, tarih ya da otel değişirse
+# eski etiket yanlış kalır. Yakın günlerdeki siparişler önceki senkronla karşılaştırılır.
+CHANGE_WINDOW_DAYS = 7      # bugünden itibaren kaç günlük sipariş izlenir
+CHANGE_KEEP_HOURS = 72      # karttaki "Değişti" kaydı ne kadar saklanır
+MAX_CHANGE_LINES = 6        # tek bildirimde en fazla kaç sipariş listelenir
+
+
+def _short_item(name: str) -> str:
+    return one_line(name).split("(")[0].strip() or one_line(name)
+
+
+def _equipment_map(order: dict[str, Any]) -> dict[str, str]:
+    items = (order.get("dr_form") or {}).get("equipment") or []
+    return {_short_item(row.get("item", "")): one_line(row.get("quantity", "")) for row in items if row.get("item")}
+
+
+def _ddmm(iso: str) -> str:
+    return f"{iso[8:10]}.{iso[5:7]}" if valid_iso(iso) else iso
+
+
+def describe_changes(old: dict[str, Any], new: dict[str, Any]) -> list[str]:
+    """İki kayıt arasındaki etikete yansıyan farkları Türkçe kısa metinlere çevirir."""
+    notes: list[str] = []
+    if new.get("status") == "cancelled" and old.get("status") != "cancelled":
+        return ["İPTAL EDİLDİ"]
+    if old.get("date") != new.get("date"):
+        notes.append(f"tarih {_ddmm(old.get('date', ''))}→{_ddmm(new.get('date', ''))}")
+    old_pax = (old.get("dr_form") or {}).get("clients", "")
+    new_pax = (new.get("dr_form") or {}).get("clients", "")
+    if old_pax and new_pax and old_pax != new_pax:
+        notes.append(f"kişi {old_pax}→{new_pax}")
+    if old.get("location_name") and new.get("location_name") and old["location_name"] != new["location_name"]:
+        notes.append(f"otel {old['location_name']}→{new['location_name']}")
+    old_items, new_items = _equipment_map(old), _equipment_map(new)
+    if old_items and new_items:
+        for name in sorted(set(old_items) | set(new_items)):
+            before, after = old_items.get(name), new_items.get(name)
+            if before == after:
+                continue
+            if before is None:
+                notes.append(f"+{name} {after}")
+            elif after is None:
+                notes.append(f"−{name}")
+            else:
+                notes.append(f"{name} {before}→{after}")
+    old_phone = (old.get("waybill") or {}).get("tour_manager_phone", "")
+    new_phone = (new.get("waybill") or {}).get("tour_manager_phone", "")
+    if old_phone and new_phone and old_phone != new_phone:
+        notes.append("rehber telefonu değişti")
+    return notes
+
+
+def _readable(order: dict[str, Any]) -> bool:
+    """Belgeleri bu senkronda gerçekten okunmuş mu? (okunamayan kayıt yanlış alarm üretmesin)"""
+    return bool((order.get("dr_form") or {}).get("customer"))
+
+
+def _kept_changes(order: dict[str, Any] | None, now: datetime) -> list[dict[str, str]]:
+    cutoff = now - timedelta(hours=CHANGE_KEEP_HOURS)
+    kept = []
+    for entry in (order or {}).get("changes") or []:
+        try:
+            moment = datetime.strptime(entry.get("at", ""), "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+        except (TypeError, ValueError):
+            continue
+        if moment >= cutoff:
+            kept.append({"at": entry["at"], "text": one_line(entry.get("text", ""))})
+    return kept
+
+
+def annotate_changes(previous: dict[str, Any] | None, document: dict[str, Any],
+                     today: date, now: datetime) -> tuple[dict[str, Any], list[str]]:
+    """Yakın günlerdeki siparişleri önceki veriyle karşılaştırır.
+
+    Yeni belgeyi (siparişlere "changes" kaydı eklenmiş, değiştirilmeden kopyalanmış) ve
+    bildirim satırlarını döner. Önceki veri yoksa ya da örnek veriyse karşılaştırma yapılmaz.
+    """
+    compare = bool(previous) and not previous.get("demo")
+    last_day = (today + timedelta(days=CHANGE_WINDOW_DAYS)).isoformat()
+    lines: list[str] = []
+    updated = dict(document)
+    for key in ("deliveries", "returns"):
+        before = {str(o.get("id")): o for o in (previous or {}).get(key, []) or [] if isinstance(o, dict)}
+        orders = []
+        for order in document.get(key, []):
+            old = before.get(str(order.get("id")))
+            changes = _kept_changes(old, now)
+            watched = today.isoformat() <= max(order.get("date", ""), (old or {}).get("date", "")) <= last_day
+            if compare and old and watched and _readable(order) and _readable(old):
+                notes = describe_changes(old, order)
+                if notes:
+                    text = "; ".join(notes)
+                    changes.append({"at": utc_stamp(now), "text": text})
+                    lines.append(f"{order.get('location_name') or order.get('title')} "
+                                 f"({order.get('id')}, {_ddmm(order.get('date', ''))}): {text}")
+            fresh = {k: v for k, v in order.items() if k != "changes"}
+            orders.append({**fresh, "changes": changes} if changes else fresh)
+        updated[key] = orders
+    return updated, lines
+
+
+def change_message(lines: list[str]) -> str:
+    """Değişiklik bildiriminin metni."""
+    shown = lines[:MAX_CHANGE_LINES]
+    more = len(lines) - len(shown)
+    text = "🔁 Sipariş değişti — etiketi kontrol et:\n" + "\n".join("• " + line for line in shown)
+    return text + (f"\n…ve {more} sipariş daha" if more > 0 else "")
 
 
 # ============================================================================
@@ -2306,7 +2437,11 @@ def finish(settings: Settings, previous: dict[str, Any] | None, outcome: Outcome
         write_status_only(settings, previous, STATUS_PARTIAL, outcome.message, now)
         return EXIT_FAILURE
     document = assemble_document(previous, outcome.results, outcome.detail_errors, settings, now)
+    document, change_lines = annotate_changes(previous, document, settings.today, now)
     write_if_changed(settings, previous, document, now)
+    if change_lines:
+        log.info("Değişen sipariş sayısı: %d.", len(change_lines))
+        send_ntfy(settings, change_message(change_lines), priority="high", click="?filter=all&changed=1")
     maybe_send_reminder(settings, document)
     all_failed = all(orders is None for orders in outcome.results.values())
     return EXIT_FAILURE if all_failed else EXIT_OK

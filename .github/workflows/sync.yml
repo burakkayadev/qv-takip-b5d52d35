@@ -23,9 +23,10 @@ on:
         default: 'yok'
         options: ['yok', 'morning', 'noon', 'evening']
 
-# data.json'ı commit edebilmek için yazma izni
+# data.json'ı commit edebilmek için yazma izni; önceki çalıştırmanın sonucunu okumak için actions: read
 permissions:
   contents: write
+  actions: read
 
 # Aynı anda tek çalışma; süren iş iptal edilmez, yenisi sıraya girer
 concurrency:
@@ -62,9 +63,12 @@ jobs:
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
           # Hatırlatma türü zamanlamaya göre seçilir; elle çalıştırmada girdiden alınır
           REMINDER: ${{ github.event.schedule == '0 15 * * *' && 'evening' || github.event.schedule == '0 5 * * *' && 'morning' || github.event.schedule == '0 10 * * *' && 'noon' || inputs.send_reminder == true && 'evening' || inputs.reminder != 'yok' && inputs.reminder || '' }}
-          # Geçmişe ve ileriye bakılacak gün sayısı (uygulamadaki tarih seçici için)
-          QV_PAST_DAYS: '31'
+          # Geçmişe ve ileriye bakılacak gün sayısı (tarih seçici ve aylık rapor için:
+          # 62 gün geriye bakınca önceki ayın tamamı her zaman eldedir)
+          QV_PAST_DAYS: '62'
           QV_WINDOW_DAYS: '32'
+          # Bildirime dokununca açılacak uygulama adresi
+          APP_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
         run: python scraper.py
 
       # Giriş başarısız olsa bile (login_failed durumu) data.json commit edilebilmeli
@@ -90,3 +94,20 @@ jobs:
             sleep 5
           done
           exit 1
+
+      # Senkron bozulursa telefona BİR KEZ haber ver: yalnızca bir önceki çalıştırma başarılıysa
+      # (sorun sürdükçe her 30 dakikada bir bildirim gelmez). Şifre hatası zaten ayrıca bildirilir.
+      - name: Senkron bozulduysa bildir
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+        run: |
+          [ -n "$NTFY_TOPIC" ] || exit 0
+          if grep -q '"status":"login_failed"' data.json 2>/dev/null; then exit 0; fi
+          previous=$(gh run list -R "$GITHUB_REPOSITORY" -w sync.yml -s completed -L 1 --json conclusion --jq '.[0].conclusion' || echo "")
+          if [ "$previous" != "success" ]; then echo "Önceki çalıştırma da başarısızdı; tekrar bildirilmiyor."; exit 0; fi
+          curl -s -H "Title: Quietvox" -H "Priority: high" \
+            -H "Click: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" \
+            --data-binary "⚠️ Quietvox senkronu başarısız oldu; uygulamadaki veriler güncellenmiyor olabilir." \
+            "https://ntfy.sh/${NTFY_TOPIC}" > /dev/null

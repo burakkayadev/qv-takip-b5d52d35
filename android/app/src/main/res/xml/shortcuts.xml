@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Uygulama simgesine uzun basınca çıkan kısayollar: doğrudan ilgili listeyi açar -->
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutId="today_deliveries"
+        android:shortcutLongLabel="@string/sc_deliveries"
+        android:shortcutShortLabel="@string/sc_deliveries_short">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="https://burakkayadev.github.io/qv-takip-b5d52d35/?tab=deliveries&amp;filter=today"
+            android:targetClass="com.google.androidbrowserhelper.trusted.LauncherActivity"
+            android:targetPackage="io.github.burakkayadev.qvtakip" />
+    </shortcut>
+    <shortcut
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutId="today_returns"
+        android:shortcutLongLabel="@string/sc_returns"
+        android:shortcutShortLabel="@string/sc_returns_short">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="https://burakkayadev.github.io/qv-takip-b5d52d35/?tab=returns&amp;filter=today"
+            android:targetClass="com.google.androidbrowserhelper.trusted.LauncherActivity"
+            android:targetPackage="io.github.burakkayadev.qvtakip" />
+    </shortcut>
+    <shortcut
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutId="overdue_returns"
+        android:shortcutLongLabel="@string/sc_overdue"
+        android:shortcutShortLabel="@string/sc_overdue_short">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="https://burakkayadev.github.io/qv-takip-b5d52d35/?tab=returns&amp;filter=overdue"
+            android:targetClass="com.google.androidbrowserhelper.trusted.LauncherActivity"
+            android:targetPackage="io.github.burakkayadev.qvtakip" />
+    </shortcut>
+</shortcuts>

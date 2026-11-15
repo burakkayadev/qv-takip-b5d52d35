@@ -27,6 +27,10 @@
             <meta-data
                 android:name="android.support.customtabs.trusted.DEFAULT_URL"
                 android:value="https://burakkayadev.github.io/qv-takip-b5d52d35/" />
+            <!-- Simgeye uzun basınca çıkan kısayollar -->
+            <meta-data
+                android:name="android.app.shortcuts"
+                android:resource="@xml/shortcuts" />
             <meta-data
                 android:name="android.support.customtabs.trusted.STATUS_BAR_COLOR"
                 android:resource="@color/navy" />

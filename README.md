@@ -73,6 +73,10 @@ Gelen bildirimler:
 - **Her akşam 18:00 (TR):** `📦 Yarın 3 Teslimat (Conrad, Four Seasons) ve 🔄 2 İade Alımı var.`
 - **Uygulamadan yapılan işlem sonucu:** `✅ Sipariş 2000… Quietvox'ta Delivered yapıldı.` ya da `❌ … yapılamadı: neden`.
 - **Giriş başarısız olursa:** `⚠️ Quietvox oturumu açılamadı, şifreyi kontrol edin` (sorun sürdükçe tekrar tekrar gönderilmez).
+- **Sipariş değişirse:** önümüzdeki 7 gündeki bir siparişte kişi sayısı, ekipman, tarih ya da otel değişir veya sipariş
+  iptal edilirse `🔁 Sipariş değişti — etiketi kontrol et` ve değişikliğin özeti gelir.
+- **Senkron bozulursa:** `⚠️ Quietvox senkronu başarısız oldu` (bir kez; sorun sürdükçe tekrar gönderilmez).
+- Bildirime dokununca uygulama doğrudan ilgili listede açılır.
 
 Hatırlatmayı denemek için: **Actions → Quietvox Senkronizasyon → Run workflow → `reminder` alanından tür seçin.**
 
