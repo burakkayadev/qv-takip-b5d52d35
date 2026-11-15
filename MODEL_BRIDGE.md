@@ -1,11 +1,21 @@
 # MODEL_BRIDGE — Uygulamalar Arası Ortak Hafıza
 
-> **Son Aktif Uygulama:** Claude Masaüstü  
-> **Son Güncelleme:** 15 Kasım 2026 (UTC+3) — **GitHub'a gönderildi** (commit `8a25597`: şifre koruması + alarm e-postası + yedekleme ve 3'lü yazdırma birlikte; version.yml build 5'i üç dosyaya yazdı, Pages yayını ve canlıda build 5 doğrulandı; `backup.yml` ve `notify.yml` GitHub'da aktif). **Eksik Secret'lar:** `MAIL_TO`, `SMTP_USER`, `SMTP_PASS` henüz yok → girilene kadar hiçbir e-posta gitmez; `QV_PASS_BACKUP` ve `RCLONE_CONFIG` de yok (isteğe bağlı).
+> **Son Aktif Uygulama:** Antigravity  
+> **Son Güncelleme:** 15 Kasım 2026 22:42 (UTC+3) — **Toplu "Hazırlandı" (Delivered) Quietvox Senkronizasyonu Hatası Düzeltildi + Her Güncellemede Otomatik E-posta Bildirimi Eklendi + GitHub'a Push Edildi.**
 
 ---
 
-## 📌 SON DURUM ÖZETİ — Son Aktif Uygulama: Claude Masaüstü (şifre koruması ve yedekleme)
+## 📌 SON DURUM ÖZETİ — Son Aktif Uygulama: Antigravity (Toplu "Hazırlandı" Düzeltmesi & Otomatik Güncelleme E-postası)
+
+| Başlık | Detay |
+|---|---|
+| **Son Aktif Uygulama** | Antigravity |
+| **Tarih / Saat** | 15.11.2026 22:42 (İstanbul) |
+| **Tamamlanan İşler** | 1. **Kök Neden #1 Çözüldü (`qv_action.py` — SMS Onay Penceresi Hatası):** GitHub Actions loglarında (`43751362120`–`43751385131`) 19 Kasım siparişleri için `Save` tuşuna basıldığında `eu.quietvox.com` portalının `"Send sms to the Tour Guide after saving the Order? (Yes, save changes and send sms / No, just save changes)"` onay modalını açtığı ve `JS_FORM_PROBLEMS`'ın bunu beklenmeyen hata sayıp kaydetmeden çıktığı tespit edildi. `JS_FORM_PROBLEMS` artık `"No, just save changes"` (veya `#save-if-changed-dialog-no-discard-save-btn`) butonunu otomatik olarak bir kez tıklıyor ve AJAX kaydının tamamlanıp `#dialog_large.in` penceresinin kapanmasını bekliyor.<br>2. **Kök Neden #2 Çözüldü (`index.html` — Bekleyen/Hatalı Siparişlerin Erken Arşive Gizlenmesi):** `isOrderCompleted(o, tab)` içindeki `if (p && ...)` kontrolü kaldırıldı. Böylece "Hazırlandı" veya "Teslim Alındı" işaretlenen siparişler henüz Quietvox'ta güncellenmeden (veya hata aldığında) "Önceden Alınanlar" (`archive`) sekmesine kaybolmuyor; ana ekranda `⏳ Quietvox'a gönderildi` / `⚠️ Quietvox'a düşmedi — tekrar gönder` rozetiyle görünür kalıyor ve yalnızca `data.json`'da gerçekten `delivered`/`returned` olduğunda (veya "Yalnızca burada işaretle" seçildiğinde) arşive taşınıyor.<br>3. **Toplu `order_ids` Gönderimi ve Canlı İş Akışı Takibi (`index.html`, `qv_action.py`, `.github/workflows/action.yml`):** `action.yml` ve `qv_action.py` (`read_requests`, `run_many`) artık `order_ids` (`QVID:YYYY-AA-GG,...`) parametresini destekliyor; toplu seçimde tüm QV ID'ler eksiksiz tek `workflow_dispatch` isteğiyle gönderilip tek tarayıcı oturumunda işleniyor. Arayüzde `watchActionDispatch` ile işlem durumu canlı izleniyor (*"⏳ X sipariş orijinal Quietvox sistemine 'Hazırlandı' olarak işleniyor..."* → *"✅ X sipariş orijinal Quietvox sistemine 'Hazırlandı' olarak işlendi!"* veya hata durumunda *"⚠️ Dikkat: X sipariş orijinal Quietvox sistemine işlenemedi!"*).<br>4. **Her Yeni Güncellemede Otomatik E-posta Bildirimi (`notify_mail.py`, `.github/workflows/version.yml`):** `index.html`, `version.json`, `manifest.json`, `manifest.webmanifest`, `sw.js`, `icons/**` değişip `main` dalına push edildiğinde `version.yml` sürüm numarasını artırdıktan sonra `python3 notify_mail.py --update` çalıştırarak `MAIL_TO` Secret'ındaki alıcılara `🚀 Quietvox Takip Uygulaması Güncellendi (Yeni Sürüm Hazır)` konulu (güncelleme saati, sürüm/build bilgisi, son commit özeti ve canlı uygulama linki içeren) HTML + düz metin e-posta gönderiyor. Otomatik `data.json` veri çekimlerinde (`sync.yml`) gereksiz e-posta gönderilmez.<br>5. **Doğrulama:** 139 Python testi (`pytest tests`) ve `index.html` JS sözdizimi kontrolü hatasız geçti. |
+| **Değişen Dosyalar** | `qv_action.py`, `.github/workflows/action.yml`, `index.html`, `notify_mail.py`, `.github/workflows/version.yml`, `tests/test_action.py`, `tests/test_notify.py`, `MODEL_BRIDGE.md`, `.gitignore` (yedek: `_backup_before_antigravity_v8/`) |
+| **Bir Sonraki Uygulamanın Yapacağı İş** | `MODEL_BRIDGE.md` dosyasını okuyarak mevcut çalışan özellikleri ve `CURRENT_BUILD` kuralını bozmadan devam etmek. |
+
+### Önceki kayıt — Claude Masaüstü (şifre koruması ve yedekleme)
 
 | Başlık | Detay |
 |---|---|

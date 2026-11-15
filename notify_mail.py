@@ -214,7 +214,95 @@ def send_login_alert(failed_at: datetime, env, app_url: str = "") -> bool:
     return True
 
 
-def main() -> int:
+# ---- Uygulama güncellemesi bildirim e-postası (".github/workflows/version.yml" çağırır) ------
+UPDATE_SUBJECT = "🚀 Quietvox Takip Uygulaması Güncellendi (Yeni Sürüm Hazır)"
+DEFAULT_APP_URL = "https://burakkayadev.github.io/qv-takip-b5d52d35/"
+
+
+def build_update_text(version_data: dict, commit_msg: str, app_url: str, updated_at: datetime) -> str:
+    when = updated_at.astimezone(TZ).strftime("%d.%m.%Y %H:%M")
+    ver = version_data.get("version") or "4.0.0"
+    build = version_data.get("build") or "—"
+    commit = version_data.get("commit") or "—"
+    summary = (commit_msg or "Uygulama iyileştirmeleri ve hata düzeltmeleri").strip()
+    url = (app_url or DEFAULT_APP_URL).strip()
+    return (
+        "Quietvox Takip Uygulaması yeni sürüme güncellendi ve yayına alındı.\n\n"
+        f"• Güncelleme Saati (İstanbul): {when}\n"
+        f"• Sürüm Bilgisi: v{ver} (Build #{build} · Commit {commit})\n"
+        f"• Son Değişiklik Özeti:\n{summary}\n\n"
+        f"• Canlı Uygulama Linki (doğrudan açıp yenileyebilirsiniz):\n{url}\n\n"
+        "Bu e-posta Quietvox Takip güncelleme sistemi tarafından otomatik gönderildi.\n"
+    )
+
+
+def build_update_html(version_data: dict, commit_msg: str, app_url: str, updated_at: datetime) -> str:
+    when = updated_at.astimezone(TZ).strftime("%d.%m.%Y %H:%M")
+    ver = escape(str(version_data.get("version") or "4.0.0"))
+    build = escape(str(version_data.get("build") or "—"))
+    commit = escape(str(version_data.get("commit") or "—"))
+    summary = escape((commit_msg or "Uygulama iyileştirmeleri ve hata düzeltmeleri").strip()).replace("\n", "<br>")
+    url = escape((app_url or DEFAULT_APP_URL).strip())
+    return (
+        '<div style="font-family:Arial,sans-serif;font-size:14px;color:#111;max-width:600px">'
+        '<h2 style="color:#1B2030;margin:0 0 12px">🚀 Quietvox Takip Uygulaması Güncellendi</h2>'
+        '<p>Uygulamanın yeni sürümü yayına alındı. Aşağıdaki bağlantıya dokunarak doğrudan açıp kullanabilirsiniz:</p>'
+        '<table style="border-collapse:collapse;width:100%;margin:12px 0;font-size:14px">'
+        f'<tr><td style="border:1px solid #ddd;padding:8px;background:#f8fafc;width:160px"><b>Güncelleme Saati</b></td>'
+        f'<td style="border:1px solid #ddd;padding:8px">{escape(when)} (İstanbul)</td></tr>'
+        f'<tr><td style="border:1px solid #ddd;padding:8px;background:#f8fafc"><b>Sürüm Bilgisi</b></td>'
+        f'<td style="border:1px solid #ddd;padding:8px">v{ver} · Build #{build} (<code>{commit}</code>)</td></tr>'
+        f'<tr><td style="border:1px solid #ddd;padding:8px;background:#f8fafc"><b>Son Değişiklik Özeti</b></td>'
+        f'<td style="border:1px solid #ddd;padding:8px">{summary}</td></tr>'
+        f'<tr><td style="border:1px solid #ddd;padding:8px;background:#f8fafc"><b>Canlı Uygulama</b></td>'
+        f'<td style="border:1px solid #ddd;padding:8px"><a href="{url}" style="color:#2563eb;font-weight:bold">{url}</a></td></tr>'
+        '</table>'
+        f'<p style="margin:18px 0"><a href="{url}" style="background:#2563eb;color:#fff;padding:10px 18px;'
+        'border-radius:8px;text-decoration:none;font-weight:bold;display:inline-block">'
+        '📱 Uygulamayı Aç ve Yenile</a></p>'
+        '<p style="color:#666;font-size:12px">Bu e-posta Quietvox Takip uygulaması tarafından yalnızca yeni sürüm '
+        'yayına alındığında otomatik gönderilir (otomatik veri çekimlerinde gönderilmez).</p></div>'
+    )
+
+
+def send_update_notification(env, version_path: Path | None = None) -> bool:
+    """Yeni uygulama sürümü yayına alındığında bilgilendirme e-postası gönderir."""
+    config = smtp_config(env, "MAIL_TO")
+    if config is None:
+        print("MAIL_TO / SMTP_USER / SMTP_PASS tanımlı değil; güncelleme e-postası gönderilmedi.")
+        return False
+    recipients, user, password, host, port = config
+    vpath = version_path or Path(__file__).with_name("version.json")
+    try:
+        version_data = json.loads(vpath.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        version_data = {"version": "4.0.0"}
+    try:
+        raw_dt = str(version_data.get("updated_at") or "").replace("Z", "+00:00")
+        updated_at = datetime.fromisoformat(raw_dt)
+        if updated_at.tzinfo is None:
+            updated_at = updated_at.replace(tzinfo=timezone.utc)
+    except ValueError:
+        updated_at = datetime.now(timezone.utc)
+    commit_msg = env.get("COMMIT_MESSAGE") or ""
+    app_url = env.get("APP_URL") or DEFAULT_APP_URL
+
+    message = EmailMessage()
+    message["Subject"] = UPDATE_SUBJECT
+    message["From"] = user
+    message["To"] = ", ".join(recipients)
+    message.set_content(build_update_text(version_data, commit_msg, app_url, updated_at))
+    message.add_alternative(build_update_html(version_data, commit_msg, app_url, updated_at), subtype="html")
+    send(message, host, port, user, password)
+    print(f"Güncelleme bildirim e-postası gönderildi: build #{version_data.get('build')}, {len(recipients)} alıcı.")
+    return True
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = argv if argv is not None else sys.argv[1:]
+    if "--update" in args or (os.environ.get("NOTIFY_MODE") or "").strip().lower() == "update":
+        send_update_notification(os.environ)
+        return 0
     orders = parse_orders(os.environ.get("ORDERS", ""))
     if not orders:
         print("Geçerli sipariş yok; e-posta gönderilmedi.")

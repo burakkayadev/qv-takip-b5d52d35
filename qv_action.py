@@ -95,14 +95,33 @@ JS_FORM_PROBLEMS = r"""
 () => {
   const visible = (node) => !!(node.offsetWidth || node.offsetHeight || node.getClientRects().length);
   const texts = [];
+  let clickedConfirm = '';
   const errors = '#order-form .errorSummary, #order-form .help-inline.error, #order-form .alert-error, .alert-error';
   for (const node of document.querySelectorAll(errors)) {
     if (visible(node) && node.textContent.trim()) texts.push(node.textContent.trim().replace(/\s+/g, ' '));
   }
   const extra = [...document.querySelectorAll('.modal.in')].filter((modal) => modal.id !== 'dialog_large');
-  for (const modal of extra) texts.push('Onay penceresi: ' + modal.textContent.trim().replace(/\s+/g, ' '));
+  for (const modal of extra) {
+    // "Send sms to the Tour Guide after saving the Order?" penceresinde SMS göndermeden kaydet ("No, just save changes")
+    const noSmsBtn = [...modal.querySelectorAll('button, a, input[type="button"], input[type="submit"]')].find(
+      (btn) => /no,\s*just\s*save/i.test((btn.textContent || btn.value || '').trim())
+    );
+    const saveChangedBtn = modal.querySelector('#save-if-changed-dialog-no-discard-save-btn');
+    const autoBtn = noSmsBtn || saveChangedBtn;
+    if (autoBtn) {
+      if (!modal.dataset.qvConfirmed) {
+        modal.dataset.qvConfirmed = String(Date.now());
+        clickedConfirm = (autoBtn.textContent || autoBtn.value || 'Onay').trim();
+        autoBtn.click();
+      }
+      if (Date.now() - Number(modal.dataset.qvConfirmed) < 15000) {
+        continue;
+      }
+    }
+    texts.push('Onay penceresi: ' + modal.textContent.trim().replace(/\s+/g, ' '));
+  }
   const open = !!document.querySelector('#dialog_large.in');
-  return {open, texts: texts.slice(0, 5).map((text) => text.slice(0, 300))};
+  return {open, clickedConfirm, texts: texts.slice(0, 5).map((text) => text.slice(0, 300))};
 }
 """
 
@@ -134,6 +153,47 @@ def read_request(env: dict[str, str]) -> tuple[ActionSpec, str, date] | str:
     if not scraper.valid_iso(day_text):
         return "QV_ORDER_DATE YYYY-AA-GG biçiminde olmalı."
     return spec, order_id, date.fromisoformat(day_text)
+
+
+def read_requests(env: dict[str, str]) -> tuple[ActionSpec, list[tuple[str, date]]] | str:
+    """Tekli (QV_ORDER_ID + QV_ORDER_DATE) veya toplu (QV_ORDER_IDS: 'id:YYYY-AA-GG,...') istekleri okur."""
+    spec = ACTIONS.get((env.get("QV_ACTION") or "").strip().lower())
+    if spec is None:
+        return "QV_ACTION 'delivered' ya da 'returned' olmalı."
+    default_date = (env.get("QV_ORDER_DATE") or "").strip()
+    raw_batch = (env.get("QV_ORDER_IDS") or "").strip()
+    if not raw_batch:
+        raw_id = (env.get("QV_ORDER_ID") or "").strip()
+        if "," in raw_id or ":" in raw_id:
+            raw_batch = raw_id
+    if raw_batch:
+        items: list[tuple[str, date]] = []
+        seen: set[str] = set()
+        for part in raw_batch.split(","):
+            token = part.strip()
+            if not token:
+                continue
+            if ":" in token:
+                oid, dtext = token.split(":", 1)
+                oid, dtext = oid.strip(), dtext.strip()
+            else:
+                oid, dtext = token, default_date
+            if not re.fullmatch(r"\d{4,15}", oid):
+                return f"QV_ORDER_IDS içinde geçersiz sipariş kimliği: {oid}"
+            if not scraper.valid_iso(dtext):
+                return f"QV_ORDER_IDS içinde geçersiz tarih ({oid}): YYYY-AA-GG olmalı."
+            key = f"{oid}:{dtext}"
+            if key not in seen:
+                seen.add(key)
+                items.append((oid, date.fromisoformat(dtext)))
+        if not items:
+            return "QV_ORDER_IDS boş olamaz."
+        return spec, items
+    single = read_request(env)
+    if isinstance(single, str):
+        return single
+    s_spec, s_id, s_day = single
+    return s_spec, [(s_id, s_day)]
 
 
 async def open_edit_dialog(page: Any, settings: scraper.Settings, spec: ActionSpec,
@@ -203,6 +263,8 @@ async def save_and_check(page: Any, dialogs: list[str]) -> str:
         if dialogs:
             return "Beklenmeyen onay sorusu (reddedildi): " + dialogs[0][:200]
         state = await page.evaluate(JS_FORM_PROBLEMS)
+        if state.get("clickedConfirm"):
+            log.info("Onay penceresi otomatik onaylandı: %s", state["clickedConfirm"])
         if state["texts"]:
             return "; ".join(state["texts"])
         if not state["open"]:
@@ -214,9 +276,14 @@ async def confirm_status(page: Any, settings: scraper.Settings, spec: ActionSpec
                          order_id: str, day: date) -> bool:
     """Takvim feed'inden durumun gerçekten değiştiğini doğrular."""
     url = scraper.feed_url_for(settings.base_url + spec.calendar_path, spec.kind, day, 1)
-    response = await page.context.request.get(url, headers={"X-Requested-With": "XMLHttpRequest"})
-    items = scraper.parse_feed_items(json.loads(await response.text()), day, 1) or []
-    return any(item["id"] == order_id and item["status"] == spec.status_name for item in items)
+    for attempt in range(3):
+        response = await page.context.request.get(url, headers={"X-Requested-With": "XMLHttpRequest"})
+        items = scraper.parse_feed_items(json.loads(await response.text()), day, 1) or []
+        if any(item["id"] == order_id and item["status"] == spec.status_name for item in items):
+            return True
+        if attempt < 2:
+            await page.wait_for_timeout(1000)
+    return False
 
 
 async def apply_action(page: Any, settings: scraper.Settings, spec: ActionSpec,
@@ -229,30 +296,36 @@ async def apply_action(page: Any, settings: scraper.Settings, spec: ActionSpec,
         await dialog.dismiss()  # tanımadığımız hiçbir soruya "evet" denmez
 
     page.on("dialog", on_dialog)
-    await open_edit_dialog(page, settings, spec, order_id, day)
-    changed = await set_status(page, spec)
-    if spec.status_name == "delivered":
-        await page.check("#Order_is_self_delivery_1")
-    await page.check("#Order_is_self_return_1")
-    if spec.status_name == "returned":
-        for line in await fill_return_counts(page):
-            log.info("İade adedi: %s", line)
-    if not changed:
-        log.info("Sipariş zaten '%s' durumunda; yalnızca diğer alanlar güncelleniyor.", spec.label)
-    if dry_run:
-        log.info("DRY_RUN: form dolduruldu, KAYDEDİLMEDİ.")
+    try:
+        await open_edit_dialog(page, settings, spec, order_id, day)
+        changed = await set_status(page, spec)
+        if spec.status_name == "delivered":
+            await page.check("#Order_is_self_delivery_1")
+        await page.check("#Order_is_self_return_1")
+        if spec.status_name == "returned":
+            for line in await fill_return_counts(page):
+                log.info("İade adedi: %s", line)
+        if not changed:
+            log.info("Sipariş zaten '%s' durumunda; yalnızca diğer alanlar güncelleniyor.", spec.label)
+        if dry_run:
+            log.info("DRY_RUN: form dolduruldu, KAYDEDİLMEDİ.")
+            return ""
+        problem = await save_and_check(page, dialogs)
+        if problem:
+            return problem
+        if not await confirm_status(page, settings, spec, order_id, day):
+            return "kaydedildi görünüyor ama takvimde durum değişmedi"
         return ""
-    problem = await save_and_check(page, dialogs)
-    if problem:
-        return problem
-    if not await confirm_status(page, settings, spec, order_id, day):
-        return "kaydedildi görünüyor ama takvimde durum değişmedi"
-    return ""
+    finally:
+        page.remove_listener("dialog", on_dialog)
 
 
-async def run(settings: scraper.Settings, spec: ActionSpec, order_id: str, day: date, dry_run: bool) -> int:
+async def run_many(settings: scraper.Settings, spec: ActionSpec,
+                   orders: list[tuple[str, date]], dry_run: bool) -> int:
     from playwright.async_api import async_playwright
 
+    succeeded: list[str] = []
+    failures: list[tuple[str, str]] = []
     async with async_playwright() as playwright:
         browser = await playwright.chromium.launch(headless=settings.headless)
         try:
@@ -263,23 +336,45 @@ async def run(settings: scraper.Settings, spec: ActionSpec, order_id: str, day: 
                 scraper.send_ntfy(settings, scraper.LOGIN_FAILED_MESSAGE, priority="high")
                 return EXIT_LOGIN
             page, active, _ = session
-            try:
-                problem = await apply_action(page, active, spec, order_id, day, dry_run)
-            except Exception as exc:
-                problem = str(exc) or type(exc).__name__
+            for order_id, day in orders:
+                problem = ""
+                for attempt in range(1, 3):
+                    try:
+                        problem = await apply_action(page, active, spec, order_id, day, dry_run)
+                    except Exception as exc:
+                        problem = str(exc) or type(exc).__name__
+                    if not problem:
+                        break
+                    if attempt < 2:
+                        log.warning("Sipariş %s deneme %d başarısız (%s); yeniden deneniyor...",
+                                    order_id, attempt, problem)
+                        await page.wait_for_timeout(1500)
+                if problem:
+                    log.error("Sipariş %s '%s' yapılamadı: %s", order_id, spec.label, problem)
+                    failures.append((order_id, problem))
+                else:
+                    log.info("Sipariş %s '%s' yapıldı.", order_id, spec.label)
+                    succeeded.append(order_id)
         finally:
             await browser.close()
-    if problem:
-        log.error("Sipariş %s '%s' yapılamadı: %s", order_id, spec.label, problem)
-        # İş akışı geçici hatalarda yeniden dener; bildirim yalnızca son denemede gider
+
+    if not dry_run and succeeded:
+        if len(succeeded) == 1:
+            scraper.send_ntfy(settings, f"✅ Sipariş {succeeded[0]} Quietvox'ta {spec.label} yapıldı.")
+        else:
+            scraper.send_ntfy(settings, f"✅ {len(succeeded)} sipariş Quietvox'ta {spec.label} yapıldı: {', '.join(succeeded[:8])}")
+
+    if failures:
         if (os.environ.get("QV_NOTIFY_FAILURE") or "1").strip() != "0":
-            scraper.send_ntfy(settings, f"❌ Sipariş {order_id} {spec.label} yapılamadı: {problem[:200]}",
-                              priority="high")
+            for oid, prob in failures[:5]:
+                scraper.send_ntfy(settings, f"❌ Sipariş {oid} {spec.label} yapılamadı: {prob[:200]}",
+                                  priority="high")
         return EXIT_FAILED
-    if not dry_run:
-        log.info("Sipariş %s '%s' yapıldı.", order_id, spec.label)
-        scraper.send_ntfy(settings, f"✅ Sipariş {order_id} Quietvox'ta {spec.label} yapıldı.")
     return EXIT_OK
+
+
+async def run(settings: scraper.Settings, spec: ActionSpec, order_id: str, day: date, dry_run: bool) -> int:
+    return await run_many(settings, spec, [(order_id, day)], dry_run)
 
 
 def main() -> int:
@@ -288,13 +383,13 @@ def main() -> int:
     if not (settings.user and settings.password):
         log.error("QV_USER ve QV_PASS tanımlı olmalı.")
         return EXIT_CONFIG
-    request = read_request(dict(os.environ))
+    request = read_requests(dict(os.environ))
     if isinstance(request, str):
         log.error(request)
         return EXIT_CONFIG
-    spec, order_id, day = request
+    spec, orders = request
     dry_run = (os.environ.get("DRY_RUN") or "").strip().lower() in ("1", "true", "yes")
-    return asyncio.run(run(settings, spec, order_id, day, dry_run))
+    return asyncio.run(run_many(settings, spec, orders, dry_run))
 
 
 if __name__ == "__main__":

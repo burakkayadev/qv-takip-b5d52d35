@@ -3518,19 +3518,19 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     if (!o) return false;
     var k = orderKey(o, tab === 'returns' ? 'return' : 'delivery');
     var m = markOf(k);
-    var p = state.pending[k];
+    // ÖNEMLİ: state.pending (Quietvox'a gönderilmiş ama henüz onaylanmamış/başarısız olmuş)
+    // siparişler tamamlanmış sayılmaz; yalnızca Quietvox'ta gerçekten Delivered/Returned
+    // olanlar veya kullanıcı "Yalnızca burada işaretle" dediğinde Önceden Alınanlar'a taşınır.
     if (tab === 'returns') {
       if (isPickedUp(o)) return true;
       if (o.status === 'returned') return true;
       if (m && m.done) return true;
-      if (p && p.action === 'returned') return true;
       return false;
     }
     // deliveries
     if (isDone(o, 'deliveries')) return true;
     if (o.status === 'delivered' || o.status === 'returned' || o.qv_done === true) return true;
     if (m && (m.done || m.prepared)) return true;
-    if (p && (p.action === 'delivered' || p.action === 'prepared')) return true;
     return false;
   }
 
@@ -4126,8 +4126,8 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     var done = reached(order, action);
     var queued = !done && Boolean(state.queue[key] && state.queue[key].action === action);
     var entry = state.pending[key] && state.pending[key].action === action ? state.pending[key] : null;
-    var waiting = !done && !queued && entry && Date.now() - entry.ts <= PENDING_FAIL_MS;
-    var failed = !done && !queued && entry && !waiting;
+    var waiting = !done && !queued && entry && !entry.failed && Date.now() - entry.ts <= PENDING_FAIL_MS;
+    var failed = !done && !queued && entry && (entry.failed || !waiting);
     var localOnly = !done && !queued && !entry && markOf(key)[info.field] === true;
     var bagReady = !done && action === 'delivered' && isBagReady(order, key);
     var classes = 'check' +
@@ -4357,7 +4357,7 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     if (queued && !finished) {
       append(main.querySelector('.chips'), el('span', 'chip queued', '📡 İnternet bekleniyor (Kuyrukta)'));
     } else if (pending && !finished) {
-      var late = Date.now() - pending.ts > PENDING_FAIL_MS;
+      var late = Boolean(pending.failed) || Date.now() - pending.ts > PENDING_FAIL_MS;
       append(main.querySelector('.chips'), el('span', 'chip pending' + (late ? ' late' : ''),
         late ? '⚠️ Quietvox\'a düşmedi' : '⏳ Quietvox\'a gönderildi'));
     }
@@ -5011,13 +5011,77 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
 
   // Tek siparişi Quietvox'a gönderir; başarılıysa true, yetki sorununda 'auth' hatası fırlatır
   function dispatchOne(order, action) {
-    var id = order.dr_form.qv_booking_id || order.id.split('_')[0];
-    var body = JSON.stringify({ ref: 'main', inputs: { action: action, order_id: id, order_date: order.date } });
+    var id = bookingId(order);
+    var body = JSON.stringify({
+      ref: 'main',
+      inputs: { action: action, order_id: id, order_date: order.date, order_ids: id + ':' + order.date }
+    });
     return githubRequest('/actions/workflows/' + ACTION_WORKFLOW + '/dispatches', { method: 'POST', body: body })
+      .then(function (res) {
+        if (res.status === 422) {
+          var fallbackBody = JSON.stringify({ ref: 'main', inputs: { action: action, order_id: id, order_date: order.date } });
+          return githubRequest('/actions/workflows/' + ACTION_WORKFLOW + '/dispatches', { method: 'POST', body: fallbackBody });
+        }
+        return res;
+      })
       .then(function (res) {
         if (res.status === 401 || res.status === 403 || res.status === 404) throw new Error('auth');
         return res.ok;
       });
+  }
+
+  // GitHub Actions üzerinde çalışan Quietvox İşlem iş akışını izler; tamamlandığında veya hata verdiğinde bildirim gösterir
+  function captureKnownActionRuns() {
+    return githubRequest('/actions/workflows/' + ACTION_WORKFLOW + '/runs?event=workflow_dispatch&per_page=10')
+      .then(function (res) { return res.ok ? res.json() : { workflow_runs: [] }; })
+      .then(function (data) {
+        var map = {};
+        (data.workflow_runs || []).forEach(function (r) { map[r.id] = true; });
+        return map;
+      })
+      .catch(function () { return {}; });
+  }
+
+  function watchActionDispatch(knownIds, keys, info) {
+    var count = keys.length;
+    var deadline = Date.now() + 8 * 60000;
+    var check = function () {
+      if (Date.now() > deadline) return;
+      githubRequest('/actions/workflows/' + ACTION_WORKFLOW + '/runs?event=workflow_dispatch&per_page=10')
+        .then(function (res) { return res.ok ? res.json() : null; })
+        .then(function (data) {
+          if (!data || !Array.isArray(data.workflow_runs)) {
+            window.setTimeout(check, 12000);
+            return;
+          }
+          var run = data.workflow_runs.filter(function (r) { return !knownIds[r.id]; })[0];
+          if (!run) {
+            window.setTimeout(check, 10000);
+            return;
+          }
+          if (run.status !== 'completed') {
+            window.setTimeout(check, 12000);
+            return;
+          }
+          if (run.conclusion === 'success') {
+            showToast('✅ ' + count + ' sipariş orijinal Quietvox sistemine \'' + info.label + '\' (' + info.quietvox + ') olarak işlendi! Veriler güncelleniyor…');
+            window.setTimeout(function () { loadData(false); }, 15000);
+            window.setTimeout(function () { loadData(false); }, 45000);
+          } else {
+            var nextP = Object.assign({}, state.pending);
+            keys.forEach(function (k) {
+              if (nextP[k]) {
+                nextP[k] = Object.assign({}, nextP[k], { failed: true, ts: Date.now() - PENDING_FAIL_MS - 1000 });
+              }
+            });
+            savePending(nextP);
+            render(true);
+            showToast('⚠️ Dikkat: ' + count + ' sipariş orijinal Quietvox sistemine işlenemedi (' + (run.conclusion || 'hata') + ')! Kart üzerindeki uyarıdan tekrar deneyebilirsiniz.');
+          }
+        })
+        .catch(function () { window.setTimeout(check, 15000); });
+    };
+    window.setTimeout(check, 10000);
   }
 
   function bulkSend() {
@@ -5031,7 +5095,7 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     var list = el('ul', 'dlg-list');
     todo.forEach(function (o) {
       var row = el('li');
-      append(row, el('span', '', o.location_name || o.title), el('b', '', o.dr_form.qv_booking_id || o.id));
+      append(row, el('span', '', o.location_name || o.title), el('b', '', bookingId(o)));
       append(list, row);
     });
     var note = action === 'returned'
@@ -5045,8 +5109,9 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     showDialog([title, el('p', 'dlg-note', note), scroll, buttons]);
   }
 
-  // Siparişleri sırayla gönderir (her biri Quietvox'ta ayrı iş olarak paralel işlenir; çevrimdışıysa kuyruğa alır)
+  // Seçili tüm siparişleri (order_ids listesiyle) Quietvox'a eksiksiz gönderir ve sonucu takip eder
   function runBulk(todo, action, kind) {
+    var info = ACTIONS[action];
     if (!navigator.onLine) {
       todo.forEach(function (order) {
         enqueueAction(order, orderKey(order, kind), action, true);
@@ -5056,19 +5121,74 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
       render(true);
       return;
     }
+
+    var orderIdsList = todo.map(function (o) { return bookingId(o) + ':' + o.date; }).join(',');
+    var firstId = bookingId(todo[0]);
+    var firstDate = todo[0].date;
+    var keys = todo.map(function (o) { return orderKey(o, kind); });
+
+    showToast('⏳ ' + todo.length + ' sipariş orijinal Quietvox sistemine \'' + info.label + '\' olarak işleniyor…');
+
+    captureKnownActionRuns().then(function (knownIds) {
+      var batchBody = JSON.stringify({
+        ref: 'main',
+        inputs: { action: action, order_id: firstId, order_date: firstDate, order_ids: orderIdsList }
+      });
+      return githubRequest('/actions/workflows/' + ACTION_WORKFLOW + '/dispatches', { method: 'POST', body: batchBody })
+        .then(function (res) {
+          if (res.status === 401 || res.status === 403 || res.status === 404) throw new Error('auth');
+          if (res.ok) {
+            var pending = Object.assign({}, state.pending);
+            var nextQ = Object.assign({}, state.queue);
+            keys.forEach(function (key) {
+              delete nextQ[key];
+              pending[key] = { action: action, ts: Date.now() };
+              if (markOf(key)[info.field]) setMark(key, info.field, false);
+            });
+            saveQueue(nextQ);
+            savePending(pending);
+            setSelecting(false);
+            render(true);
+            showToast('⏳ ' + todo.length + ' sipariş orijinal Quietvox sistemine \'' + info.label + '\' (' + info.quietvox + ') olarak işleniyor…');
+            watchActionDispatch(knownIds, keys, info);
+            [120000, 210000, 330000].forEach(function (ms) {
+              window.setTimeout(function () { loadData(false); }, ms);
+            });
+            return;
+          }
+          // Geriye dönük uyumluluk: order_ids henüz desteklenmiyorsa tek tek gönder
+          return runBulkSequential(todo, action, kind, info, knownIds);
+        });
+    }).catch(function (err) {
+      if (err && err.message === 'auth') {
+        showToast('⚠️ Gönderilemedi: GitHub erişim anahtarı geçersiz ya da yetkisiz (⚙ Ayarlar)');
+      } else {
+        todo.forEach(function (order) {
+          enqueueAction(order, orderKey(order, kind), action, true);
+        });
+        setSelecting(false);
+        showToast('📡 Ağ hatası: ' + todo.length + ' sipariş kuyruğa alındı, bağlantı gelince otomatik gönderilecek');
+        render(true);
+      }
+    });
+  }
+
+  function runBulkSequential(todo, action, kind, info, knownIds) {
     var sent = 0;
     var queuedCount = 0;
     var failed = 0;
     var index = 0;
+    var sentKeys = [];
     var next = function () {
       if (index >= todo.length) {
-        var msg = sent + ' sipariş gönderildi';
-        if (queuedCount) msg += ', ' + queuedCount + ' kuyruğa alındı (📡)';
-        if (failed) msg += ', ' + failed + ' gönderilemedi';
-        showToast(msg + '.');
+        var msg = sent ? ('⏳ ' + sent + ' sipariş orijinal Quietvox sistemine \'' + info.label + '\' olarak işleniyor…') : '';
+        if (queuedCount) msg += (msg ? ' ' : '') + '(' + queuedCount + ' kuyruğa alındı 📡)';
+        if (failed) msg += (msg ? ' ' : '') + '⚠️ ' + failed + ' sipariş gönderilemedi!';
+        showToast(msg || 'İşlem tamamlandı.');
         setSelecting(false);
         render(true);
         if (sent > 0) {
+          watchActionDispatch(knownIds || {}, sentKeys, info);
           [150000, 300000, 480000].forEach(function (ms) { window.setTimeout(function () { loadData(false); }, ms); });
         }
         return;
@@ -5080,6 +5200,7 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
       dispatchOne(order, action).then(function (ok) {
         if (ok) {
           sent += 1;
+          sentKeys.push(key);
           var pending = Object.assign({}, state.pending);
           pending[key] = { action: action, ts: Date.now() };
           savePending(pending);
@@ -5089,7 +5210,7 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
       }).catch(function (err) {
         if (err.message === 'auth') {
           failed += 1;
-          index = todo.length; // yetki yoksa diğerlerini deneme
+          index = todo.length;
         } else {
           enqueueAction(order, key, action, true);
           queuedCount += 1;
@@ -5129,7 +5250,9 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
   ];
 
   function bookingId(order) {
-    return str(order.dr_form && order.dr_form.qv_booking_id) || str(order.id).split('_')[0];
+    return str(order.dr_form && order.dr_form.qv_booking_id) ||
+      str(order.waybill && order.waybill.qv_id) ||
+      str(order.id).split('_')[0];
   }
 
   function isFormPrinted(order) {
@@ -6590,43 +6713,55 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
 
   function sendAction(order, key, action) {
     var info = ACTIONS[action];
-    var id = order.dr_form.qv_booking_id || order.id.split('_')[0];
-    var body = JSON.stringify({ ref: 'main', inputs: { action: action, order_id: id, order_date: order.date } });
+    var id = bookingId(order);
+    var body = JSON.stringify({
+      ref: 'main',
+      inputs: { action: action, order_id: id, order_date: order.date, order_ids: id + ':' + order.date }
+    });
     closeDialog();
     if (!navigator.onLine) {
       enqueueAction(order, key, action, false);
       return;
     }
-    showToast('Quietvox\'a gönderiliyor…');
-    githubRequest('/actions/workflows/' + ACTION_WORKFLOW + '/dispatches', { method: 'POST', body: body })
-      .then(function (res) {
-        if (res.status === 401 || res.status === 403 || res.status === 404) throw new Error('auth');
-        if (!res.ok) throw new Error('http');
-        if (state.queue[key]) {
-          var nextQ = Object.assign({}, state.queue);
-          delete nextQ[key];
-          saveQueue(nextQ);
-        }
-        var pending = Object.assign({}, state.pending);
-        pending[key] = { action: action, ts: Date.now() };
-        savePending(pending);
-        if (markOf(key)[info.field]) setMark(key, info.field, false); // yerel işaret yerine gerçek durum izlenir
-        showToast('Gönderildi. Quietvox\'ta 2–3 dakika içinde ' + info.quietvox + ' olacak.');
-        render(true);
-        [120000, 210000, 330000].forEach(function (ms) {
-          window.setTimeout(function () { loadData(false); }, ms);
+    showToast('⏳ 1 sipariş orijinal Quietvox sistemine \'' + info.label + '\' olarak işleniyor…');
+    captureKnownActionRuns().then(function (knownIds) {
+      return githubRequest('/actions/workflows/' + ACTION_WORKFLOW + '/dispatches', { method: 'POST', body: body })
+        .then(function (res) {
+          if (res.status === 422) {
+            var fallbackBody = JSON.stringify({ ref: 'main', inputs: { action: action, order_id: id, order_date: order.date } });
+            return githubRequest('/actions/workflows/' + ACTION_WORKFLOW + '/dispatches', { method: 'POST', body: fallbackBody });
+          }
+          return res;
+        })
+        .then(function (res) {
+          if (res.status === 401 || res.status === 403 || res.status === 404) throw new Error('auth');
+          if (!res.ok) throw new Error('http');
+          if (state.queue[key]) {
+            var nextQ = Object.assign({}, state.queue);
+            delete nextQ[key];
+            saveQueue(nextQ);
+          }
+          var pending = Object.assign({}, state.pending);
+          pending[key] = { action: action, ts: Date.now() };
+          savePending(pending);
+          if (markOf(key)[info.field]) setMark(key, info.field, false); // yerel işaret yerine gerçek durum izlenir
+          showToast('⏳ 1 sipariş orijinal Quietvox sistemine \'' + info.label + '\' (' + info.quietvox + ') olarak işleniyor…');
+          render(true);
+          watchActionDispatch(knownIds, [key], info);
+          [120000, 210000, 330000].forEach(function (ms) {
+            window.setTimeout(function () { loadData(false); }, ms);
+          });
         });
-      })
-      .catch(function (err) {
-        if (err.message === 'auth') {
-          showToast('Gönderilemedi: erişim anahtarı geçersiz ya da yetkisiz (⚙ Ayarlar)');
-        } else if (err.message === 'http') {
-          showToast('Gönderilemedi: GitHub yanıt vermedi, tekrar deneyin');
-        } else {
-          // Otel bodrumu / zayıf şebeke: ağ hatasında işlemi çevrimdışı kuyruğa al
-          enqueueAction(order, key, action, false);
-        }
-      });
+    }).catch(function (err) {
+      if (err && err.message === 'auth') {
+        showToast('⚠️ Gönderilemedi: erişim anahtarı geçersiz ya da yetkisiz (⚙ Ayarlar)');
+      } else if (err && err.message === 'http') {
+        showToast('⚠️ Gönderilemedi: GitHub yanıt vermedi, tekrar deneyin');
+      } else {
+        // Otel bodrumu / zayıf şebeke: ağ hatasında işlemi çevrimdışı kuyruğa al
+        enqueueAction(order, key, action, false);
+      }
+    });
   }
 
   function returnPreviewList(order) {

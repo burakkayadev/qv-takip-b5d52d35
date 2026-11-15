@@ -23,6 +23,7 @@ _backup_before_claude_v5/
 .claude/launch.json
 _backup_before_claude_v6/
 _backup_before_claude_v7/
+_backup_before_antigravity_v8/
 # Flash bellek / tam proje yedekleri (repoya yüklenmez, imza anahtarı içerir)
 YEDEK_FLASH_BELLEK/
 QuietVox_Tam_Yedek_*/

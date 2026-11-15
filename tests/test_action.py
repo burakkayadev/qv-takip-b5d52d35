@@ -48,3 +48,24 @@ def test_valid_request_selects_calendar_and_status():
         {"QV_ACTION": "Returned", "QV_ORDER_ID": "2000000001", "QV_ORDER_DATE": "2026-11-14"})
 
     assert (spec.status_value, spec.kind, order_id, day.isoformat()) == ("6", "return", "2000000001", "2026-11-14")
+
+
+def test_read_requests_supports_bulk_order_ids():
+    spec, orders = qv_action.read_requests({
+        "QV_ACTION": "delivered",
+        "QV_ORDER_ID": "2000221883",
+        "QV_ORDER_DATE": "2026-11-19",
+        "QV_ORDER_IDS": "2000221883:2026-11-19, 2000264994:2026-11-19, 2000221883:2026-11-19, 2000265002",
+    })
+    assert spec.status_value == "2"
+    assert [(oid, d.isoformat()) for oid, d in orders] == [
+        ("2000221883", "2026-11-19"),
+        ("2000264994", "2026-11-19"),
+        ("2000265002", "2026-11-19"),
+    ]
+
+
+def test_js_form_problems_auto_clicks_no_sms_confirmation():
+    assert "no,\\s*just\\s*save" in qv_action.JS_FORM_PROBLEMS
+    assert "qvConfirmed" in qv_action.JS_FORM_PROBLEMS
+

@@ -10,8 +10,10 @@ on:
     branches: [main]
     paths:
       - 'index.html'
-      - 'sw.js'
+      - 'version.json'
+      - 'manifest.json'
       - 'manifest.webmanifest'
+      - 'sw.js'
       - 'icons/**'
 
 permissions:
@@ -24,7 +26,8 @@ concurrency:
 jobs:
   version:
     runs-on: ubuntu-latest
-    # Bu iş akışının kendi commit'i GITHUB_TOKEN ile gönderildiği için yeniden tetiklenmez (döngü olmaz)
+    # Kendi sürüm güncelleme commit'lerinde yeniden çalışmaması için ek güvenlik koşulu
+    if: "!startsWith(github.event.head_commit.message, 'chore: sürüm numarası güncellendi') && !startsWith(github.event.head_commit.message, 'chore: auto-update version.json')"
     steps:
       - uses: actions/checkout@v4
 
@@ -68,9 +71,21 @@ jobs:
           git add version.json index.html sw.js
           if git diff --cached --quiet; then echo "Değişiklik yok."; exit 0; fi
           git commit -m "chore: sürüm numarası güncellendi (build ${{ github.run_number }})"
+          pushed=0
           for attempt in 1 2 3; do
             git pull --rebase -X theirs origin "${GITHUB_REF_NAME}" || { git rebase --abort || true; }
-            if git push origin "HEAD:${GITHUB_REF_NAME}"; then exit 0; fi
+            if git push origin "HEAD:${GITHUB_REF_NAME}"; then pushed=1; break; fi
             sleep 5
           done
-          exit 1
+          if [ "$pushed" != "1" ]; then exit 1; fi
+
+      - name: Güncelleme bildirim e-postasını gönder
+        env:
+          MAIL_TO: ${{ secrets.MAIL_TO }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+          APP_URL: https://burakkayadev.github.io/qv-takip-b5d52d35/
+        run: python3 notify_mail.py --update

@@ -71,3 +71,29 @@ def test_main_sends_to_all_recipients(monkeypatch):
     assert notify_mail.main() == 0
     assert sent["host"] == "smtp.gmail.com" and sent["port"] == 465
     assert sent["msg"]["To"] == "a@example.com, b@example.com"
+
+
+def test_send_update_notification_subject_and_body(monkeypatch, tmp_path):
+    vfile = tmp_path / "version.json"
+    vfile.write_text('{"version": "4.0.0", "build": 77, "commit": "abc1234", "updated_at": "2026-11-15T18:30:00Z"}',
+                     encoding="utf-8")
+    sent = {}
+    env = {
+        "MAIL_TO": "a@example.com, b@example.com",
+        "SMTP_USER": "gonderen@example.com",
+        "SMTP_PASS": "uygulama-sifresi",
+        "COMMIT_MESSAGE": "fix: toplu Hazırlandı senkronizasyonu ve otomatik e-posta",
+        "APP_URL": "https://burakkayadev.github.io/qv-takip-b5d52d35/",
+    }
+    monkeypatch.setattr(notify_mail, "send", lambda msg, host, port, user, pw: sent.update(msg=msg, host=host, port=port))
+
+    assert notify_mail.send_update_notification(env, version_path=vfile) is True
+    msg = sent["msg"]
+    assert msg["Subject"] == "🚀 Quietvox Takip Uygulaması Güncellendi (Yeni Sürüm Hazır)"
+    assert msg["To"] == "a@example.com, b@example.com"
+    plain = msg.get_body(("plain",)).get_content()
+    html = msg.get_body(("html",)).get_content()
+    assert "Build #77" in plain and "fix: toplu Hazırlandı" in plain
+    assert "https://burakkayadev.github.io/qv-takip-b5d52d35/" in plain
+    assert "Build #77" in html and "https://burakkayadev.github.io/qv-takip-b5d52d35/" in html
+

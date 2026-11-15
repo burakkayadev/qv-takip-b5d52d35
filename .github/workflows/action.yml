@@ -1,6 +1,6 @@
 name: Quietvox İşlem
 # Her çalıştırma listede hangi sipariş için olduğuyla görünür (sorun takibi için)
-run-name: "${{ inputs.action }} · ${{ inputs.order_id }} · ${{ inputs.order_date }}"
+run-name: "${{ inputs.action }} · ${{ inputs.order_ids || inputs.order_id }} · ${{ inputs.order_date }}"
 
 # Uygulamadaki "Hazırlandı" / "Teslim Alındı" butonları bu iş akışını tetikler.
 on:
@@ -17,6 +17,9 @@ on:
       order_date:
         description: 'Siparişin takvimdeki günü (YYYY-AA-GG)'
         required: true
+      order_ids:
+        description: 'Toplu QV Booking ID listesi (QVID:YYYY-AA-GG,...)'
+        required: false
       dry_run:
         description: 'Deneme: formu doldur ama KAYDETME'
         type: boolean
@@ -30,7 +33,7 @@ permissions:
 # ve öncekileri iptal eder; ortak grup kullanıldığında arka arkaya basılan siparişler
 # kayboluyordu. Artık farklı siparişler paralel çalışır, aynı sipariş sıraya girer.
 concurrency:
-  group: quietvox-action-${{ inputs.order_id }}
+  group: quietvox-action-${{ inputs.order_ids || inputs.order_id }}
   cancel-in-progress: false
 
 jobs:
@@ -68,6 +71,7 @@ jobs:
           QV_ACTION: ${{ inputs.action }}
           QV_ORDER_ID: ${{ inputs.order_id }}
           QV_ORDER_DATE: ${{ inputs.order_date }}
+          QV_ORDER_IDS: ${{ inputs.order_ids }}
           DRY_RUN: ${{ inputs.dry_run && '1' || '0' }}
           QV_NOTIFY_FAILURE: '0'
         run: |
