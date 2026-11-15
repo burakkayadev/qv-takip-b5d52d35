@@ -40,6 +40,7 @@ jobs:
     env:
       QV_USER: ${{ secrets.QV_USER }}
       QV_PASS: ${{ secrets.QV_PASS }}
+      QV_PASS_BACKUP: ${{ secrets.QV_PASS_BACKUP }}
       QV_HTTP_USER: ${{ secrets.QV_HTTP_USER }}
       QV_HTTP_PASS: ${{ secrets.QV_HTTP_PASS }}
       NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}

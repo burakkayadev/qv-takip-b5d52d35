@@ -57,6 +57,15 @@ jobs:
         env:
           QV_USER: ${{ secrets.QV_USER }}
           QV_PASS: ${{ secrets.QV_PASS }}
+          # İsteğe bağlı ikinci şifre: QV_PASS reddedilirse otomatik denenir
+          QV_PASS_BACKUP: ${{ secrets.QV_PASS_BACKUP }}
+          # Giriş hatası acil e-postası (saatte en fazla 1). Alıcılar Secret'ta; repoda adres yok.
+          MAIL_TO: ${{ secrets.MAIL_TO }}
+          ALERT_TO: ${{ secrets.ALERT_TO }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
           # İsteğe bağlı: HTTP Basic katmanı farklı bilgi istiyorsa (boşsa QV_USER/QV_PASS kullanılır)
           QV_HTTP_USER: ${{ secrets.QV_HTTP_USER }}
           QV_HTTP_PASS: ${{ secrets.QV_HTTP_PASS }}

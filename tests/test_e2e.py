@@ -203,6 +203,19 @@ def test_login_failure_keeps_orders_notifies_once_and_exits_nonzero(site, tmp_pa
     assert len(site.notifications) == 1  # zaten login_failed: bildirim tekrarlanmaz
 
 
+def test_backup_password_logs_in_when_main_password_is_wrong(site, tmp_path):
+    result = run_scraper(site, tmp_path, QV_PASS="eski-yanlis-sifre", QV_PASS_BACKUP=mock.FORM_PASS)
+    assert result.returncode == 0, result.stdout + result.stderr
+    document = read_output(tmp_path)
+    assert document["status"] != "login_failed" and document["auth_backup"] is True
+    assert document["deliveries"] or document["returns"]
+    assert "yedek şifreyle" in result.stdout
+    assert mock.FORM_PASS not in result.stdout + result.stderr
+
+    again = run_scraper(site, tmp_path)  # ana şifre düzeldi: uyarı işareti kalkar
+    assert again.returncode == 0 and "auth_backup" not in read_output(tmp_path)
+
+
 def test_rejected_basic_auth_is_reported_as_login_failure(site, tmp_path):
     result = run_scraper(site, tmp_path, QV_HTTP_PASS="yanlis-kapi-sifresi")
     assert result.returncode != 0

@@ -1,0 +1,43 @@
+name: Quietvox Bildirim
+run-name: "Form basıldı · e-posta bildirimi"
+
+# Uygulamada "Form" içeren bir baskı başlatılınca tetiklenir ve bilgilendirme e-postası gönderir.
+# Gerekli Secret'lar: MAIL_TO (alıcılar, virgülle), SMTP_USER, SMTP_PASS (Gmail uygulama şifresi).
+# İsteğe bağlı: SMTP_HOST, SMTP_PORT (varsayılan smtp.gmail.com:465).
+on:
+  workflow_dispatch:
+    inputs:
+      orders:
+        description: 'QVID:YYYY-AA-GG listesi (virgülle)'
+        required: true
+      printed_at:
+        description: 'Form basılma zamanı (ISO 8601)'
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Depoyu al
+        uses: actions/checkout@v4
+
+      - name: Python 3.12 kur
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # Girdiler komut satırına gömülmez, ortam değişkeni olarak verilir (enjeksiyona karşı)
+      - name: E-posta gönder
+        env:
+          ORDERS: ${{ inputs.orders }}
+          PRINTED_AT: ${{ inputs.printed_at }}
+          MAIL_TO: ${{ secrets.MAIL_TO }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+        run: python notify_mail.py

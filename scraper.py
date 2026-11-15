@@ -26,7 +26,7 @@ import sys
 import tempfile
 import urllib.parse
 import urllib.request
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Iterable, Mapping
@@ -69,6 +69,11 @@ STATUS_PARTIAL = "partial"
 STATUS_LOGIN_FAILED = "login_failed"
 
 LOGIN_FAILED_MESSAGE = "⚠️ Quietvox oturumu açılamadı, şifreyi kontrol edin"
+# Giriş hatası e-postası: aynı hata sürerken en fazla saatte bir (son gönderim data.json'da tutulur)
+LOGIN_ALERT_INTERVAL = timedelta(hours=1)
+LOGIN_ALERT_FIELD = "login_alert_at"
+# Ana şifre çalışmayıp yedek şifreyle girildiğinde data.json'a yazılan işaret (uygulama uyarı gösterir)
+AUTH_BACKUP_FIELD = "auth_backup"
 
 # CSS seçici adayları. Her anahtar QV_SEL_<ANAHTAR> ortam değişkeniyle ezilebilir
 # (birden çok aday "||" ile ayrılır). Örn: QV_SEL_EVENT_PRIMARY=".my-event||a.booking"
@@ -274,6 +279,7 @@ class Settings:
     past_days: int = 0  # bugünden geriye kaç günün siparişi tutulur (geçmişe bakmak için)
     reminder: str = ""  # "evening" (yarın özeti) | "morning" | "noon" (bugün + unutulan iadeler)
     app_url: str = ""  # bildirime dokununca açılacak uygulama adresi (ör. https://…github.io/repo/)
+    password_backup: str = ""  # QV_PASS_BACKUP: ana şifre reddedilirse denenecek ikinci şifre
 
 
 def _env(env: Mapping[str, str], name: str, default: str = "") -> str:
@@ -347,6 +353,7 @@ def load_settings(env: Mapping[str, str] | None = None) -> Settings:
         past_days=max(0, _env_int(env, "QV_PAST_DAYS", 0)),
         reminder=_env(env, "REMINDER").lower() or ("evening" if _env_flag(env, "SEND_REMINDER", False) else ""),
         app_url=_env(env, "APP_URL"),
+        password_backup=env.get("QV_PASS_BACKUP") or "",
     )
 
 
@@ -1350,11 +1357,17 @@ def assemble_document(previous: dict[str, Any] | None, results: Mapping[str, lis
 
 
 def status_only_document(previous: dict[str, Any] | None, status: str, message: str,
-                         settings: Settings, now: datetime) -> dict[str, Any]:
-    """Mevcut siparişleri KORUYARAK yalnızca status ve status_message alanlarını günceller."""
+                         settings: Settings, now: datetime,
+                         extra: Mapping[str, Any] | None = None) -> dict[str, Any]:
+    """Mevcut siparişleri KORUYARAK yalnızca durum alanlarını günceller (extra: None değer alanı siler)."""
     document = copy.deepcopy(previous) if previous else empty_document(settings, now)
     document["status"] = status
     document["status_message"] = message
+    for key, value in (extra or {}).items():
+        if value is None:
+            document.pop(key, None)
+        else:
+            document[key] = value
     return document
 
 
@@ -1394,7 +1407,10 @@ def content_signature(document: dict[str, Any] | None) -> str:
     """generated_at dışındaki anlamlı içeriğin karşılaştırma imzası."""
     if not document:
         return ""
-    keys = ("schema_version", "demo", "status", "status_message", "timezone", "window_days", "deliveries", "returns")
+    # login_alert_at / auth_backup da sayılır: değişince yazılmazlarsa saatlik e-posta sınırı ve
+    # "yedek şifre kullanılıyor" uyarısı bayat kalır
+    keys = ("schema_version", "demo", "status", "status_message", "timezone", "window_days", "deliveries", "returns",
+            LOGIN_ALERT_FIELD, AUTH_BACKUP_FIELD)
     return json.dumps({key: document.get(key) for key in keys}, sort_keys=True, ensure_ascii=False)
 
 
@@ -1430,9 +1446,9 @@ def write_if_changed(settings: Settings, previous: dict[str, Any] | None,
 
 
 def write_status_only(settings: Settings, previous: dict[str, Any] | None, status: str,
-                      message: str, now: datetime) -> None:
+                      message: str, now: datetime, extra: Mapping[str, Any] | None = None) -> None:
     """Siparişlere dokunmadan durum alanlarını yazar (değişiklik yoksa yazmaz)."""
-    document = status_only_document(previous, status, message, settings, now)
+    document = status_only_document(previous, status, message, settings, now, extra)
     if previous and content_signature(previous) == content_signature(document):
         log.info("Durum zaten '%s'; %s'a dokunulmadı.", status, settings.output.name)
         return
@@ -2468,6 +2484,7 @@ class Outcome:
     results: dict[str, list | None] = field(default_factory=dict)
     detail_errors: int = 0
     message: str = ""
+    used_backup: bool = False  # ana şifre reddedildi, QV_PASS_BACKUP ile girildi
 
 
 class SecretFilter(logging.Filter):
@@ -2491,7 +2508,8 @@ def configure_logging(settings: Settings) -> None:
             stream.reconfigure(encoding="utf-8", errors="replace")
     handler = logging.StreamHandler(sys.stdout)
     handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s", "%H:%M:%S"))
-    handler.addFilter(SecretFilter([settings.password, settings.http_pass, settings.ntfy_topic]))
+    handler.addFilter(SecretFilter([settings.password, settings.http_pass, settings.ntfy_topic,
+                                    settings.password_backup, os.environ.get("SMTP_PASS") or ""]))
     logging.basicConfig(level=logging.DEBUG if settings.debug else logging.INFO, handlers=[handler], force=True)
 
 
@@ -2506,30 +2524,95 @@ async def new_context(browser: Any, settings: Settings) -> Any:
     return context
 
 
+def backup_settings(settings: Settings) -> Settings | None:
+    """QV_PASS_BACKUP tanımlı ve ana şifreden farklıysa yedek şifreli ayarlar; değilse None.
+
+    HTTP Basic şifresi ayrıca verilmemişse (ana şifreyle aynıysa) o da yedek şifreye geçer.
+    """
+    backup = settings.password_backup
+    if not backup or backup == settings.password:
+        return None
+    http_pass = backup if settings.http_pass == settings.password else settings.http_pass
+    return replace(settings, password=backup, http_pass=http_pass)
+
+
+async def login_with_fallback(browser: Any, settings: Settings) -> tuple[Any, Settings, bool] | None:
+    """Önce ana şifreyle, olmazsa yedek şifreyle giriş yapar.
+
+    Başarılıysa (sayfa, kullanılan ayarlar, yedek mi kullanıldı); iki şifre de reddedilirse None.
+    Siteye ulaşılamazsa istisna yukarı geçer.
+    """
+    backup = backup_settings(settings)
+    candidates = [settings] + ([backup] if backup else [])
+    for index, active in enumerate(candidates):
+        context = await new_context(browser, active)
+        page = await context.new_page()
+        if await ensure_login(context, page, active):
+            if index:
+                log.warning("Ana şifre reddedildi; yedek şifreyle (QV_PASS_BACKUP) giriş yapıldı.")
+            return page, active, bool(index)
+        await dump_debug(active, page, "login_failed")
+        await context.close()
+        if index + 1 < len(candidates):
+            log.warning("Ana şifreyle giriş başarısız; yedek şifre (QV_PASS_BACKUP) deneniyor.")
+    return None
+
+
 async def run_session(browser: Any, settings: Settings) -> Outcome:
-    """Giriş + dört takvimin taranması."""
-    context = await new_context(browser, settings)
-    page = await context.new_page()
+    """Giriş (ana, gerekirse yedek şifre) + dört takvimin taranması."""
     try:
-        logged_in = await ensure_login(context, page, settings)
+        session = await login_with_fallback(browser, settings)
     except Exception as exc:
         log.error("Siteye ulaşılamadı (%s).", type(exc).__name__)
         return Outcome("unreachable", message="Quietvox sitesine ulaşılamadı; eski veriler gösteriliyor.")
-    if not logged_in:
-        await dump_debug(settings, page, "login_failed")
+    if session is None:
         return Outcome("login_failed")
-    results, detail_errors = await scrape_all(page, settings)
-    return Outcome("ok", results, detail_errors)
+    page, active, used_backup = session
+    results, detail_errors = await scrape_all(page, active)
+    return Outcome("ok", results, detail_errors, used_backup=used_backup)
+
+
+def login_alert_due(previous: dict[str, Any] | None, now: datetime) -> bool:
+    """Son giriş-hatası e-postasından bu yana en az LOGIN_ALERT_INTERVAL geçtiyse True."""
+    last = (previous or {}).get(LOGIN_ALERT_FIELD)
+    if not last:
+        return True
+    try:
+        sent_at = datetime.fromisoformat(str(last).replace("Z", "+00:00"))
+    except ValueError:
+        return True
+    if sent_at.tzinfo is None:
+        sent_at = sent_at.replace(tzinfo=timezone.utc)
+    return now - sent_at >= LOGIN_ALERT_INTERVAL
+
+
+def send_login_alert(settings: Settings, now: datetime) -> bool:
+    """Acil giriş hatası e-postası (notify_mail). Hata kazıyıcıyı durdurmaz; gönderildiyse True."""
+    try:
+        import notify_mail  # aynı klasörde; yalnızca gerektiğinde yüklenir
+        return notify_mail.send_login_alert(now, os.environ, settings.app_url)
+    except Exception as exc:
+        log.error("Giriş hatası e-postası gönderilemedi (%s).", type(exc).__name__)
+        return False
 
 
 def handle_login_failure(settings: Settings, previous: dict[str, Any] | None, now: datetime) -> int:
-    """Giriş başarısız: bir kez bildir, siparişleri koruyarak durumu yaz, hata koduyla çık."""
+    """Giriş başarısız: siparişleri koruyarak durumu yaz, bildir (ntfy bir kez, e-posta saatte en
+    fazla bir kez), hata koduyla çık."""
     log.error("Quietvox oturumu açılamadı.")
     already_reported = bool(previous) and previous.get("status") == STATUS_LOGIN_FAILED
     if not already_reported:
         send_ntfy(settings, LOGIN_FAILED_MESSAGE, priority="high")
+    alert_at = (previous or {}).get(LOGIN_ALERT_FIELD)
+    if login_alert_due(previous, now):
+        if send_login_alert(settings, now):
+            alert_at = now.isoformat(timespec="seconds").replace("+00:00", "Z")
+            log.info("Giriş hatası e-postası gönderildi.")
+    else:
+        log.info("Giriş hatası e-postası son bir saat içinde gönderildi; tekrarlanmadı.")
     write_status_only(settings, previous, STATUS_LOGIN_FAILED,
-                      "Quietvox oturumu açılamadı, şifreyi kontrol edin.", now)
+                      "Quietvox oturumu açılamadı, şifreyi kontrol edin.", now,
+                      {LOGIN_ALERT_FIELD: alert_at})
     return EXIT_LOGIN
 
 
@@ -2543,6 +2626,8 @@ def finish(settings: Settings, previous: dict[str, Any] | None, outcome: Outcome
         return EXIT_FAILURE
     document = assemble_document(previous, outcome.results, outcome.detail_errors, settings, now)
     document, change_lines = annotate_changes(previous, document, settings.today, now)
+    if outcome.used_backup:
+        document[AUTH_BACKUP_FIELD] = True
     write_if_changed(settings, previous, document, now)
     if change_lines:
         log.info("Değişen sipariş sayısı: %d.", len(change_lines))

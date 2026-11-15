@@ -1055,6 +1055,18 @@ dialog.dlg::backdrop { background: rgba(27, 32, 48, 0.55); }
 }
 .dlg-note { font-size: 14px !important; color: var(--ink-soft); }
 
+.pw-section { display: grid; gap: 10px; margin: 2px 0 16px; padding: 12px 14px; border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.16); background: rgba(255, 255, 255, 0.05); }
+.pw-section h3 { margin: 0; font-size: 16px; }
+.pw-section, .pw-section > * { min-width: 0; }
+.pw-section .dlg-btns { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.pw-section .btn { white-space: normal; line-height: 1.25; min-width: 0; overflow-wrap: anywhere; }
+.pw-section.urgent { border-color: rgba(255, 120, 110, 0.6); box-shadow: 0 0 0 1px rgba(255, 120, 110, 0.25); }
+.pw-status { margin: 0; }
+.pw-status:empty { display: none; }
+.pw-status a { color: inherit; text-decoration: underline; }
+[data-theme="light"] .pw-section { background: #F6F7FA; border-color: rgba(27, 32, 48, 0.25); }
+
 /* ==========================================================================
    9) KÂĞIT ÇIKTISI
    Varsayılan A4; WayBill yazdırılırken sayfa boyutu betikle A5'e çevrilir.
@@ -1925,6 +1937,12 @@ body.selecting .tabs { display: none !important; }
 
 .chip.warnchip { background: var(--err-bg); color: var(--err-ink); font-weight: 800; }
 .chip.changed { background: var(--warn-bg); color: var(--warn-ink); font-weight: 800; }
+/* Form basıldı rozeti (kalıcı, bu cihazda) */
+.chip.printed { background: rgba(16, 185, 129, 0.18); color: #6EE7B7; border: 1px solid rgba(16, 185, 129, 0.45); font-weight: 800; }
+[data-theme="light"] .chip.printed { background: #DCFCE7; color: #14532D; border-color: #86EFAC; }
+.print-modes { display: grid; gap: 10px; }
+.print-mode { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; }
+.print-mode small { grid-column: 1 / -1; margin-top: -4px; font-size: 13px; opacity: 0.85; }
 .change-note { font-size: 14px; color: var(--warn-ink); background: var(--warn-bg); border-radius: 10px; padding: 8px 10px; }
 
 .font-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
@@ -3063,7 +3081,7 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     <button type="button" class="bulk-x" id="bulk-close" aria-label="Seçimi kapat">✕</button></div>
   <button type="button" id="bulk-all">Tümünü seç</button>
   <button type="button" id="bulk-wb">🖨️ WayBill (2'şer)</button>
-  <button type="button" id="bulk-both" style="grid-column: 1 / -1">🖨️ Toplu Yazdır (WayBill + Form)</button>
+  <button type="button" id="bulk-both" style="grid-column: 1 / -1">🖨️ Toplu Yazdır (3 seçenek)</button>
   <button type="button" class="bulk-go" id="bulk-send" style="grid-column: 1 / -1">Quietvox'a gönder</button>
 </div>
 
@@ -3124,6 +3142,11 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
   var LS_QUEUE = 'qv.queue.v1';               // Çevrimdışıyken kuyruğa alınan işlemler (bağlantı gelince gönderilir)
   var PENDING_FAIL_MS = 12 * 60 * 1000;       // Bu süre sonunda durum değişmediyse "olmadı" say
   var ACTION_WORKFLOW = 'action.yml';
+  var NOTIFY_WORKFLOW = 'notify.yml';           // Form basılınca e-posta bildirimi
+  var LS_PRINTED = 'qv.printed.v1';             // { QV ID: basılma zamanı } — "Form Yazdırıldı ✓" rozeti
+  var LS_NOTIFY_QUEUE = 'qv.notify.queue.v1';   // Çevrimdışıyken bekleyen e-posta bildirimleri
+  var PRINTED_TTL_MS = 120 * 24 * 60 * 60 * 1000; // 120 günden eski rozet kayıtları silinir
+  var printedMap = {};
   var CONSUMABLE_PERCENT = 3;                 // Sarf kalemlerinde iade adedi: teslimin en fazla %3'ü
   var CONSUMABLE_RE = /QV1\.38\b|battery\s+aa|QV1\.2S\b|earphone\s+3[.,]5\s*mm\s+new\s+style/i;
   var NOTE_PRESETS = ['Resepsiyon Ahmet Bey', 'Resepsiyon', 'Bellboy', 'Tur Rehberi', 'Güvenlik'];
@@ -3401,6 +3424,7 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
       status: str(raw.status) || 'ok',
       status_message: str(raw.status_message),
       generated_at: str(raw.generated_at),
+      auth_backup: raw.auth_backup === true, // ana şifre reddedildi, yedek şifreyle girildi
       deliveries: normalizeList(raw.deliveries),
       returns: normalizeList(raw.returns)
     };
@@ -3693,7 +3717,7 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     }
     if (d) {
       if (d.status === 'login_failed') {
-        items.push(['error', 'Quietvox oturumu açılamadı, şifreyi kontrol edin.']);
+        items.push(['error', '⚠️ Quietvox oturumu güncellenmeli — Yeni şifreyi girin (dokunun)', openPasswordSettings]);
       } else if (d.status === 'partial') {
         items.push(['warn', 'Veriler eksik olabilir' + (d.status_message ? ': ' + d.status_message : '.')]);
       } else if (d.status !== 'ok' && d.status_message) {
@@ -3703,6 +3727,10 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
       if (!isNaN(gen.getTime()) && Date.now() - gen.getTime() > STALE_MS) {
         var hours = Math.floor((Date.now() - gen.getTime()) / 3600000);
         items.push(['warn', 'Veri eski olabilir (yaklaşık ' + hours + ' saat önce güncellendi).']);
+      }
+      if (d.auth_backup === true && d.status !== 'login_failed') {
+        items.push(['warn', '🔑 Ana Quietvox şifresi çalışmadı, yedek şifreyle devam ediliyor. Yeni şifreyi girmek için dokunun.',
+          openPasswordSettings]);
       }
       if (state.offline) {
         items.push(['info', 'Çevrimdışı: en son kaydedilen veri gösteriliyor.']);
@@ -3714,7 +3742,13 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
 
     box.replaceChildren.apply(box, items.map(function (it) {
       var bannerEl = el('div', 'banner ' + it[0], it[1]);
-      if (it[0] === 'error') {
+      if (it[2]) {
+        bannerEl.style.cursor = 'pointer';
+        bannerEl.setAttribute('role', 'button');
+        bannerEl.tabIndex = 0;
+        bannerEl.addEventListener('click', it[2]);
+        bannerEl.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); it[2](); } });
+      } else if (it[0] === 'error') {
         bannerEl.style.cursor = 'pointer';
         bannerEl.title = 'Yeniden yüklemek için dokunun';
         bannerEl.addEventListener('click', function () { loadData(true); });
@@ -3895,6 +3929,7 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     var qv = order.waybill.qv_id || order.id;
     if (qv) append(chips, el('span', 'chip qv', 'QV ID: ' + qv));
     if (order.changes.length) append(chips, el('span', 'chip changed', '🔁 Değişti'));
+    if (isFormPrinted(order)) append(chips, el('span', 'chip printed', '🖨️ Form Yazdırıldı ✓'));
     orderWarnings(order).forEach(function (text) { append(chips, el('span', 'chip warnchip', '⚠️ ' + text)); });
     return chips;
   }
@@ -4223,19 +4258,7 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
 
   // Yazdırma seçimi: WayBill (yarım A4) ya da D&R Formu (A4), her biri önizlemeli
   function openPrintDialog(order, opener) {
-    var title = el('h2', '', '🖨️ Etiket yazdır');
-    title.id = 'dlg-title';
-    var nodes = [title, el('p', '', (order.location_name || order.title) + ' · ' + (order.dr_form.qv_booking_id || order.id))];
-    [['waybill', '🖨️ WayBill (yarım A4)'], ['form', '🖨️ D&R Formu (A4)']].forEach(function (pair) {
-      var row = el('div', 'print-choice');
-      append(row,
-        dialogButton('btn-print', pair[1], function () { closeDialog(); printOrder(order, pair[0]); }),
-        dialogButton('btn-ghost', 'Önizle', function () { closeDialog(); openPreview(order, opener, pair[0]); }));
-      nodes.push(row);
-    });
-    nodes.push(el('p', 'dlg-note', 'Yazdırma ekranında kâğıt A4, ölçek %100 olmalı.'));
-    nodes.push(dialogButton('btn-link', 'Vazgeç', closeDialog));
-    showDialog(nodes);
+    openDocsPrintDialog([order], opener);
   }
 
   var WA_TEMPLATES = {
@@ -4972,7 +4995,7 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     var n = selectedOrders().length;
     $('#bulk-n').textContent = n + ' sipariş seçildi';
     $('#bulk-send').textContent = (state.tab === 'returns' ? '🔄 Teslim Alındı' : '📦 Hazırlandı') + ' → Quietvox (' + n + ')';
-    $('#bulk-both').textContent = '🖨️ Toplu Yazdır (WayBill + Form)' + (n ? ' · ' + n : '');
+    $('#bulk-both').textContent = '🖨️ Toplu Yazdır (3 seçenek)' + (n ? ' · ' + n : '');
     $('#bulk-send').disabled = n === 0;
     $('#bulk-wb').disabled = n === 0;
     $('#bulk-both').disabled = n === 0;
@@ -5091,78 +5114,267 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     printWhenReady();
   }
 
-  // Seçilen siparişler için ÖNCE tüm Formları, ARDINDAN tüm WayBill sayfalarını hazırlar (her belge ayrı A4 sayfasında)
-  function fillBulkBothPrintArea(orders) {
-    var formSheets = [];
-    var waybillSheets = [];
-    orders.forEach(function (o) {
-      var form = buildFormSheet(o);
-      form.classList.add('doc-break');
-      formSheets.push(form);
-    });
-    orders.forEach(function (o) {
-      var wb = buildWaybillSheet(o);
-      wb.classList.add('pair-end', 'doc-break');
-      waybillSheets.push(wb);
-    });
-    var sheets = formSheets.concat(waybillSheets);
+  function openBulkPrintDialog() {
+    openDocsPrintDialog(selectedOrders(), $('#bulk-both'));
+  }
+
+  /* ========================================================================
+     YAZDIRMA MODLARI: Form + WayBill · Sadece WayBill · Sadece Form
+     "Form" içeren baskıda: rozet, Quietvox'a Delivered ve e-posta bildirimi
+     ======================================================================== */
+  var PRINT_MODES = [
+    { mode: 'both', label: '📄 + 🏷️ Form + WayBill', note: 'Önce tüm Formlar, ardından tüm WayBill\'ler' },
+    { mode: 'waybill', label: '🏷️ Sadece WayBill', note: 'Yalnızca WayBill etiketleri (A4\'e ikişer)' },
+    { mode: 'form', label: '📄 Sadece Form', note: 'Yalnızca Delivery & Return Formları' }
+  ];
+
+  function bookingId(order) {
+    return str(order.dr_form && order.dr_form.qv_booking_id) || str(order.id).split('_')[0];
+  }
+
+  function isFormPrinted(order) {
+    return Boolean(printedMap[bookingId(order)]);
+  }
+
+  function loadPrinted() {
+    var raw = lsRead(LS_PRINTED);
+    var map = {};
+    if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
+      Object.keys(raw).forEach(function (id) {
+        if (typeof raw[id] === 'number' && Date.now() - raw[id] < PRINTED_TTL_MS) map[id] = raw[id];
+      });
+    }
+    return map;
+  }
+
+  function pageCount(n, mode) {
+    if (mode === 'both') return n * 2;
+    if (mode === 'waybill') return Math.ceil(n / 2);
+    return n;
+  }
+
+  function buildDocSheets(orders, mode) {
+    var forms = [];
+    var waybills = [];
+    if (mode !== 'waybill') {
+      orders.forEach(function (o) {
+        var form = buildFormSheet(o);
+        form.classList.add('doc-break');
+        forms.push(form);
+      });
+    }
+    if (mode !== 'form') {
+      orders.forEach(function (o, i) {
+        var wb = buildWaybillSheet(o);
+        // Form + WayBill: her WayBill ayrı sayfa; Sadece WayBill: A4'e ikişer
+        if (mode === 'both') wb.classList.add('pair-end', 'doc-break');
+        else if (i % 2 === 1) wb.classList.add('pair-end');
+        waybills.push(wb);
+      });
+    }
+    return forms.concat(waybills);
+  }
+
+  function fillDocsArea(orders, mode) {
     var container = $('#print-sheets');
-    container.replaceChildren.apply(container, sheets);
-    setPageSize('form');
+    container.replaceChildren.apply(container, buildDocSheets(orders, mode));
+    setPageSize(mode === 'waybill' ? 'waybill' : 'form');
     document.body.classList.add('has-print');
     fitPrintSheets(container);
   }
 
-  function openBulkPreview(orders) {
-    fillBulkBothPrintArea(orders);
-    previewReturnFocus = $('#bulk-both') || null;
+  function printDocs(orders, mode) {
+    if (!orders.length) return;
+    fillDocsArea(orders, mode);
+    printWhenReady();
+    if (mode !== 'waybill') afterFormPrinted(orders);
+  }
+
+  function previewDocs(orders, mode, opener) {
+    if (!orders.length) return;
+    fillDocsArea(orders, mode);
+    previewReturnFocus = opener || null;
     var root = $('#print-root');
     document.body.classList.add('pv-open');
     root.setAttribute('aria-hidden', 'false');
     root.setAttribute('role', 'dialog');
     root.setAttribute('aria-modal', 'true');
     root.setAttribute('aria-labelledby', 'pv-title');
-    $('#pv-title').textContent = 'Toplu Yazdır · ' + orders.length + ' sipariş (' + orders.length + ' Form + ' + orders.length + ' WayBill)';
+    var info = PRINT_MODES.filter(function (m) { return m.mode === mode; })[0];
+    $('#pv-title').textContent = info.label + ' · ' + (orders.length === 1
+      ? (orders[0].location_name || orders[0].id || '')
+      : orders.length + ' sipariş') + ' · ' + pageCount(orders.length, mode) + ' sayfa';
     updatePreviewScale();
     root.scrollTop = 0;
     $('#pv-close').focus();
   }
 
-  function openBulkPrintDialog() {
-    var orders = selectedOrders();
+  function openDocsPrintDialog(orders, opener) {
     if (!orders.length) return;
     var n = orders.length;
-    var totalPages = n * 2;
-    var title = el('h2', '', '🖨️ Toplu Yazdır — ' + n + ' sipariş (' + totalPages + ' sayfa)');
+    var title = el('h2', '', n === 1 ? '🖨️ Yazdır' : '🖨️ Toplu Yazdır — ' + n + ' sipariş');
     title.id = 'dlg-title';
-    var summary = el('p', 'dlg-note',
-      '📄 Yazdırma Sırası: Önce ' + n + ' adet Teslimat/İade Formu, ardından ' + n + ' adet Taşıma İrsaliyesi (WayBill) basılacaktır (Toplam ' + totalPages + ' sayfa A4). ' +
-      'Sayfa düzeni: A4 · Ölçek: %100 · Üstbilgi/altbilgi: kapalı.');
-    var list = el('ul', 'dlg-list');
-    orders.forEach(function (o, idx) {
-      var row = el('li');
-      var label = (idx + 1) + '. ' + (o.location_name || o.title) + (o.date ? ' (' + shortDate(o.date) + ')' : '');
-      append(row, el('span', '', label), el('b', '', (o.dr_form.qv_booking_id || o.id) + ' · 2 syf'));
-      append(list, row);
+    var nodes = [title];
+    if (n === 1) {
+      nodes.push(el('p', '', (orders[0].location_name || orders[0].title) + ' · ' + bookingId(orders[0])));
+    } else {
+      var list = el('ul', 'dlg-list');
+      orders.forEach(function (o, idx) {
+        var row = el('li');
+        append(row, el('span', '', (idx + 1) + '. ' + (o.location_name || o.title) + (o.date ? ' (' + shortDate(o.date) + ')' : '')),
+          el('b', '', bookingId(o)));
+        append(list, row);
+      });
+      var scroll = el('div', 'dlg-scroll');
+      append(scroll, list);
+      nodes.push(scroll);
+    }
+    var modes = el('div', 'print-modes');
+    PRINT_MODES.forEach(function (m) {
+      var row = el('div', 'print-mode');
+      row.setAttribute('data-print-mode', m.mode);
+      append(row,
+        dialogButton('btn-print', m.label + ' · ' + pageCount(n, m.mode) + ' syf', function () {
+          closeDialog();
+          printDocs(orders, m.mode);
+        }),
+        dialogButton('btn-ghost', 'Önizle', function () {
+          closeDialog();
+          previewDocs(orders, m.mode, opener);
+        }),
+        el('small', '', m.note));
+      append(modes, row);
     });
-    var scroll = el('div', 'dlg-scroll');
-    append(scroll, list);
-    var buttons = el('div', 'dlg-btns');
-    append(buttons,
-      dialogButton('btn-ghost', 'Vazgeç', closeDialog),
-      dialogButton('btn-ghost', 'Önizle (' + totalPages + ' syf)', function () {
-        closeDialog();
-        openBulkPreview(orders);
-      }),
-      dialogButton('btn-print', '🖨️ Yazdır (' + totalPages + ' syf)', function () {
-        closeDialog();
-        fillBulkBothPrintArea(orders);
-        printWhenReady();
-      }));
-    showDialog([title, summary, scroll, buttons]);
+    nodes.push(modes);
+    nodes.push(el('p', 'dlg-note', '“Form” içeren baskıda siparişlere 🖨️ Form Yazdırıldı ✓ eklenir, Quietvox\'a ' +
+      'Delivered olarak gönderilir ve bilgilendirme e-postası gider. Sadece WayBill bunları yapmaz. ' +
+      'Kâğıt A4, ölçek %100.'));
+    nodes.push(dialogButton('btn-link', 'Vazgeç', closeDialog));
+    showDialog(nodes);
+  }
+
+  // Delivered işlemi, siparişin teslimat takvimindeki kaydı (ve tarihi) üzerinden yapılır
+  function deliveryFor(order) {
+    var id = bookingId(order);
+    var list = (state.data && state.data.deliveries) || [];
+    return list.filter(function (o) { return bookingId(o) === id && o.date === order.date; })[0] ||
+      list.filter(function (o) { return bookingId(o) === id; })[0] || null;
+  }
+
+  // Form basıldıktan sonra: rozet, Quietvox'a Delivered ve e-posta
+  function afterFormPrinted(orders) {
+    var now = Date.now();
+    var unique = [];
+    orders.forEach(function (o) {
+      if (unique.some(function (u) { return bookingId(u) === bookingId(o); })) return;
+      unique.push(o);
+    });
+    var nextPrinted = Object.assign({}, printedMap);
+    unique.forEach(function (o) { nextPrinted[bookingId(o)] = now; });
+    printedMap = nextPrinted;
+    lsWrite(LS_PRINTED, nextPrinted);
+
+    var kind = TAB_INFO.deliveries.kind;
+    var todo = [];
+    var already = 0;
+    unique.forEach(function (o) {
+      var d = deliveryFor(o);
+      if (!d || INACTIVE_STATUSES[d.status]) return;
+      var key = orderKey(d, kind);
+      if (reached(d, 'delivered') || state.pending[key] || (state.queue && state.queue[key])) { already += 1; return; }
+      todo.push({ order: d, key: key });
+    });
+    var notifyOrders = unique.map(function (o) {
+      var d = deliveryFor(o);
+      return bookingId(o) + ':' + ((d && d.date) || o.date);
+    }).filter(function (s) { return /^\d{4,15}:\d{4}-\d{2}-\d{2}$/.test(s); });
+    var printedAt = new Date(now).toISOString();
+    var canSend = Boolean(state.token && repoSlug());
+    var sent = 0;
+    var queued = 0;
+    var idx = 0;
+
+    var finish = function () {
+      var parts = [unique.length + ' sipariş için Form basıldı, \'Yazdırıldı ✓\' işaretlendi'];
+      if (!canSend) {
+        parts.push('Quietvox\'a gönderim ve e-posta için ⚙ Ayarlar\'dan erişim anahtarı gerekli');
+      } else {
+        if (sent) parts.push(sent + ' sipariş Quietvox sistemine Delivered olarak işlendi');
+        if (queued) parts.push(queued + ' sipariş bağlantı gelince gönderilecek');
+        if (already) parts.push(already + ' sipariş zaten Delivered');
+        parts.push(sendNotify(notifyOrders, printedAt));
+      }
+      render(true);
+      showToast(parts.join(', ') + '.');
+      if (sent) [120000, 240000].forEach(function (ms) { window.setTimeout(function () { loadData(false); }, ms); });
+    };
+
+    var step = function () {
+      if (idx >= todo.length) { finish(); return; }
+      var item = todo[idx];
+      idx += 1;
+      if (!canSend) { step(); return; }
+      if (!navigator.onLine) {
+        enqueueAction(item.order, item.key, 'delivered', true);
+        queued += 1;
+        step();
+        return;
+      }
+      dispatchOne(item.order, 'delivered').then(function (ok) {
+        if (ok) {
+          sent += 1;
+          var pending = Object.assign({}, state.pending);
+          pending[item.key] = { action: 'delivered', ts: Date.now() };
+          savePending(pending);
+        } else {
+          enqueueAction(item.order, item.key, 'delivered', true);
+          queued += 1;
+        }
+      }).catch(function (err) {
+        if (err && err.message === 'auth') { canSend = false; return; }
+        enqueueAction(item.order, item.key, 'delivered', true);
+        queued += 1;
+      }).then(function () { window.setTimeout(step, BULK_DELAY_MS); });
+    };
+    step();
+  }
+
+  // E-posta bildirimi: notify.yml iş akışını tek seferde tetikler; çevrimdışıysa kuyruğa alır
+  function sendNotify(notifyOrders, printedAt) {
+    if (!notifyOrders.length) return 'e-posta gönderilmedi';
+    var payload = { orders: notifyOrders.join(','), printed_at: printedAt };
+    if (!navigator.onLine) {
+      queueNotify(payload);
+      return 'bilgilendirme e-postası bağlantı gelince gönderilecek';
+    }
+    postNotify(payload);
+    return 'bilgilendirme e-postası gönderildi';
+  }
+
+  function postNotify(payload) {
+    githubRequest('/actions/workflows/' + NOTIFY_WORKFLOW + '/dispatches',
+      { method: 'POST', body: JSON.stringify({ ref: 'main', inputs: payload }) })
+      .then(function (res) { if (!res.ok && res.status >= 500) queueNotify(payload); })
+      .catch(function () { queueNotify(payload); });
+  }
+
+  function queueNotify(payload) {
+    var list = lsRead(LS_NOTIFY_QUEUE);
+    list = Array.isArray(list) ? list : [];
+    list.push(payload);
+    lsWrite(LS_NOTIFY_QUEUE, list.slice(-50));
+  }
+
+  function flushNotifyQueue() {
+    if (!navigator.onLine || !(state.token && repoSlug())) return;
+    var list = lsRead(LS_NOTIFY_QUEUE);
+    if (!Array.isArray(list) || !list.length) return;
+    lsWrite(LS_NOTIFY_QUEUE, []);
+    list.forEach(postNotify);
   }
 
   /* ========================================================================
+     ÖZET: görünümdeki siparişlerin ekipman ve otel toplamları  /* ========================================================================
      ÖZET: görünümdeki siparişlerin ekipman ve otel toplamları
      ======================================================================== */
   function summaryData() {
@@ -6300,6 +6512,7 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
   var flushingQueue = false;
   function flushOfflineQueue() {
     if (flushingQueue || !navigator.onLine || !(state.token && repoSlug())) return;
+    flushNotifyQueue();
     var keys = Object.keys(state.queue || {});
     if (!keys.length) return;
     flushingQueue = true;
@@ -6353,7 +6566,8 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
       keys.forEach(function (key) {
         var entry = state.pending[key];
         var tab = entry.action === 'returned' ? 'returns' : 'deliveries';
-        var order = ordersOf(tab).filter(function (o) { return orderKey(o, TAB_INFO[tab].kind) === key; })[0];
+        // Ham liste: ordersOf bekleyen işleri listeden çıkardığı için burada kullanılamaz
+        var order = rawOrdersOf(tab).filter(function (o) { return orderKey(o, TAB_INFO[tab].kind) === key; })[0];
         // Başarısız işlemler 3 gün görünür kalır ki gözden kaçmasın
         var stale = Date.now() - entry.ts > 3 * 24 * 60 * 60 * 1000;
         if (order && !reached(order, entry.action) && !stale) next[key] = entry;
@@ -6366,7 +6580,8 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
       qKeys.forEach(function (key) {
         var entry = state.queue[key];
         var tab = entry.action === 'returned' ? 'returns' : 'deliveries';
-        var order = ordersOf(tab).filter(function (o) { return orderKey(o, TAB_INFO[tab].kind) === key; })[0];
+        // Ham liste: ordersOf bekleyen işleri listeden çıkardığı için burada kullanılamaz
+        var order = rawOrdersOf(tab).filter(function (o) { return orderKey(o, TAB_INFO[tab].kind) === key; })[0];
         if (!order || !reached(order, entry.action)) nextQ[key] = entry;
       });
       if (Object.keys(nextQ).length !== qKeys.length) saveQueue(nextQ);
@@ -6493,6 +6708,257 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     showDialog(nodes);
   }
 
+
+  /* ========================================================================
+     QUIETVOX ŞİFRESİ (uygulama içinden güncelleme)
+     Yeni şifre GitHub'ın verdiği açık anahtarla telefonda şifrelenir (libsodium "sealed box"),
+     yalnızca şifreli hâli GitHub Secret'ına (QV_PASS / QV_PASS_BACKUP) yazılır; düz metin hiçbir
+     yere kaydedilmez. Ardından senkron (sync.yml) çalıştırılıp yeni şifreyle giriş denenir.
+     Gerekli izin: GitHub anahtarında "Secrets: Read and write" (README).
+     ======================================================================== */
+  var SYNC_WORKFLOW = 'sync.yml';
+  var NACL_URL = 'https://cdnjs.cloudflare.com/ajax/libs/tweetnacl/1.0.3/nacl-fast.min.js';
+  var NACL_SRI = 'sha512-aLSwsdjU35MF6PERT7Pic3+X6qL7O+Us8hYQl/gjrPoV4JXUNoCF2Ys3/vfJSiBW1QNxz2WTr4tEo5VcOdHt/g==';
+  var PW_POLL_MS = 10000;
+  var PW_POLL_LIMIT_MS = 12 * 60000;
+  var PW_RELOAD_DELAYS_MS = [60000, 150000];
+  var naclPromise = null;
+
+  function loadNacl() {
+    if (window.nacl && window.nacl.box) return Promise.resolve(window.nacl);
+    if (naclPromise) return naclPromise;
+    naclPromise = new Promise(function (resolve, reject) {
+      var script = document.createElement('script');
+      script.src = NACL_URL;
+      script.integrity = NACL_SRI;
+      script.crossOrigin = 'anonymous';
+      script.referrerPolicy = 'no-referrer';
+      script.onload = function () { if (window.nacl && window.nacl.box) resolve(window.nacl); else reject(new Error('nacl')); };
+      script.onerror = function () { naclPromise = null; reject(new Error('nacl')); };
+      document.head.appendChild(script);
+    });
+    return naclPromise;
+  }
+
+  // BLAKE2b (RFC 7693), tek blokluk girdi için: sealed box nonce'u = BLAKE2b(epk || pk, 24 bayt)
+  var B2B_IV = ['6a09e667f3bcc908', 'bb67ae8584caa73b', '3c6ef372fe94f82b', 'a54ff53a5f1d36f1',
+    '510e527fade682d1', '9b05688c2b3e6c1f', '1f83d9abfb41bd6b', '5be0cd19137e2179'];
+  var B2B_SIGMA = [
+    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], [14, 10, 4, 8, 9, 15, 13, 6, 1, 12, 0, 2, 11, 7, 5, 3],
+    [11, 8, 12, 0, 5, 2, 15, 13, 10, 14, 3, 6, 7, 1, 9, 4], [7, 9, 3, 1, 13, 12, 11, 14, 2, 6, 5, 10, 4, 0, 15, 8],
+    [9, 0, 5, 7, 2, 4, 10, 15, 14, 1, 11, 12, 6, 8, 3, 13], [2, 12, 6, 10, 0, 11, 8, 3, 4, 13, 7, 5, 15, 14, 1, 9],
+    [12, 5, 1, 15, 14, 13, 4, 10, 0, 7, 6, 3, 9, 2, 8, 11], [13, 11, 7, 14, 12, 1, 3, 9, 5, 0, 15, 4, 8, 6, 2, 10],
+    [6, 15, 14, 9, 11, 3, 0, 8, 12, 2, 13, 7, 1, 4, 10, 5], [10, 2, 8, 4, 7, 6, 1, 5, 15, 11, 9, 14, 3, 12, 13, 0]];
+
+  function blake2b(input, outLen) {
+    if (typeof BigInt === 'undefined' || input.length > 128) throw new Error('nacl');
+    var MASK = BigInt('0xffffffffffffffff');
+    var iv = B2B_IV.map(function (hex) { return BigInt('0x' + hex); });
+    var h = iv.slice();
+    h[0] ^= BigInt(0x01010000 ^ outLen);
+    var block = new Uint8Array(128);
+    block.set(input);
+    var m = [];
+    for (var i = 0; i < 16; i++) {
+      var word = BigInt(0);
+      for (var b = 7; b >= 0; b--) word = (word << BigInt(8)) | BigInt(block[i * 8 + b]);
+      m.push(word);
+    }
+    var v = h.concat(iv);
+    v[12] ^= BigInt(input.length);
+    v[14] ^= MASK;
+    function rotr(x, n) { return ((x >> BigInt(n)) | (x << BigInt(64 - n))) & MASK; }
+    function mix(a, c, e, d, x, y) {
+      v[a] = (v[a] + v[c] + x) & MASK; v[d] = rotr(v[d] ^ v[a], 32);
+      v[e] = (v[e] + v[d]) & MASK; v[c] = rotr(v[c] ^ v[e], 24);
+      v[a] = (v[a] + v[c] + y) & MASK; v[d] = rotr(v[d] ^ v[a], 16);
+      v[e] = (v[e] + v[d]) & MASK; v[c] = rotr(v[c] ^ v[e], 63);
+    }
+    for (var r = 0; r < 12; r++) {
+      var s = B2B_SIGMA[r % 10];
+      mix(0, 4, 8, 12, m[s[0]], m[s[1]]); mix(1, 5, 9, 13, m[s[2]], m[s[3]]);
+      mix(2, 6, 10, 14, m[s[4]], m[s[5]]); mix(3, 7, 11, 15, m[s[6]], m[s[7]]);
+      mix(0, 5, 10, 15, m[s[8]], m[s[9]]); mix(1, 6, 11, 12, m[s[10]], m[s[11]]);
+      mix(2, 7, 8, 13, m[s[12]], m[s[13]]); mix(3, 4, 9, 14, m[s[14]], m[s[15]]);
+    }
+    var out = new Uint8Array(outLen);
+    for (var k = 0; k < outLen; k++) {
+      var w = h[k >> 3] ^ v[k >> 3] ^ v[(k >> 3) + 8];
+      out[k] = Number((w >> BigInt(8 * (k & 7))) & BigInt(255));
+    }
+    return out;
+  }
+
+  // libsodium crypto_box_seal ile uyumlu: geçici anahtar || box(mesaj, nonce, alıcı anahtarı)
+  function sealedBox(nacl, message, publicKey) {
+    var eph = nacl.box.keyPair();
+    var keys = new Uint8Array(64);
+    keys.set(eph.publicKey);
+    keys.set(publicKey, 32);
+    var boxed = nacl.box(message, blake2b(keys, 24), publicKey, eph.secretKey);
+    var out = new Uint8Array(32 + boxed.length);
+    out.set(eph.publicKey);
+    out.set(boxed, 32);
+    return out;
+  }
+
+  function bytesToB64(bytes) {
+    var bin = '';
+    for (var i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+    return btoa(bin);
+  }
+
+  function b64ToBytes(text) {
+    var bin = atob(text);
+    var out = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+    return out;
+  }
+
+  function checkGithub(res) {
+    if (res.status === 401 || res.status === 403 || res.status === 404) throw new Error('perm');
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    return res;
+  }
+
+  function saveQuietvoxSecret(name, password) {
+    return Promise.all([loadNacl(), githubRequest('/actions/secrets/public-key').then(checkGithub)])
+      .then(function (parts) {
+        return parts[1].json().then(function (key) {
+          var sealed = sealedBox(parts[0], new TextEncoder().encode(password), b64ToBytes(key.key));
+          return githubRequest('/actions/secrets/' + name, {
+            method: 'PUT', body: JSON.stringify({ encrypted_value: bytesToB64(sealed), key_id: key.key_id })
+          });
+        });
+      })
+      .then(checkGithub);
+  }
+
+  function listSyncRuns() {
+    return githubRequest('/actions/workflows/' + SYNC_WORKFLOW + '/runs?event=workflow_dispatch&per_page=10')
+      .then(checkGithub)
+      .then(function (res) { return res.json(); })
+      .then(function (body) { return body.workflow_runs || []; });
+  }
+
+  // Senkronu başlatır, yeni çalıştırmayı (önceki listede olmayan) bitene kadar izler.
+  // onUpdate(evre, run): 'queued' | 'running' | 'ok' | 'fail' | 'timeout'
+  function runTestSync(onUpdate) {
+    var known = {};
+    var deadline = Date.now() + PW_POLL_LIMIT_MS;
+    return listSyncRuns().then(function (runs) {
+      runs.forEach(function (run) { known[run.id] = true; });
+      return githubRequest('/actions/workflows/' + SYNC_WORKFLOW + '/dispatches',
+        { method: 'POST', body: JSON.stringify({ ref: 'main' }) }).then(checkGithub);
+    }).then(function () {
+      onUpdate('queued', null);
+      function tick() {
+        if (Date.now() > deadline) { onUpdate('timeout', null); return; }
+        listSyncRuns().then(function (runs) {
+          var run = runs.filter(function (r) { return !known[r.id]; })[0];
+          if (run && run.status === 'completed') {
+            onUpdate(run.conclusion === 'success' ? 'ok' : 'fail', run);
+            return;
+          }
+          if (run) onUpdate(run.status === 'in_progress' ? 'running' : 'queued', run);
+          setTimeout(tick, PW_POLL_MS);
+        }).catch(function () { setTimeout(tick, PW_POLL_MS); });
+      }
+      setTimeout(tick, PW_POLL_MS);
+    });
+  }
+
+  function passwordErrorText(err) {
+    var msg = err && err.message;
+    if (msg === 'perm') return '❌ GitHub anahtarının "Secrets: Read and write" izni yok. README → "Quietvox şifresini uygulamadan güncelleme" adımlarına bakın.';
+    if (msg === 'nacl') return '❌ Şifreleme modülü yüklenemedi; internet bağlantısını kontrol edip tekrar deneyin.';
+    if (err instanceof TypeError) return '❌ Bağlantı yok; şifre kaydedilmedi.';
+    return '❌ Kaydedilemedi (' + (msg || 'bilinmeyen hata') + ').';
+  }
+
+  function buildPasswordSection(urgent) {
+    var box = el('div', 'pw-section' + (urgent ? ' urgent' : ''));
+    var input = el('input', 'dlg-input');
+    input.type = 'password';
+    input.id = 'qv-new-pass';
+    input.autocomplete = 'new-password';
+    input.placeholder = 'Yeni Quietvox şifresi';
+    input.setAttribute('aria-label', 'Yeni Quietvox şifresi');
+    var status = el('p', 'dlg-note pw-status');
+    status.setAttribute('role', 'status');
+    status.setAttribute('aria-live', 'polite');
+    var save, backup;
+
+    function setStatus(message, run) {
+      status.replaceChildren(document.createTextNode(message));
+      if (run && run.html_url) {
+        var link = el('a', '', 'Çalıştırma kaydını aç');
+        link.href = run.html_url;
+        link.target = '_blank';
+        link.rel = 'noopener';
+        append(status, document.createTextNode(' '), link);
+      }
+    }
+
+    function setBusy(busy) { save.disabled = busy; backup.disabled = busy; }
+
+    function onTestUpdate(phase, run) {
+      if (phase === 'queued') setStatus('⏳ Test çekimi sırada bekliyor…', run);
+      else if (phase === 'running') setStatus('⏳ Yeni şifreyle Quietvox\'a giriş deneniyor (2-4 dakika sürer)…', run);
+      else if (phase === 'ok') {
+        setBusy(false);
+        setStatus('✅ Yeni şifre çalışıyor. Veriler birkaç dakika içinde güncellenir.', run);
+        showToast('✅ Quietvox şifresi güncellendi ve çalışıyor');
+        PW_RELOAD_DELAYS_MS.forEach(function (ms) { setTimeout(function () { loadData(true); }, ms); });
+      } else if (phase === 'fail') {
+        setBusy(false);
+        setStatus('❌ Giriş yine başarısız görünüyor. Şifreyi kontrol edip tekrar deneyin.', run);
+        showToast('❌ Yeni şifreyle giriş başarısız');
+      } else {
+        setBusy(false);
+        setStatus('⌛ Test uzun sürdü; sonucu birkaç dakika sonra uygulamadaki uyarıdan görebilirsiniz.', run);
+      }
+    }
+
+    function submit(secretName, withTest) {
+      var password = input.value;
+      if (!password.trim()) { setStatus('Önce yeni şifreyi yazın.'); input.focus(); return; }
+      if (!(state.token && repoSlug())) { setStatus('Önce aşağıdaki GitHub erişim anahtarını girip kaydedin.'); return; }
+      setBusy(true);
+      setStatus('🔒 Şifre telefonda şifrelenip GitHub\'a kaydediliyor…');
+      saveQuietvoxSecret(secretName, password).then(function () {
+        input.value = '';
+        if (!withTest) {
+          setBusy(false);
+          setStatus('✓ Yedek şifre kaydedildi. Ana şifre reddedilirse otomatik denenecek.');
+          return null;
+        }
+        setStatus('✓ Şifre kaydedildi. Test çekimi başlatılıyor…');
+        return runTestSync(onTestUpdate);
+      }).catch(function (err) {
+        setBusy(false);
+        setStatus(passwordErrorText(err));
+      });
+    }
+
+    save = dialogButton('btn-print', 'Kaydet ve Dene', function () { submit('QV_PASS', true); });
+    backup = dialogButton('btn-ghost', 'Yedek şifre olarak kaydet', function () { submit('QV_PASS_BACKUP', false); });
+    input.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); save.click(); } });
+    var buttons = el('div', 'dlg-btns');
+    append(buttons, save, backup);
+    append(box,
+      el('h3', '', '🔑 Quietvox Şifresini Güncelle'),
+      el('p', 'dlg-note', 'Quietvox şifresi değiştiyse yenisini yazın. Şifre bu telefonda saklanmaz; şifrelenip yalnızca GitHub\'a kaydedilir ve yeni şifreyle hemen bir deneme çekimi yapılır.'),
+      input, buttons, status);
+    return box;
+  }
+
+  function openPasswordSettings() {
+    openSettings();
+    var input = $('#qv-new-pass');
+    if (input) input.focus();
+  }
+
   function openSettings() {
     var title = el('h2', '', '⚙ Ayarlar');
     title.id = 'dlg-title';
@@ -6518,8 +6984,10 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
           render(true);
         }).catch(function () { showToast('Denenemedi: bağlantı yok'); });
       }));
+    var loginProblem = !!(state.data && (state.data.status === 'login_failed' || state.data.auth_backup === true));
     showDialog([
       title,
+      buildPasswordSection(loginProblem),
       el('p', '', 'Quietvox\'a yazabilmek için GitHub erişim anahtarı (yalnızca bu cihazda saklanır):'),
       input,
       el('p', 'dlg-note', slug ? 'Repo: ' + slug : 'Bu adres GitHub Pages olmadığı için Quietvox\'a yazma kapalı.'),
@@ -7236,6 +7704,8 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     var today = istanbulDate(new Date());
     applyTheme();
     initSplash();
+    printedMap = loadPrinted();
+    lsWrite(LS_PRINTED, printedMap);
     var github = lsRead(LS_GITHUB);
     var pending = lsRead(LS_PENDING);
     var queue = lsRead(LS_QUEUE);

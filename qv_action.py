@@ -256,13 +256,15 @@ async def run(settings: scraper.Settings, spec: ActionSpec, order_id: str, day: 
     async with async_playwright() as playwright:
         browser = await playwright.chromium.launch(headless=settings.headless)
         try:
-            context = await scraper.new_context(browser, settings)
-            page = await context.new_page()
-            if not await scraper.ensure_login(context, page, settings):
+            # Ana şifre reddedilirse yedek şifre (QV_PASS_BACKUP) denenir. Alarm e-postasını
+            # iş sonunda tetiklenen senkron (sync.yml) gönderir.
+            session = await scraper.login_with_fallback(browser, settings)
+            if session is None:
                 scraper.send_ntfy(settings, scraper.LOGIN_FAILED_MESSAGE, priority="high")
                 return EXIT_LOGIN
+            page, active, _ = session
             try:
-                problem = await apply_action(page, settings, spec, order_id, day, dry_run)
+                problem = await apply_action(page, active, spec, order_id, day, dry_run)
             except Exception as exc:
                 problem = str(exc) or type(exc).__name__
         finally:

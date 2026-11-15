@@ -39,6 +39,7 @@ Repo → **Settings → Secrets and variables → Actions → New repository sec
 |---|---|---|
 | `QV_USER` | ✅ | Quietvox kullanıcı adı / e-posta |
 | `QV_PASS` | ✅ | Quietvox şifresi |
+| `QV_PASS_BACKUP` | İsteğe bağlı | İkinci (yedek) şifre: `QV_PASS` reddedilirse otomatik denenir. Şifre değişeceği önceden biliniyorsa yenisini buraya girin. |
 | `NTFY_TOPIC` | İsteğe bağlı | Bildirim kanalı adı (aşağıya bakın). Tanımlı değilse bildirim gönderilmez. |
 | `QV_HTTP_USER` / `QV_HTTP_PASS` | İsteğe bağlı | Yalnızca tarayıcının ilk sorduğu (açılır pencere) kullanıcı/şifre, site içindeki giriş formundakinden **farklıysa** gerekir. |
 
@@ -132,11 +133,101 @@ Telefonda şu adresi açıp dosyayı indirin ve kurun (ilk kurulumda "bilinmeyen
 
 Bunun için telefonda **bir kez** erişim anahtarı girilir:
 1. GitHub → sağ üst profil → **Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token**.
-2. **Repository access:** *Only select repositories* → bu repo. **Permissions → Repository permissions → Actions: Read and write**.
+2. **Repository access:** *Only select repositories* → bu repo. **Permissions → Repository permissions → Actions: Read and write**
+   ve (şifreyi uygulamadan güncelleyebilmek için) **Secrets: Read and write**. Mevcut anahtara bu izni sonradan
+   eklemek için anahtarı açıp **Edit** deyin; anahtar değişmez, telefona yeniden girmek gerekmez.
 3. Oluşan `github_pat_…` anahtarını kopyalayın; uygulamada **⚙ → anahtarı yapıştırın → Kaydet ve dene**.
 
 Anahtar yalnızca o telefonda saklanır ve yalnızca bu repodaki iş akışlarını başlatabilir. Anahtar girilmezse
 butonlar yalnızca uygulama içinde işaret koyar ("Yalnızca burada işaretle").
+
+### Yazdırma seçenekleri ve otomatik Delivered
+Kartın **🖨️ Yazdır** düğmesi ve toplu seçimde **🖨️ Toplu Yazdır (3 seçenek)** aynı pencereyi açar:
+
+| Seçenek | Ne basılır | Otomatik işlem |
+|---|---|---|
+| 📄 + 🏷️ **Form + WayBill** | Önce tüm Formlar, sonra tüm WayBill'ler (her biri ayrı sayfa) | Evet |
+| 🏷️ **Sadece WayBill** | Yalnızca WayBill'ler, A4'e ikişer | Hayır |
+| 📄 **Sadece Form** | Yalnızca Delivery & Return Formları | Evet |
+
+"Form" içeren bir baskıda **Yazdır**'a basıldığı anda:
+1. Kartlara kalıcı **🖨️ Form Yazdırıldı ✓** rozeti eklenir (o telefonda saklanır).
+2. Siparişler Quietvox'a **Delivered** olarak gönderilir (Quietvox İşlem iş akışı; internet yoksa kuyruğa alınır,
+   bağlantı gelince gönderilir). Zaten Delivered olan ya da gönderimi süren sipariş tekrar gönderilmez.
+3. Tek bir **bilgilendirme e-postası** gider (aşağıdaki kurulum gerekir).
+
+Not: işlem **Yazdır**'a basınca başlar; telefonun yazdırma ekranında iptal edilse de geri alınmaz.
+
+### E-posta bildirimi (kurulum, bir kez)
+E-posta GitHub Actions'taki **Quietvox Bildirim** iş akışından (`notify.yml` → `notify_mail.py`) Gmail ile gönderilir.
+Konu: `Quietvox: X Sipariş Formu Basıldı ve Teslim Edildi (Delivered)`; gövdede QV ID, otel, acente, kişi/ekipman,
+teslim/iade tarihi ve işlem saati tablosu. Alıcı adresleri repoya yazılmaz, Secret olarak tutulur.
+
+1. Gönderen Gmail hesabında **2 Adımlı Doğrulama**'yı açın, sonra **Google Hesabı → Güvenlik → Uygulama şifreleri**'nden
+   16 haneli bir uygulama şifresi oluşturun.
+2. Secret'ları girin (her komut değeri sorar):
+
+```bash
+gh secret set SMTP_USER -R burakkayadev/qv-takip-b5d52d35
+```
+
+```bash
+gh secret set SMTP_PASS -R burakkayadev/qv-takip-b5d52d35
+```
+
+```bash
+gh secret set MAIL_TO -R burakkayadev/qv-takip-b5d52d35
+```
+
+`SMTP_USER`: gönderen Gmail adresi · `SMTP_PASS`: uygulama şifresi · `MAIL_TO`: alıcılar, virgülle (ör. `a@x.com,b@y.com`).
+Gmail dışı sağlayıcı için isteğe bağlı `SMTP_HOST` ve `SMTP_PORT` (varsayılan `smtp.gmail.com`, `465`).
+Secret'lar girilmezse iş akışı hata vermeden biter, e-posta gönderilmez.
+
+### Quietvox şifresi değişirse (giriş koruması)
+Quietvox girişi başarısız olursa (yanlış şifre, oturum reddi, giriş sayfasına geri dönme):
+- `data.json`'daki siparişler **silinmez**; yalnızca durum `login_failed` olur. Uygulama son verilerle çalışmaya devam eder.
+- Uygulamanın üstünde kırmızı **⚠️ Quietvox oturumu güncellenmeli — Yeni şifreyi girin** bandı çıkar.
+- `MAIL_TO` (ya da tanımlıysa `ALERT_TO`) alıcılarına **⚠️ ACİL: Quietvox Şifresi Değişmiş Olabilir - Giriş Başarısız**
+  e-postası gider. Sorun sürerse en fazla **saatte bir** tekrarlanır (son gönderim `data.json` → `login_alert_at`).
+- `QV_PASS_BACKUP` tanımlıysa önce o denenir; yedek şifreyle girilirse veriler normal güncellenir ve sarı
+  **🔑 yedek şifreyle devam ediliyor** bandı çıkar.
+
+**Quietvox şifresini uygulamadan güncelleme (10 saniye):** bandına dokunun (ya da ☰ → ⚙ Quietvox bağlantısı) →
+**🔑 Quietvox Şifresini Güncelle** → yeni şifre → **Kaydet ve Dene**. Şifre telefonda GitHub'ın açık anahtarıyla
+şifrelenip `QV_PASS` Secret'ına yazılır (düz metin hiçbir yere kaydedilmez), ardından senkron çalıştırılıp yeni şifreyle
+giriş denenir ve sonuç ("✅ Yeni şifre çalışıyor" / "❌ Giriş yine başarısız") 2-4 dakikada aynı kutuda görünür.
+**Yedek şifre olarak kaydet** düğmesi aynı şekilde `QV_PASS_BACKUP`'a yazar. Bunun için GitHub anahtarında
+**Secrets: Read and write** izni gerekir (bkz. "Quietvox'a yazma"). Bilgisayardan: repo → Settings → Secrets and
+variables → Actions → `QV_PASS` → Update.
+
+### Yedekleme (Google Drive + flash bellek)
+**Haftalık otomatik yedek:** `.github/workflows/backup.yml` ("Quietvox Yedek") her Pazar 03:30'da repoyu ZIP'ler;
+ZIP Actions sayfasında 90 gün saklanır ve `RCLONE_CONFIG` Secret'ı tanımlıysa Google Drive'daki `QuietVox_Yedekler`
+klasörüne yüklenir (120 günden eskiler silinir; klasör adı `DRIVE_BACKUP_FOLDER` Secret'ıyla değiştirilebilir).
+`.gitignore`'daki dosyalar (Android imza anahtarı, çerezler, yerel yedekler) bu yedeğe girmez.
+
+Drive bağlantısı (bir kez, bilgisayarda):
+
+```bash
+winget install Rclone.Rclone
+```
+
+```bash
+rclone config
+```
+
+`n` (yeni) → ad: `gdrive` → tür: `drive` → client_id/secret boş → scope: `drive.file` → tarayıcıda Google hesabına izin →
+kalan sorular varsayılan. Sonra yapılandırmayı Secret olarak girin:
+
+```bash
+gh secret set RCLONE_CONFIG -R burakkayadev/qv-takip-b5d52d35 < "$APPDATA/rclone/rclone.conf"
+```
+
+Deneme için Actions → **Quietvox Yedek (Google Drive)** → **Run workflow**.
+
+**Flash bellek yedeği:** masaüstündeki `YEDEK_FLASH_BELLEK/QuietVox_Tam_Yedek_<tarih>` klasörü ve aynı adlı `.zip`
+doğrudan USB belleğe kopyalanır. İçindeki `BENI_OKU_KURULUM.txt` repo adresini, Secret listesini ve bilgisayar sıfırlanırsa
+sistemi baştan kurma adımlarını anlatır. Bu klasör Android imza anahtarını da içerdiği için güvenli yerde saklayın.
 
 ---
 
@@ -144,7 +235,7 @@ butonlar yalnızca uygulama içinde işaret koyar ("Yalnızca burada işaretle")
 
 | Belirti | Çözüm |
 |---|---|
-| Kırmızı "oturum açılamadı" bandı | `QV_USER` / `QV_PASS` secret'larını güncelleyin, sonra workflow'u elle çalıştırın. |
+| Kırmızı "Quietvox oturumu güncellenmeli" bandı | Banda dokunup **🔑 Quietvox Şifresini Güncelle → Kaydet ve Dene** (bkz. "Quietvox şifresi değişirse"). |
 | "Veri eski olabilir" uyarısı | **Actions** sekmesinde son çalıştırmanın hatasına bakın. |
 | Workflow çalışıyor ama sipariş gelmiyor | Aşağıdaki "Seçicileri ayarlama" bölümüne bakın. |
 | Zamanlama gecikiyor | GitHub'ın ücretsiz zamanlayıcısı yoğun saatlerde 5–20 dk gecikebilir; normaldir. |
