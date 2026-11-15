@@ -2,15 +2,10 @@ name: Quietvox Senkronizasyon
 
 on:
   schedule:
-    # Her 30 dakikada bir veri senkronizasyonu (UTC). Dakika 5 ve 35 seçildi:
-    # 15:00'teki hatırlatma zamanlamasıyla çakışmasın ve saat başı yoğunluğuna takılmasın
+    # Her 30 dakikada bir veri senkronizasyonu (UTC). Hatırlatmalar da bu çalışmalara
+    # bağlıdır (ayrı Chromium başlatılmaz): 05:05 UTC = 08:00 TR sabah, 10:05 UTC = 13:00 TR öğle,
+    # 15:05 UTC = 18:00 TR akşam. Tür aşağıdaki "Hatırlatma türünü belirle" adımında seçilir.
     - cron: '5,35 * * * *'
-    # Her gün 15:00 UTC = 18:00 Türkiye saati: yarının hatırlatma bildirimi
-    - cron: '0 15 * * *'
-    # 05:00 UTC = 08:00 TR: bugün bekleyenler + alınmayı unutulan iadeler
-    - cron: '0 5 * * *'
-    # 10:00 UTC = 13:00 TR: bugün hâlâ bekleyenler (günün ikinci hatırlatması)
-    - cron: '0 10 * * *'
   workflow_dispatch:
     inputs:
       send_reminder:
@@ -53,6 +48,27 @@ jobs:
       - name: Playwright Chromium kur
         run: python -m playwright install --with-deps chromium
 
+      - name: Hatırlatma türünü belirle
+        id: rem
+        env:
+          IN_SEND: ${{ inputs.send_reminder }}
+          IN_KIND: ${{ inputs.reminder }}
+        run: |
+          kind=""
+          if [ "$GITHUB_EVENT_NAME" = "schedule" ]; then
+            hour=$((10#$(date -u +%H))); minute=$((10#$(date -u +%M)))
+            # Yalnızca :05 çalışması hatırlatma yapar (:35 çalışması yapmaz)
+            if [ "$minute" -lt 30 ]; then
+              case "$hour" in 5) kind=morning;; 10) kind=noon;; 15) kind=evening;; esac
+            fi
+          elif [ "$IN_KIND" != "" ] && [ "$IN_KIND" != "yok" ]; then
+            kind="$IN_KIND"
+          elif [ "$IN_SEND" = "true" ]; then
+            kind=evening
+          fi
+          echo "Hatırlatma türü: ${kind:-yok}"
+          echo "kind=$kind" >> "$GITHUB_OUTPUT"
+
       - name: Kazıyıcıyı çalıştır
         env:
           QV_USER: ${{ secrets.QV_USER }}
@@ -71,7 +87,7 @@ jobs:
           QV_HTTP_PASS: ${{ secrets.QV_HTTP_PASS }}
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
           # Hatırlatma türü zamanlamaya göre seçilir; elle çalıştırmada girdiden alınır
-          REMINDER: ${{ github.event.schedule == '0 15 * * *' && 'evening' || github.event.schedule == '0 5 * * *' && 'morning' || github.event.schedule == '0 10 * * *' && 'noon' || inputs.send_reminder == true && 'evening' || inputs.reminder != 'yok' && inputs.reminder || '' }}
+          REMINDER: ${{ steps.rem.outputs.kind }}
           # Geçmişe ve ileriye bakılacak gün sayısı (tarih seçici ve aylık rapor için:
           # 62 gün geriye bakınca önceki ayın tamamı her zaman eldedir)
           QV_PAST_DAYS: '62'

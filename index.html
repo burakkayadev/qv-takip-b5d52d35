@@ -7970,7 +7970,104 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     registerServiceWorker();
   }
 
-  init();
+  /* ========================================================================
+     ERİŞİM PIN KİLİDİ
+     Doğru PIN bu cihazda hatırlanır; kilit açılmadan hiçbir sipariş verisi
+     yüklenmez veya çizilmez (init çağrılmaz). Yalnızca PIN'in tuzlu özeti
+     bulunur, PIN'in kendisi kodda yoktur.
+     ======================================================================== */
+  var PIN_SALT = 'qv-pin-v1:';
+  var PIN_SHA256 = '52e740700451ab9764645666dfe67d2b57ed7bafd5979565db9fc6a70718ff4a';
+  var PIN_FALLBACK = '5464e09617468'; // SubtleCrypto olmayan (http) ortamlar için
+  var LS_PIN_OK = 'qv.pin.ok.v1';
+
+  function cyrb53(str) {
+    var h1 = 0xdeadbeef, h2 = 0x41c6ce57, i, ch;
+    for (i = 0; i < str.length; i++) {
+      ch = str.charCodeAt(i);
+      h1 = Math.imul(h1 ^ ch, 2654435761);
+      h2 = Math.imul(h2 ^ ch, 1597334677);
+    }
+    h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+    h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+    return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(16);
+  }
+
+  function checkPin(pin, done) {
+    var text = PIN_SALT + pin;
+    if (window.crypto && window.crypto.subtle && window.TextEncoder) {
+      window.crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)).then(function (buf) {
+        var hex = Array.prototype.map.call(new Uint8Array(buf), function (b) {
+          return ('0' + b.toString(16)).slice(-2);
+        }).join('');
+        done(hex === PIN_SHA256);
+      }, function () { done(cyrb53(text) === PIN_FALLBACK); });
+    } else {
+      done(cyrb53(text) === PIN_FALLBACK);
+    }
+  }
+
+  function isUnlocked() {
+    try { return window.localStorage.getItem(LS_PIN_OK) === PIN_SHA256; } catch (e) { return false; }
+  }
+
+  function showPinLock(onUnlock) {
+    var box = document.createElement('div');
+    box.id = 'pinLock';
+    box.setAttribute('role', 'dialog');
+    box.setAttribute('aria-modal', 'true');
+    box.style.cssText = 'position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;' +
+      'justify-content:center;background:#0B1120;color:#fff;font-family:system-ui,sans-serif;padding:24px';
+    var card = document.createElement('form');
+    card.style.cssText = 'width:100%;max-width:320px;text-align:center;display:flex;flex-direction:column;gap:14px';
+    var title = document.createElement('div');
+    title.textContent = '🔒 Quietvox Takip';
+    title.style.cssText = 'font-size:22px;font-weight:700';
+    var hint = document.createElement('div');
+    hint.textContent = 'Erişim PIN\'ini girin';
+    hint.style.cssText = 'opacity:.75;font-size:15px';
+    var input = document.createElement('input');
+    input.type = 'password';
+    input.inputMode = 'numeric';
+    input.autocomplete = 'off';
+    input.maxLength = 6;
+    input.setAttribute('aria-label', 'Erişim PIN');
+    input.style.cssText = 'font-size:28px;letter-spacing:10px;text-align:center;padding:12px;border-radius:12px;' +
+      'border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;outline:none';
+    var msg = document.createElement('div');
+    msg.style.cssText = 'min-height:20px;color:#fca5a5;font-size:14px';
+    var btn = document.createElement('button');
+    btn.type = 'submit';
+    btn.textContent = 'Aç';
+    btn.style.cssText = 'padding:12px;border-radius:12px;border:0;background:#2563eb;color:#fff;font-size:17px;font-weight:600';
+    card.appendChild(title); card.appendChild(hint); card.appendChild(input); card.appendChild(msg); card.appendChild(btn);
+    box.appendChild(card);
+    document.body.appendChild(box);
+    input.focus();
+    var fails = 0, blockedUntil = 0;
+    card.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      var now = Date.now();
+      if (now < blockedUntil) {
+        msg.textContent = 'Çok fazla deneme. ' + Math.ceil((blockedUntil - now) / 1000) + ' sn bekleyin.';
+        return;
+      }
+      checkPin(input.value, function (ok) {
+        if (ok) {
+          try { window.localStorage.setItem(LS_PIN_OK, PIN_SHA256); } catch (e) { /* depolama kapalı olabilir */ }
+          if (box.parentNode) box.parentNode.removeChild(box);
+          onUnlock();
+          return;
+        }
+        fails++;
+        input.value = '';
+        if (fails >= 5) { blockedUntil = Date.now() + 30000; fails = 0; msg.textContent = 'Çok fazla deneme. 30 sn bekleyin.'; }
+        else msg.textContent = 'Yanlış PIN';
+      });
+    });
+  }
+
+  if (isUnlocked()) init(); else showPinLock(init);
 })();
 </script>
 </body>

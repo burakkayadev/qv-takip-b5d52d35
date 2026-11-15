@@ -29,3 +29,18 @@ _backup_before_antigravity_v9/
 YEDEK_FLASH_BELLEK/
 QuietVox_Tam_Yedek_*/
 QuietVox_Tam_Yedek_*.zip
+
+# Güvenlik: gizli anahtar / ortam / oturum dosyaları asla GitHub'a gönderilmez
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.jks
+*.keystore
+rclone.conf
+*_backup_*
+_backup_before_*/
+*.log
+cookies*.json
+*.cookies

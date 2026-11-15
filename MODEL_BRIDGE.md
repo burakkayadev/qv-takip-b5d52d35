@@ -1,11 +1,23 @@
 # MODEL_BRIDGE — Uygulamalar Arası Ortak Hafıza
 
 > **Son Aktif Uygulama:** Antigravity  
-> **Son Güncelleme:** 15 Kasım 2026 23:00 (UTC+3) — **Portal Senkronizasyonu Kesin Doğrulama & Canlı Rozetler + 7/24 Sağlık ve Gereksiz Yük Denetimi (`healthcheck.yml` & `tests/system_check.py`) + Hotmail/Outlook Spam Korumalı E-posta Motoru Tamamlandı ve Canlıya Alındı.**
+> **Son Güncelleme:** 15 Kasım 2026 23:20 (UTC+3) — **Gereksiz yük optimizasyonları + güvenlik sertleştirmesi (6 haneli erişim PIN'i) tamamlandı.**
 
 ---
 
-## 📌 SON DURUM ÖZETİ — Son Aktif Uygulama: Antigravity (Operasyonel Güvence, 7/24 Sağlık/Yük Denetimi & Spam Korumalı E-posta)
+## 📌 SON DURUM ÖZETİ — Son Aktif Uygulama: Antigravity (Optimizasyon & Güvenlik)
+
+| Başlık | Detay |
+|---|---|
+| **Son Aktif Uygulama** | Antigravity |
+| **Tarih / Saat** | 15.11.2026 23:20 (İstanbul) |
+| **Tamamlanan İşler** | 1. **sync.yml:** ayrı `0 5,10,15` / `0 5` / `0 10` / `0 15` cron'ları kaldırıldı; tek `5,35 * * * *` cron'u kaldı. Hatırlatma türü yeni "Hatırlatma türünü belirle" adımında UTC saatinden seçilir (05:xx morning, 10:xx noon, 15:xx evening; yalnızca dakika < 30 olan :05 çalışması). Elle çalıştırma girdileri aynen çalışır. Gecikmeli (>25 dk) :05 çalışması o günkü hatırlatmayı kaçırabilir.<br>2. **data.json:** zaten sıkıştırıldığı doğrulandı (`scraper.py` `separators=(",", ":")`, 1.24 MB tek satır); önceki "280 KB boşluk" tahmini yanlıştı, değişiklik gerekmedi.<br>3. **Temizlik:** `HANDOFF_TO_CLAUDE.md` silindi; en yeni 2 yedek (`_backup_before_antigravity_v10`, `_v9`) korundu, eski 8 yerel yedek silindi (flash bellek yedeğine dokunulmadı).<br>4. **Güvenlik:** git geçmişi + dosyalar tarandı, gerçek şifre/token yok (yalnızca test sahte şifresi). `.gitignore` güçlendirildi. İş akışı `permissions` blokları zaten en düşük seviyedeydi. `index.html` içinde `innerHTML` yok (DOM/`textContent`); token yalnızca `api.github.com`'a gider, konsola yazılmaz.<br>5. **PIN kilidi (`index.html`):** 6 haneli PIN, tuzlu SHA-256 özeti kodda; doğru PIN `localStorage` (`qv.pin.ok.v1`) ile hatırlanır; kilit açılmadan `init()` ve veri yüklemesi çalışmaz; 5 yanlışta 30 sn bekleme. Gerçek tarayıcıyla test edildi. **PIN'i değiştirmek için özeti güncelle; PIN repoda yazılı değil.**<br>6. **Doğrulama:** 140 test geçti, `tests/system_check.py` sağlıklı. |
+| **Değişen Dosyalar** | `.github/workflows/sync.yml`, `index.html`, `.gitignore`, `MODEL_BRIDGE.md`, `Quietvox_Kullanim_Kilavuzu.pdf`; silindi: `HANDOFF_TO_CLAUDE.md` (yedek: `_backup_before_antigravity_v10/`) |
+| **Bir Sonraki Uygulamanın Yapacağı İş** | `MODEL_BRIDGE.md` okuyup çalışan özellikleri bozmadan devam etmek; sync.yml hatırlatmalarının ilk 05:05/10:05/15:05 UTC çalışmalarında geldiğini doğrulamak. |
+
+### Önceki kayıt — Antigravity (15.11.2026 23:00)
+
+### (23:00 özeti) Operasyonel Güvence, 7/24 Sağlık/Yük Denetimi & Spam Korumalı E-posta)
 
 | Başlık | Detay |
 |---|---|
