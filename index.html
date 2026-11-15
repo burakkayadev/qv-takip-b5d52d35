@@ -623,7 +623,7 @@ details.more[open] > summary::after { content: "▴"; }
   font-weight: 700;
   font-size: 17px;
   box-shadow: 0 8px 24px rgba(27, 32, 48, 0.35);
-  z-index: 60;
+  z-index: 130;
   max-width: calc(100vw - 32px);
   text-align: center;
 }
@@ -1039,7 +1039,8 @@ dialog.dlg {
   padding: 0;
   border-radius: var(--radius);
   width: min(92vw, 460px);
-  max-height: 86vh;
+  max-height: 88dvh;
+  overflow-y: auto;
   background: var(--cream);
   color: var(--navy);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
@@ -2460,54 +2461,55 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
   position: fixed;
   inset: 0;
   z-index: 92;
-  background: rgba(6, 10, 20, 0.75);
-  -webkit-backdrop-filter: blur(16px);
-  backdrop-filter: blur(16px);
+  background: rgba(6, 10, 20, 0.80);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 10px;
+  overflow: hidden;
 }
 .qv-cal-modal[hidden] { display: none !important; }
 .qv-cal-container {
-  width: min(98vw, 1100px);
-  max-height: 94vh;
+  width: min(98vw, 1140px);
+  max-height: 94dvh;
   background: #FFFFFF;
   color: #1E293B;
-  border-radius: 16px;
-  border: 2px solid #CBD5E1;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65);
+  border-radius: 14px;
+  border: 1px solid #CBD5E1;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.38);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  animation: qvSplashRise 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 .qv-cal-head {
   background: #0B1120;
   color: #FFFFFF;
-  padding: 12px 18px;
+  padding: 12px 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
   flex-wrap: wrap;
-  border-bottom: 3px solid #D4AF37;
+  border-bottom: 2px solid #D4AF37;
+  box-sizing: border-box;
+  width: 100%;
 }
 .qv-cal-nav {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  min-width: 0;
 }
 .qv-cal-nav h2 {
   margin: 0;
   font-size: 17px;
   font-weight: 800;
   color: #FDE68A;
-  min-width: 140px;
+  min-width: 130px;
   text-align: center;
 }
 .qv-cal-btn {
-  min-height: 34px;
+  min-height: 36px;
   padding: 0 12px;
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.25);
@@ -2531,13 +2533,13 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
   border-radius: 8px;
 }
 .qv-cal-vbtn {
-  padding: 4px 12px;
+  padding: 5px 12px;
   border-radius: 6px;
   border: none;
   background: transparent;
   color: #CBD5E1;
   font-weight: 700;
-  font-size: 12px;
+  font-size: 12.5px;
   cursor: pointer;
 }
 .qv-cal-vbtn.active {
@@ -2556,74 +2558,79 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
 .qv-cal-legend {
   background: #F8FAFC;
   border-bottom: 1px solid #E2E8F0;
-  padding: 8px 16px;
+  padding: 8px 14px;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 14px;
+  column-gap: 12px;
+  row-gap: 6px;
   font-size: 12px;
   font-weight: 700;
-  overflow-x: auto;
-  white-space: nowrap;
+  width: 100%;
+  box-sizing: border-box;
 }
-.legend-title { color: #64748B; font-weight: 800; }
-.legend-item { display: inline-flex; align-items: center; gap: 5px; color: #334155; }
+.legend-title { color: #475569; font-weight: 800; }
+.legend-item { display: inline-flex; align-items: center; gap: 5px; color: #1E293B; }
 .legend-color {
   width: 14px;
   height: 14px;
   border-radius: 3px;
-  border: 1px solid rgba(0, 0, 0, 0.2);
+  border: 1.5px solid rgba(0, 0, 0, 0.25);
+  flex: none;
 }
-.st-reserved { background: #FFCC00; border-color: #CA8A04; }
-.st-confirmed { background: #3399FF; border-color: #0284C7; }
-.st-delivered { background: #FF9900; border-color: #EA580C; }
-.st-returned { background: #33CC33; border-color: #16A34A; }
-.st-cancelled { background: #FF3333; border-color: #DC2626; }
+.legend-color.st-reserved  { background: #F59E0B; border-color: #B45309; }
+.legend-color.st-confirmed { background: #2563EB; border-color: #1D4ED8; }
+.legend-color.st-delivered { background: #16A34A; border-color: #15803D; }
+.legend-color.st-returned  { background: #7C3AED; border-color: #5B21B6; }
+.legend-color.st-cancelled { background: #DC2626; border-color: #991B1B; }
 
 .qv-cal-filter-bar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
   padding: 8px 12px;
   background: #0B1120;
   border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-  overflow-x: auto;
+  width: 100%;
+  box-sizing: border-box;
 }
 .qv-cal-ftab {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 7px 14px;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px 6px;
   font-size: 12px;
   font-weight: 700;
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  background: rgba(30, 41, 59, 0.7);
-  color: #94A3B8;
+  border: 1px solid rgba(255, 255, 255, 0.20);
+  background: rgba(30, 41, 59, 0.78);
+  color: #CBD5E1;
   cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.15s ease;
+  text-align: center;
+  white-space: normal;
+  line-height: 1.2;
+  min-width: 0;
+  transition: background 0.15s ease, color 0.15s ease;
 }
 .qv-cal-ftab:hover {
-  background: rgba(51, 65, 85, 0.8);
+  background: rgba(51, 65, 85, 0.9);
   color: #F8FAFC;
 }
 .qv-cal-ftab.active {
   background: #D4AF37;
   color: #0B1120;
   border-color: #F6E05E;
-  box-shadow: 0 2px 10px rgba(212, 175, 55, 0.45);
 }
 .qv-cal-ftab.ftab-del.active {
-  background: #10B981;
+  background: #EA580C;
   color: #FFFFFF;
-  border-color: #34D399;
-  box-shadow: 0 2px 10px rgba(16, 185, 129, 0.45);
+  border-color: #FB923C;
 }
 .qv-cal-ftab.ftab-ret.active {
-  background: #F59E0B;
-  color: #0B1120;
-  border-color: #FBBF24;
-  box-shadow: 0 2px 10px rgba(245, 158, 11, 0.45);
+  background: #1E3A8A;
+  color: #FFFFFF;
+  border-color: #60A5FA;
 }
 
 .qv-cal-grid-wrap {
@@ -2635,7 +2642,7 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
 }
 .qv-cal-grid-header {
   display: grid;
-  grid-template-columns: repeat(7, minmax(130px, 1fr));
+  grid-template-columns: repeat(7, minmax(120px, 1fr));
   background: #F1F5F9;
   border-bottom: 1px solid #CBD5E1;
   font-weight: 800;
@@ -2653,33 +2660,57 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
 .qv-cal-grid-header > div:last-child { border-right: none; }
 .qv-cal-days {
   display: grid;
-  grid-template-columns: repeat(7, minmax(130px, 1fr));
-  grid-auto-rows: minmax(140px, auto);
+  grid-template-columns: repeat(7, minmax(120px, 1fr));
+  grid-auto-rows: minmax(130px, auto);
   background: #CBD5E1;
   gap: 1px;
 }
 .cal-day-cell {
   background: #FFFFFF;
-  padding: 6px 5px;
-  min-height: 140px;
+  padding: 5px;
+  min-height: 130px;
   height: auto;
   display: flex;
   flex-direction: column;
   gap: 4px;
   box-sizing: border-box;
 }
-.cal-day-cell.other-month { background: #F8FAFC; opacity: 0.6; }
-.cal-day-cell.today { background: #FEF9C3; }
-.cal-day-num {
-  font-size: 12px;
-  font-weight: 800;
-  text-align: right;
-  color: #1E293B;
-  padding: 0 2px;
+.cal-day-cell.other-month { background: #F8FAFC; opacity: 0.65; }
+.cal-day-cell.today { background: #FFFBEB; }
+.cal-day-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  width: 100%;
+  background: transparent;
+  border: 0;
+  padding: 2px 3px;
   margin-bottom: 2px;
+  cursor: pointer;
+  font: inherit;
+  border-radius: 6px;
+}
+.cal-day-head:hover { background: rgba(15, 23, 42, 0.06); }
+.cal-day-count {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #475569;
+  background: #E2E8F0;
+  padding: 1px 6px;
+  border-radius: 999px;
+}
+.cal-day-num {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: #1E293B;
+  margin-left: auto;
 }
 .cal-day-cell.today .cal-day-num {
-  color: #B45309;
+  background: #D97706;
+  color: #FFFFFF;
+  padding: 1px 6px;
+  border-radius: 6px;
   font-weight: 900;
 }
 .cal-orders-list {
@@ -2687,17 +2718,17 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
   flex-direction: column;
   gap: 5px;
   overflow-y: auto;
-  max-height: 240px;
-  padding-right: 2px;
+  max-height: 250px;
+  padding-right: 1px;
 }
 .cal-order-chip {
   flex-shrink: 0 !important;
-  min-height: 38px !important;
+  min-height: 40px !important;
   border-radius: 6px;
-  padding: 4px 6px;
+  padding: 5px 7px;
   cursor: pointer;
-  border-left: 4px solid;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-left: 6px solid;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -2705,34 +2736,35 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
   box-sizing: border-box;
   text-decoration: none;
 }
-.cal-order-chip:active { transform: scale(0.97); }
-.cal-order-chip.st-reserved  { background: #FEF9C3; border-left-color: #EAB308; color: #713F12; }
-.cal-order-chip.st-confirmed { background: #E0F2FE; border-left-color: #0284C7; color: #075985; }
-.cal-order-chip.st-delivered { background: #FFEDD5; border-left-color: #EA580C; color: #9A3412; }
-.cal-order-chip.st-returned  { background: #DCFCE7; border-left-color: #16A34A; color: #14532D; }
+.cal-order-chip:active { opacity: 0.85; }
+.cal-order-chip.st-reserved  { background: #FEF3C7; border-left-color: #F59E0B; color: #78350F; }
+.cal-order-chip.st-confirmed { background: #DBEAFE; border-left-color: #2563EB; color: #1E3A8A; }
+.cal-order-chip.st-delivered { background: #DCFCE7; border-left-color: #16A34A; color: #14532D; }
+.cal-order-chip.st-returned  { background: #EDE9FE; border-left-color: #7C3AED; color: #4C1D95; }
 .cal-order-chip.st-cancelled { background: #FEE2E2; border-left-color: #DC2626; color: #991B1B; }
 
 .cal-chip-top {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 5px;
   margin-bottom: 2px;
-  line-height: 1;
+  line-height: 1.3;
 }
 .cal-badge {
-  font-size: 8.5px;
+  flex: none;
+  font-size: 9.5px;
   font-weight: 800;
-  padding: 2px 4px;
-  border-radius: 3px;
-  line-height: 1;
+  padding: 2px 5px;
+  border-radius: 4px;
+  line-height: 1.1;
   letter-spacing: 0.2px;
 }
 .cal-badge.badge-del {
-  background: #10B981;
+  background: #EA580C;
   color: #FFFFFF;
 }
 .cal-badge.badge-ret {
-  background: #3B82F6;
+  background: #1E3A8A;
   color: #FFFFFF;
 }
 /* Otel ve acente adları ASLA kırpılmaz: alt satıra kayarak tam okunur */
@@ -2756,13 +2788,27 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
   color: inherit;
   line-height: 1.3;
 }
-.cal-chip-top { align-items: flex-start; line-height: 1.3; }
-.cal-badge { flex: none; }
 
-/* ---- Takvim: Liste görünümü (telefonda varsayılan) ---- */
+/* ---- Takvim: Liste / Gün görünümü ---- */
 .qv-cal-container.agenda .qv-cal-grid-header { display: none; }
 .qv-cal-container.agenda .qv-cal-days { display: block; background: #F1F5F9; padding: 10px; }
 .qv-cal-container.agenda .qv-cal-grid-wrap { background: #F1F5F9; }
+.cal-day-backbar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+.cal-day-backbtn {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #CBD5E1;
+  background: #FFFFFF;
+  color: #0F172A;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+}
 .cal-agenda-day {
   background: #FFFFFF;
   border: 1px solid #CBD5E1;
@@ -2788,34 +2834,67 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
 .cal-agenda-sec { padding: 10px 12px 12px; }
 .cal-agenda-sec + .cal-agenda-sec { border-top: 1px solid #E2E8F0; }
 .cal-agenda-sec h4 { margin: 0 0 8px; font-size: 14px; font-weight: 800; letter-spacing: 0.02em; }
-.cal-agenda-sec.sec-del h4 { color: #047857; }
-.cal-agenda-sec.sec-ret h4 { color: #1D4ED8; }
+.cal-agenda-sec.sec-del h4 { color: #C2410C; }
+.cal-agenda-sec.sec-ret h4 { color: #1E3A8A; }
 .cal-agenda-list { display: flex; flex-direction: column; gap: 8px; }
 .cal-agenda-empty { padding: 12px 14px; font-size: 14px; color: #475569; }
 .qv-cal-container.agenda .cal-order-chip { min-height: 52px !important; padding: 8px 10px; border-left-width: 6px; }
-.qv-cal-container.agenda .cal-company { font-size: 15px; }
-.qv-cal-container.agenda .cal-hotel { font-size: 16px; font-weight: 800; }
+.qv-cal-container.agenda .cal-company { font-size: 14.5px; }
+.qv-cal-container.agenda .cal-hotel { font-size: 15px; font-weight: 800; }
 .qv-cal-container.agenda .cal-badge { font-size: 11px; padding: 3px 6px; }
+
+/* ---- Sipariş Detay Penceresi (Takvim / Liste içinden) ---- */
+.cal-det-head { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.cal-det-pill {
+  font-size: 12px; font-weight: 800; padding: 4px 8px; border-radius: 6px;
+  border-left: 4px solid;
+}
+.cal-det-pill.st-reserved  { background: #FEF3C7; border-color: #F59E0B; color: #78350F; }
+.cal-det-pill.st-confirmed { background: #DBEAFE; border-color: #2563EB; color: #1E3A8A; }
+.cal-det-pill.st-delivered { background: #DCFCE7; border-color: #16A34A; color: #14532D; }
+.cal-det-pill.st-returned  { background: #EDE9FE; border-color: #7C3AED; color: #4C1D95; }
+.cal-det-pill.st-cancelled { background: #FEE2E2; border-color: #DC2626; color: #991B1B; }
+.cal-det-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 6px 10px;
+  padding: 8px 10px; border-radius: 10px;
+  background: rgba(148, 163, 184, 0.12);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+}
+.cal-det-item { min-width: 0; }
+.cal-det-label { font-size: 11.5px; font-weight: 700; opacity: 0.72; margin-bottom: 2px; }
+.cal-det-val { font-size: 14px; font-weight: 700; overflow-wrap: anywhere; }
+.cal-det-actions { display: flex; flex-direction: column; gap: 8px; }
+.cal-det-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 
 /* ---- Takvim: telefon ekranı (< 768px) ---- */
 @media (max-width: 767px) {
-  .qv-cal-modal { padding: 0; }
-  .qv-cal-container { width: 100vw; max-height: 100vh; height: 100vh; border-radius: 0; border: 0; }
-  .qv-cal-head { padding: 10px 12px; gap: 8px; }
-  .qv-cal-nav { gap: 6px; flex: 1 1 auto; }
-  .qv-cal-nav h2 { min-width: 0; font-size: 15px; flex: 1 1 auto; }
-  .qv-cal-btn { min-height: 40px; min-width: 40px; font-size: 14px; }
-  .qv-cal-vbtn { font-size: 14px; padding: 8px 12px; }
-  .qv-cal-ftab { font-size: 13px; padding: 9px 12px; }
-  .qv-cal-legend { font-size: 13px; }
-  /* Ay görünümü: sütunlar sıkıştırılmaz, tablo yatay kaydırılır */
-  .qv-cal-grid-header, .qv-cal-days { grid-template-columns: repeat(7, minmax(150px, 1fr)); }
-  .qv-cal-grid-header { font-size: 13px; }
-  .cal-day-num { font-size: 14px; }
-  .cal-company { font-size: 13px; }
-  .cal-hotel { font-size: 13px; }
-  .cal-badge { font-size: 11px; }
-  .cal-order-chip { color: #0F172A !important; }
+  .qv-cal-modal { padding: 0 !important; }
+  .qv-cal-container {
+    width: 100vw;
+    max-width: 100vw;
+    height: 100dvh;
+    max-height: 100dvh;
+    border-radius: 0;
+    border: 0;
+    box-shadow: none;
+    overflow-x: hidden;
+  }
+  .qv-cal-head { padding: 8px 10px; gap: 6px; }
+  .qv-cal-nav { gap: 4px; flex: 1 1 auto; min-width: 0; }
+  .qv-cal-nav h2 { min-width: 0; font-size: 14.5px; flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .qv-cal-btn { min-height: 36px; min-width: 34px; padding: 0 8px; font-size: 13px; }
+  .qv-cal-views { order: 3; width: 100%; display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; box-sizing: border-box; }
+  .qv-cal-vbtn { font-size: 13px; padding: 7px 4px; text-align: center; }
+  .qv-cal-filter-bar { gap: 4px; padding: 6px 8px; }
+  .qv-cal-ftab { font-size: 11px; padding: 7px 3px; gap: 3px; }
+  .qv-cal-legend { padding: 6px 10px; column-gap: 10px; row-gap: 4px; font-size: 11.5px; }
+  /* Ay görünümü: 7 sütunlu (Pzt-Paz) sade tablo, yatayda tablo içinde kayar */
+  .qv-cal-grid-header, .qv-cal-days { grid-template-columns: repeat(7, minmax(132px, 1fr)); }
+  .qv-cal-grid-header { font-size: 12.5px; }
+  .cal-day-num { font-size: 13px; }
+  .cal-company { font-size: 12px; }
+  .cal-hotel { font-size: 12px; }
+  .cal-badge { font-size: 10px; }
 }
 
 /* Baskı ve Önizleme Eşitlemesi & Güvenli Metin Kırılmaları */
@@ -3074,10 +3153,10 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
       <span class="legend-item"><span class="legend-color st-cancelled"></span> Cancelled</span>
     </div>
 
-    <!-- 7-Column Weekly Grid (Sunday - Saturday) -->
+    <!-- 7-Column Weekly Grid (Pazartesi - Pazar) -->
     <div class="qv-cal-grid-wrap">
       <div class="qv-cal-grid-header">
-        <div>Sunday</div><div>Monday</div><div>Tuesday</div><div>Wednesday</div><div>Thursday</div><div>Friday</div><div>Saturday</div>
+        <div>Pzt</div><div>Sal</div><div>Çar</div><div>Per</div><div>Cum</div><div>Cmt</div><div>Paz</div>
       </div>
       <div class="qv-cal-days" id="qv-cal-days">
         <!-- Rendered dynamically -->
@@ -4616,6 +4695,8 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
       renderReminder();
       renderList();
     }
+    var calModalEl = $('#qv-calendar-modal');
+    if (calModalEl && !calModalEl.hidden) renderQuietvoxCalendar();
   }
 
   /* ========================================================================
@@ -7570,17 +7651,31 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
           ' – ' + last.getDate() + ' ' + CAL_MONTH_NAMES[last.getMonth()] + ' ' + last.getFullYear();
       } else {
         $('#qv-cal-title').textContent = longDate(days[0]);
+        var backBar = el('div', 'cal-day-backbar');
+        var backMonthBtn = el('button', 'cal-day-backbtn', '← Ay Takvimi');
+        backMonthBtn.type = 'button';
+        backMonthBtn.addEventListener('click', function () {
+          calState.view = 'month'; calState.viewChosen = true; syncCalViewButtons(); renderQuietvoxCalendar();
+        });
+        var backListBtn = el('button', 'cal-day-backbtn', '☰ 7 Günlük Liste');
+        backListBtn.type = 'button';
+        backListBtn.addEventListener('click', function () {
+          calState.view = 'list'; calState.viewChosen = true; syncCalViewButtons(); renderQuietvoxCalendar();
+        });
+        append(backBar, backMonthBtn, backListBtn);
+        container.appendChild(backBar);
       }
       days.forEach(function (iso) { container.appendChild(buildCalAgendaDay(iso)); });
       return;
     }
 
     if (calState.view === 'month') {
-      var firstDay = new Date(year, month, 1).getDay(); // 0 is Sunday
+      // Pazartesi başlangıçlı 7 sütunlu (Pzt-Paz) ızgara
+      var firstDay = (new Date(year, month, 1).getDay() + 6) % 7;
       var daysInMonth = new Date(year, month + 1, 0).getDate();
       var prevMonthDays = new Date(year, month, 0).getDate();
 
-      // Leading days from previous month
+      // Önceki ayın sarkan günleri
       for (var p = firstDay - 1; p >= 0; p--) {
         var dayNum = prevMonthDays - p;
         var pMonth = month === 0 ? 11 : month - 1;
@@ -7589,13 +7684,13 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
         container.appendChild(buildCalCell(pDateStr, dayNum, true));
       }
 
-      // Current month days
+      // Bu ayın günleri
       for (var day = 1; day <= daysInMonth; day++) {
         var dateStr = year + '-' + ('0' + (month + 1)).slice(-2) + '-' + ('0' + day).slice(-2);
         container.appendChild(buildCalCell(dateStr, day, false));
       }
 
-      // Trailing days to fill the grid (multiples of 7)
+      // Haftayı 7'ye tamamlayan sonraki ay günleri
       var totalCells = firstDay + daysInMonth;
       var remaining = (7 - (totalCells % 7)) % 7;
       for (var t = 1; t <= remaining; t++) {
@@ -7605,7 +7700,7 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
         container.appendChild(buildCalCell(nDateStr, t, true));
       }
     } else if (calState.view === 'week') {
-      var currentDayOfWeek = d.getDay();
+      var currentDayOfWeek = (d.getDay() + 6) % 7;
       var weekStart = new Date(d);
       weekStart.setDate(d.getDate() - currentDayOfWeek);
       for (var w = 0; w < 7; w++) {
@@ -7614,11 +7709,113 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
         var curDateStr = cur.getFullYear() + '-' + ('0' + (cur.getMonth() + 1)).slice(-2) + '-' + ('0' + cur.getDate()).slice(-2);
         container.appendChild(buildCalCell(curDateStr, cur.getDate(), false));
       }
-    } else {
-      // Day view
-      var dayDateStr = year + '-' + ('0' + (month + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
-      container.appendChild(buildCalCell(dayDateStr, d.getDate(), false, true));
     }
+  }
+
+  function openCalDayOrders(dateStr) {
+    if (!ISO_DATE.test(dateStr)) return;
+    calState.currentDate = new Date(dateStr + 'T00:00:00');
+    calState.view = 'day';
+    calState.viewChosen = true;
+    syncCalViewButtons();
+    renderQuietvoxCalendar();
+  }
+
+  // Sipariş Detay Penceresi (Takvim / Liste içinden açılır; kapatılınca takvimde kalır)
+  function openCalendarOrderDetail(item) {
+    var order = item.order;
+    var kind = item.kind;
+    var key = orderKey(order, kind);
+    var w = order.waybill || {};
+    var f = order.dr_form || {};
+    var st = (order.status || 'reserved').toLowerCase();
+    var qvId = f.qv_booking_id || w.qv_id || order.id || '—';
+
+    var headPills = el('div', 'cal-det-head');
+    append(headPills,
+      el('span', 'cal-det-pill ' + statusToCalClass(st), STATUS_LABELS[st] || st),
+      el('span', 'cal-badge ' + (kind === 'delivery' ? 'badge-del' : 'badge-ret'), kind === 'delivery' ? '📤 VERİLECEK' : '📥 ALINACAK'),
+      qvId ? el('span', 'chip qv', 'QV ID: ' + qvId) : null
+    );
+
+    var title = el('h2', '', order.location_name || order.title || 'Sipariş Detayı');
+    title.id = 'dlg-title';
+
+    var infoGrid = el('div', 'cal-det-grid');
+    function detCell(label, value) {
+      var box = el('div', 'cal-det-item');
+      append(box, el('div', 'cal-det-label', label), el('div', 'cal-det-val', orDash(value)));
+      return box;
+    }
+    var paxText = (str(f.clients) ? f.clients + ' kişi' : '—') + (str(f.groups) ? ' (' + f.groups + ' grup)' : '');
+    append(infoGrid,
+      detCell('Acente / Müşteri', clientName(order)),
+      detCell('Pax / Grup', paxText),
+      detCell('Teslim Tarihi', shortDate(w.tour_start || (kind === 'delivery' ? order.date : ''))),
+      detCell('Alış / İade Tarihi', shortDate(w.tour_end || (kind === 'return' ? order.date : ''))),
+      detCell('Rehber', w.tour_manager_name),
+      detCell('Dil / Referans', [f.instruction_language, w.tour_reference || f.reference].filter(str).join(' · '))
+    );
+
+    var addrBox = addressField(
+      kind === 'return' ? 'İade Adresi' : 'Teslimat Adresi',
+      kind === 'return' ? (w.return_location || w.delivery_location || order.location_name)
+                        : (w.delivery_location || w.return_location || order.location_name),
+      w.delivery_phone
+    );
+
+    // Rehber arama & WhatsApp bağlantıları
+    var phone = normalizePhone(w.tour_manager_phone);
+    var contactRow = null;
+    if (phone) {
+      contactRow = el('div', 'cal-det-row');
+      append(contactRow,
+        linkButton('btn-ghost', '📞 Rehberi Ara', 'tel:+' + phone, false),
+        linkButton('btn-ghost', '💬 WhatsApp', 'https://wa.me/' + phone + '?text=' + encodeURIComponent(waText(order, item.tab)), true));
+    }
+
+    // Kayıtlı not + değişiklik notları + not düzenleme
+    var notesWrap = el('div', '');
+    var savedNote = str(markOf(key).note);
+    if (savedNote) {
+      append(notesWrap, el('p', 'dlg-note', '📝 Teslim Notu: ' + savedNote));
+    }
+    (order.changes || []).forEach(function (c) {
+      append(notesWrap, el('p', 'dlg-note', '🔁 ' + c.text + (c.at ? ' (' + changeTime(c.at) + ')' : '')));
+    });
+    var noteEditBtn = dialogButton('btn-ghost', savedNote ? '📝 Notu Düzenle' : '📝 Teslim Notu Ekle', function () {
+      openNoteEditDialog(order, key);
+    });
+
+    // Doğrudan Aksiyon Butonları: Hazırlandı / Teslim Alındı, Teslim Edildi (yerel işaret), Form Yazdır
+    var actionsBox = el('div', 'cal-det-actions');
+    var primaryAction = kind === 'return' ? 'returned' : 'delivered';
+    append(actionsBox, remoteButton(order, key, primaryAction));
+
+    if (kind === 'delivery') {
+      var doneBtn = el('button', 'check', '');
+      doneBtn.type = 'button';
+      var isLocalDone = markOf(key).done === true;
+      doneBtn.setAttribute('aria-pressed', isLocalDone ? 'true' : 'false');
+      append(doneBtn, el('span', 'box', '✓'), el('span', '', 'Teslim Edildi (Bu Cihazda İşaretle)'));
+      doneBtn.querySelector('.box').setAttribute('aria-hidden', 'true');
+      doneBtn.addEventListener('click', function () {
+        var nowDone = !(markOf(key).done === true);
+        setMark(key, 'done', nowDone);
+        doneBtn.setAttribute('aria-pressed', nowDone ? 'true' : 'false');
+        showToast(nowDone ? '✓ Teslim edildi olarak işaretlendi' : 'Teslim edildi işareti kaldırıldı');
+        render(true);
+      });
+      append(actionsBox, doneBtn);
+    }
+
+    var printBtn = dialogButton('btn-print', '🖨️ Form Yazdır (3 Seçenek)', function () {
+      openPrintDialog(order, printBtn);
+    });
+    var actionRow = el('div', 'cal-det-row');
+    append(actionRow, noteEditBtn, dialogButton('btn-ghost', 'Kapat', closeDialog));
+
+    showDialog([headPills, title, infoGrid, addrBox, contactRow, notesWrap.childNodes.length ? notesWrap : null, actionsBox, printBtn, actionRow]);
   }
 
   // Liste görünümünde bir gün: başlık + Verilecekler ve Alınacaklar ayrı bloklar
@@ -7630,7 +7827,9 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     var head = el('div', 'cal-agenda-head');
     append(head, el('span', '', (dateStr === state.today ? 'Bugün · ' : '') + longDate(dateStr)),
       el('small', '', dels.length + ' ver · ' + rets.length + ' al'));
-    head.addEventListener('click', function () { closeQuietvoxCalendar(); goToDate(dateStr); });
+    head.addEventListener('click', function () {
+      if (calState.view !== 'day') openCalDayOrders(dateStr);
+    });
     append(box, head);
     var filter = calState.filter || 'all';
     if (!items.length) {
@@ -7679,9 +7878,7 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
 
     chip.addEventListener('click', function (ev) {
       ev.stopPropagation();
-      closeQuietvoxCalendar();
-      goToDate(o.date);
-      selectTab(item.tab, false);
+      openCalendarOrderDetail(item);
     });
     return chip;
   }
@@ -7689,17 +7886,25 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
   function buildCalCell(dateStr, dayNum, isOtherMonth, isDayView) {
     var cell = el('div', 'cal-day-cell qv-cal-day' + (isOtherMonth ? ' other-month' : '') + (dateStr === state.today ? ' today' : ''));
     if (isDayView) cell.style.gridColumn = '1 / -1';
-    var numEl = el('span', 'cal-day-num qv-cal-day-num', String(dayNum));
-    cell.appendChild(numEl);
+    var items = getOrdersForCalendarDate(dateStr);
+
+    var dayHead = el('button', 'cal-day-head');
+    dayHead.type = 'button';
+    dayHead.title = longDate(dateStr) + ' — tüm siparişleri aç';
+    if (items.length) append(dayHead, el('span', 'cal-day-count', String(items.length)));
+    append(dayHead, el('span', 'cal-day-num qv-cal-day-num', String(dayNum)));
+    dayHead.addEventListener('click', function (ev) {
+      ev.stopPropagation();
+      openCalDayOrders(dateStr);
+    });
+    cell.appendChild(dayHead);
 
     var eventsEl = el('div', 'cal-orders-list qv-cal-events');
-    var items = getOrdersForCalendarDate(dateStr);
     items.forEach(function (item) { eventsEl.appendChild(buildCalChip(item)); });
 
     cell.appendChild(eventsEl);
     cell.addEventListener('click', function () {
-      closeQuietvoxCalendar();
-      goToDate(dateStr);
+      openCalDayOrders(dateStr);
     });
     return cell;
   }

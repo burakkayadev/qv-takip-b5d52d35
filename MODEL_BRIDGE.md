@@ -1,11 +1,23 @@
 # MODEL_BRIDGE — Uygulamalar Arası Ortak Hafıza
 
 > **Son Aktif Uygulama:** Antigravity  
-> **Son Güncelleme:** 15 Kasım 2026 23:40 (UTC+3) — **PIN 192834 + tuş takımı/kilit/PIN değiştirme/kurtarma + CSP ve ek güvenlik katmanları.**
+> **Son Güncelleme:** 15 Kasım 2026 23:51 (UTC+3) — **Takvim Mobil Tam Ekran (`100vw × 100dvh`), Yüksek Kontrastlı Durum Renkleri (`#F59E0B`/`#2563EB`/`#16A34A`/`#7C3AED`), Sipariş Detay Modalı & Pzt–Paz Sade Ay Görünümü Tamamlandı.**
 
 ---
 
-## 📌 SON DURUM ÖZETİ — Son Aktif Uygulama: Antigravity (PIN & Ek Güvenlik)
+## 📌 SON DURUM ÖZETİ — Son Aktif Uygulama: Antigravity (Takvim Mobil & Sipariş Detay Modalı)
+
+| Başlık | Detay |
+|---|---|
+| **Son Aktif Uygulama** | Antigravity |
+| **Tarih / Saat** | 15.11.2026 23:51 (İstanbul) |
+| **Tamamlanan İşler** | 1. **Mobil Tam Ekran Takvim & Üst Çubuk Taşma Çözümü (`index.html`):**<br>   - `@media (max-width: 767px)` altında takvim/liste modalı kenar boşluksuz tam ekran (`100vw × 100dvh`, `overflow-x: hidden`) olarak ayarlandı.<br>   - `.qv-cal-filter-bar` eşit 3 sütunlu (`grid-template-columns: repeat(3, 1fr)`) kompakt sekme ızgarasına dönüştürüldü (**Tümü \| Sadece Verilecekler \| Sadece Alınacaklar** kesilmeden/taşmadan sığıyor).<br>   - `.qv-cal-legend` (*Status color*) satırı esnek (`flex-wrap: wrap`) ve dolgulu net renk kutucuklarıyla taşmasız hizalandı.<br>2. **Yüksek Kontrastlı Durum & Yön Renkleri (`index.html`):**<br>   - 6px sol renk şeridi + zemin + kontrast yazı tanımlandı: **Reserved** (`#F59E0B` / `#FEF3C7`), **Confirmed** (`#2563EB` / `#DBEAFE`), **Delivered** (`#16A34A` / `#DCFCE7`), **Returned** (`#7C3AED` / `#EDE9FE`), **Cancelled** (`#DC2626` / `#FEE2E2`).<br>   - Yön etiketleri yüksek kontrastlı hale getirildi: **VER** (`#EA580C`) ve **AL** (`#1E3A8A`).<br>3. **Sipariş Detay Penceresi (`openCalendarOrderDetail`) & Ana Ekrana Atma Hatasının Çözümü (`index.html`):**<br>   - Takvim/Liste çiplerine basıldığında artık modal kapanıp kullanıcıyı ana ekrana atmıyor; `#dlg` içinde doğrudan **Sipariş Detay Penceresi** açılıyor (Otel, Acente, Pax/Grup, Teslim/Alış tarihleri, Rehber Ara/WhatsApp, Harita, Teslim Notları ve doğrudan **Hazırlandı / Teslim Alındı**, **Teslim Edildi** ve **Form Yazdır (3 Seçenek)** butonları). Detay penceresi kapatıldığında takvim/liste açık kalıyor; arka planda yapılan güncellemeler açık takvimi de yeniliyor (`.toast` `z-index: 130` takvimin üstünde).<br>4. **Pzt–Paz Sade "Ay" Takvim Görünümü (`index.html`):**<br>   - Aylık ve haftalık ızgara **Pazartesi–Pazar (`Pzt`–`Paz`)** düzenine geçirildi; ağır gölgeler/blur kaldırılarak sadeleştirildi. Gün başlığına tıklayınca doğrudan takvim içi o günün sipariş görünümü (`openCalDayOrders`) açılıyor.<br>5. **Doğrulama:** Playwright (390×844 mobil + 1280×800 masaüstü sıfır taşma ve sıfır konsol hatası), `tests/system_check.py` sağlıklı ve `pytest` tam paketi çalıştırıldı. |
+| **Değişen Dosyalar** | `index.html`, `MODEL_BRIDGE.md`, `Quietvox_Kullanim_Kilavuzu.pdf` (yedek: `_backup_before_antigravity_v12/`) |
+| **Bir Sonraki Uygulamanın Yapacağı İş** | `MODEL_BRIDGE.md` dosyasını okuyarak mevcut çalışan özellikleri ve güvenliği bozmadan devam etmek. |
+
+### Önceki kayıt — Antigravity (15.11.2026 23:40)
+
+### (23:40 özeti) PIN & Ek Güvenlik
 
 | Başlık | Detay |
 |---|---|
