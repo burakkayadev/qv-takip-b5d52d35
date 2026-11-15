@@ -1,7 +1,7 @@
 {
   "version": "4.0.0",
-  "build": 1,
-  "commit": "c3edc61",
-  "updated_at": "2026-11-15T16:13:00.000000+00:00",
-  "notes": "v4.0: Görünüm Modu (Klasik Kart vs Sade Liste), Takvim filtre sekmeleri ve esnek hücreler, Sesli Asistan yankı önleme ve NLP geliştirmesi, Multi-URL kesintisiz veri hattı"
+  "build": 2,
+  "commit": "5c684e7",
+  "updated_at": "2026-11-15T16:13:41.501339+00:00",
+  "notes": "v4.0: G\u00f6r\u00fcn\u00fcm Modu (Klasik Kart vs Sade Liste), Takvim filtre sekmeleri ve esnek h\u00fccreler, Sesli Asistan yank\u0131 \u00f6nleme ve NLP geli\u015ftirmesi, Multi-URL kesintisiz veri hatt\u0131"
 }
