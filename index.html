@@ -1541,6 +1541,74 @@ dialog.dlg::backdrop {
   background: linear-gradient(145deg, rgba(15, 23, 42, 0.34), rgba(220, 38, 38, 0.18));
 }
 
+/* SADE LİSTE / TEK ODAK MODU (Seçenek 1) */
+.card-minimal {
+  position: relative;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+  background: linear-gradient(155deg, rgba(15, 23, 42, 0.36) 0%, rgba(15, 23, 42, 0.24) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-left: 5px solid var(--emerald);
+  border-radius: 14px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  backdrop-filter: blur(28px) saturate(190%);
+  transition: transform 0.16s ease, box-shadow 0.16s ease;
+}
+.card-minimal.kind-delivery { border-left-color: var(--emerald); }
+.card-minimal.kind-return   { border-left-color: var(--amber); }
+.card-minimal.kind-overdue  { border-left-color: var(--crimson); }
+.card-minimal.done { opacity: 0.65; }
+.card-minimal .min-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 6px; }
+.card-minimal .min-hotel { font-size: 16px; font-weight: 700; color: #FFFFFF; line-height: 1.25; margin: 0; }
+.card-minimal.done .min-hotel { text-decoration: line-through; }
+.card-minimal .min-summary { font-size: 13px; color: #94A3B8; margin-bottom: 10px; line-height: 1.4; }
+.card-minimal .min-actions { display: flex; align-items: center; gap: 8px; }
+.card-minimal .btn-min-confirm {
+  flex: 1;
+  padding: 11px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  border: 1px solid rgba(16, 185, 129, 0.45);
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.38), rgba(5, 150, 105, 0.26));
+  color: #ECFDF5;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transition: all 0.15s ease;
+}
+.card-minimal .btn-min-confirm:active { transform: scale(0.97); }
+.card-minimal .btn-min-confirm.is-done {
+  background: rgba(16, 185, 129, 0.18);
+  border-color: rgba(16, 185, 129, 0.4);
+  color: #6EE7B7;
+}
+.card-minimal .btn-min-toggle {
+  padding: 11px 12px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(30, 41, 59, 0.55);
+  color: #E2E8F0;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.card-minimal .btn-min-toggle:active { transform: scale(0.97); }
+.card-minimal .min-drawer-body {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  display: none;
+}
+.card-minimal.open .min-drawer-body {
+  display: block;
+}
+
 .hotel {
   color: #FFFFFF;
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
@@ -2717,6 +2785,11 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     <button type="button" class="filter" data-nav-filter="tomorrow">Yarın</button>
     <button type="button" class="filter" data-nav-filter="all">Tümü</button>
   </div>
+  <div class="drawer-sec">Görünüm Modu</div>
+  <div class="view-mode-row" style="display:flex;gap:6px;padding:0 12px;margin-bottom:8px;">
+    <button type="button" class="filter" data-view-mode="classic" style="flex:1;" aria-pressed="true">🎴 Klasik</button>
+    <button type="button" class="filter" data-view-mode="minimal" style="flex:1;" aria-pressed="false">📋 Sade</button>
+  </div>
   <div class="drawer-sec">Ayarlar</div>
   <button type="button" class="nav-item" id="btn-theme">🌙 Koyu mod</button>
   <div class="drawer-sec">Yazı boyutu</div>
@@ -2964,6 +3037,7 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
   var ROUTE_MAX_STOPS = 10;                    // Google Haritalar bağlantısı en fazla 10 durak alır
   var BULK_DELAY_MS = 500;                     // toplu gönderimde istekler arası bekleme
   var LS_THEME = 'qv.theme.v1';               // 'dark' | 'light' (boşsa telefonun ayarı izlenir)
+  var LS_VIEW_MODE = 'qv.view_mode.v1';       // 'classic' | 'minimal' (Arayüz görünüm modu)
   var LS_GITHUB = 'qv.github.v1';             // GitHub erişim anahtarı (yalnızca bu cihazda)
   var LS_PENDING = 'qv.pending.v1';           // Quietvox'a gönderilmiş, sonucu beklenen işlemler
   var LS_QUEUE = 'qv.queue.v1';               // Çevrimdışıyken kuyruğa alınan işlemler (bağlantı gelince gönderilir)
@@ -3251,6 +3325,41 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     };
   }
 
+  function resolveAppUrl(filename) {
+    try {
+      var p = window.location.pathname || '';
+      if (p.indexOf('/qv-takip-b5d52d35') !== -1) {
+        return window.location.origin + '/qv-takip-b5d52d35/' + filename;
+      }
+      var lastSlash = p.lastIndexOf('/');
+      var dir = lastSlash >= 0 ? p.substring(0, lastSlash + 1) : '/';
+      if (!dir.endsWith('/')) dir += '/';
+      return window.location.origin + dir + filename;
+    } catch (e) {
+      return './' + filename;
+    }
+  }
+
+  function fetchJsonWithFallbacks(urls) {
+    var idx = 0;
+    function tryNext() {
+      if (idx >= urls.length) {
+        return Promise.reject(new Error('Tüm veri kaynakları başarısız oldu'));
+      }
+      var url = urls[idx++];
+      return fetch(url, { cache: 'no-cache' })
+        .then(function (res) {
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          return res.json();
+        })
+        .catch(function (err) {
+          console.warn('Veri kaynağı hatası (' + url + '):', err);
+          return tryNext();
+        });
+    }
+    return tryNext();
+  }
+
   function loadData(manual) {
     if (loading) return Promise.resolve();
     loading = true;
@@ -3258,12 +3367,14 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     var btn = $('#btn-refresh');
     btn.setAttribute('aria-busy', 'true');
 
-    // no-cache: sunucuya her seferinde sorulur ama veri değişmediyse yeniden indirilmez (ETag)
-    return fetch(DATA_URL, { cache: 'no-cache' })
-      .then(function (res) {
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        return res.json();
-      })
+    // 1. Doğrudan repo yolu, 2. Göreli yol, 3. GitHub Raw fallback (Deploy anında bile kesintisiz)
+    var candidateUrls = [
+      resolveAppUrl('data.json'),
+      DATA_URL,
+      'https://raw.githubusercontent.com/burakkayadev/qv-takip-b5d52d35/main/data.json'
+    ];
+
+    return fetchJsonWithFallbacks(candidateUrls)
       .then(function (raw) {
         var data = normalizeData(raw);
         lsWrite(LS_CACHE, { savedAt: Date.now(), raw: raw });
@@ -3521,7 +3632,13 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     }
 
     box.replaceChildren.apply(box, items.map(function (it) {
-      return el('div', 'banner ' + it[0], it[1]);
+      var bannerEl = el('div', 'banner ' + it[0], it[1]);
+      if (it[0] === 'error') {
+        bannerEl.style.cursor = 'pointer';
+        bannerEl.title = 'Yeniden yüklemek için dokunun';
+        bannerEl.addEventListener('click', function () { loadData(true); });
+      }
+      return bannerEl;
     }));
   }
 
@@ -4115,7 +4232,91 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     showDialog([title, who, chips, input, buttons]);
   }
 
+  function buildMinimalCard(order, tab) {
+    var info = TAB_INFO[tab] || TAB_INFO.deliveries;
+    var actualKind = order.waybill && order.waybill.qv_id ? (order.status === 'returned' || isPickedUp(order) ? 'return' : 'delivery') : info.kind;
+    var cardKind = tab === 'archive' ? actualKind : info.kind;
+    var key = orderKey(order, cardKind);
+    var w = order.waybill;
+    var finished = isDone(order, tab === 'archive' ? (cardKind === 'return' ? 'returns' : 'deliveries') : tab) ||
+                   (tab === 'deliveries' && markOf(key).done) ||
+                   (tab === 'archive');
+    var isOverdueCard = tab === 'returns' && order.date < state.today && order.status === 'delivered' && !isPickedUp(order);
+    var stripeClass = isOverdueCard ? ' kind-overdue' : (cardKind === 'return' ? ' kind-return' : ' kind-delivery');
+    var card = el('article', 'glass card-minimal' + stripeClass + (finished ? ' done' : ''));
+    var hotelName = order.location_name || order.title || 'Adı belirtilmemiş';
+
+    var head = el('div', 'min-head');
+    var hotelEl = el('h3', 'min-hotel', hotelName);
+    var chips = cardChips(order);
+    append(head, hotelEl, chips);
+
+    var summaryEl = cardSummary(order);
+    summaryEl.className = 'min-summary';
+
+    var actionRow = el('div', 'min-actions');
+    var isDel = cardKind !== 'return';
+    var actionLabel = finished
+      ? (isDel ? '✓ Hazırlandı' : '✓ Teslim Alındı')
+      : (isDel ? '📦 Hazırlandı' : '🔄 Teslim Alındı');
+
+    var btnConfirm = el('button', 'btn-min-confirm' + (finished ? ' is-done' : ''), actionLabel);
+    btnConfirm.type = 'button';
+    btnConfirm.addEventListener('click', function () {
+      if (finished) {
+        toggleDone(key, order, cardKind);
+      } else {
+        openDeliveryNoteDialog(order, key, isDel ? 'delivered' : 'returned', cardKind);
+      }
+    });
+
+    var btnToggle = el('button', 'btn-min-toggle', '⚙️ İşlemler ▾');
+    btnToggle.type = 'button';
+    btnToggle.addEventListener('click', function () {
+      card.classList.toggle('open');
+      btnToggle.textContent = card.classList.contains('open') ? '⚙️ Kapat ▴' : '⚙️ İşlemler ▾';
+    });
+
+    append(actionRow, btnConfirm, btnToggle);
+
+    // Açılır çekmece: Kontrol listesi, Kanıt Fotoğrafı, Ara/WhatsApp/Yazdır
+    var drawerBody = el('div', 'min-drawer-body');
+    var checklist = buildChecklist(order, key, card, tab);
+    
+    var phone = normalizePhone(w ? w.tour_manager_phone : '');
+    var address = cardKind === 'return'
+      ? (w && (w.return_location || w.delivery_location) || order.location_name)
+      : (w && (w.delivery_location || w.return_location) || order.location_name);
+    var quick = el('div', 'quick');
+    var call = quickButton('📞', 'Ara', phone ? 'tel:+' + phone : '', false);
+    var wa = quickButton('💬', 'WhatsApp',
+      phone ? 'https://wa.me/' + phone + '?text=' + encodeURIComponent(waText(order, tab)) : '', true);
+    if (!phone) { call.classList.add('off'); wa.classList.add('off'); }
+    var map = quickButton('🗺️', 'Harita', address ? mapsUrl(address) : '', true);
+    if (!address) map.classList.add('off');
+    var print = quickButton('🖨️', 'Yazdır', '', false);
+    print.addEventListener('click', function () { openPrintDialog(order, print); });
+    append(quick, call, wa, map, print);
+
+    var savedNote = str(markOf(key).note);
+    if (savedNote) {
+      var noteBar = el('div', 'delivery-note-bar');
+      var editBtn = el('button', '', '✏️ Düzenle');
+      editBtn.type = 'button';
+      editBtn.addEventListener('click', function () { openNoteEditDialog(order, key); });
+      append(noteBar, el('span', '', '📝 Teslim Notu: ' + savedNote), editBtn);
+      append(drawerBody, noteBar);
+    }
+
+    append(drawerBody, checklist, quick);
+    append(card, head, summaryEl, actionRow, drawerBody);
+    return card;
+  }
+
   function buildCard(order, tab) {
+    if (state.viewMode === 'minimal') {
+      return buildMinimalCard(order, tab);
+    }
     var info = TAB_INFO[tab] || TAB_INFO.deliveries;
     var actualKind = order.waybill && order.waybill.qv_id ? (order.status === 'returned' || isPickedUp(order) ? 'return' : 'delivery') : info.kind;
     var cardKind = tab === 'archive' ? actualKind : info.kind;
@@ -4691,6 +4892,13 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     var saved = lsRead(LS_THEME);
     if (saved === 'light' || saved === 'dark') return saved;
     return 'dark';
+  }
+
+  function updateViewModeButtons() {
+    var mode = state.viewMode || 'classic';
+    document.querySelectorAll('[data-view-mode]').forEach(function (btn) {
+      btn.setAttribute('aria-pressed', btn.getAttribute('data-view-mode') === mode ? 'true' : 'false');
+    });
   }
 
   function applyTheme() {
@@ -5590,21 +5798,112 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     if (!transcript) return;
     var norm = transcript.toLocaleLowerCase('tr-TR');
 
-    if (/hat[ıi]rlat|alarm|takvim/.test(norm)) {
-      speakVoiceReminder(transcript);
-    } else if (/gecik|overdue/.test(norm)) {
-      speakVoiceOverdue();
-    } else if (/yar[ıi]n|haz[ıi]rl[ıi]k|[çc]anta/.test(norm)) {
-      speakVoicePrep();
-    } else if (/verilecek|teslim/.test(norm)) {
-      speakVoiceDeliveries();
-    } else if (/al[ıi]nacak|[ıi]ade/.test(norm)) {
-      speakVoiceReturns();
-    } else if (/bug[üu]n|[öo]zet|ne var/.test(norm)) {
-      speakVoiceToday();
-    } else {
-      speakText("Komut anlaşılamadı. Lütfen 'Bugün ne var', 'Verilecekler', 'Alınacaklar', 'Geciken iadeler', 'Hazırlık' veya 'Saat 8\\'e hatırlatıcı kur' demeyi deneyin.");
+    // 1. Takvim Görünümü
+    if (/takvim|calendar/.test(norm)) {
+      openQuietvoxCalendar();
+      speakText('Quietvox takvim görünümü açıldı.');
+      return;
     }
+
+    // 2. Önceden Alınanlar (Arşiv)
+    if (/önceden|onceden|ar[şs]iv/.test(norm)) {
+      selectTab('archive', false);
+      speakText('Önceden alınan tamamlanmış siparişler açıldı.');
+      return;
+    }
+
+    // 3. Hatırlatıcı / Alarm
+    if (/hat[ıi]rlat|alarm/.test(norm)) {
+      speakVoiceReminder(transcript);
+      return;
+    }
+
+    // 4. Çanta Hazırlık Modu
+    if (/haz[ıi]rl[ıi]k|[çc]anta/.test(norm)) {
+      speakVoicePrep();
+      return;
+    }
+
+    // 5. Geciken İadeler
+    if (/gecik|overdue/.test(norm)) {
+      speakVoiceOverdue();
+      return;
+    }
+
+    // 6. Belirli Bir Gün ve Yön (Örn: "Ayın 18'inde alınacak ne var?", "18 Kasım'da verilecekler", "18'inde ne var?")
+    var dayMatch = norm.match(/(?:ay[ıi]n\s+)?(\d{1,2})(?:['’](?:s[ıi]|nde|nda|si|i|e|a))?\s*(?:kas[ıi]m)?/);
+    if (dayMatch) {
+      var dNum = parseInt(dayMatch[1], 10);
+      var curDate = new Date();
+      var targetDate = curDate.getFullYear() + '-' + ('0' + (curDate.getMonth() + 1)).slice(-2) + '-' + (dNum < 10 ? '0' : '') + dNum;
+      goToDate(targetDate);
+      var isRet = /al[ıi]nacak|[ıi]ade/.test(norm);
+      var isDel = /verilecek|teslim/.test(norm);
+      if (isRet) selectTab('returns', false);
+      else if (isDel) selectTab('deliveries', false);
+
+      var dels = rawOrdersOn('deliveries', targetDate);
+      var rets = rawOrdersOn('returns', targetDate);
+      if (isRet) {
+        speakText(dNum + ' Kasım günü için ' + rets.length + ' iade alımı bulundu.');
+      } else if (isDel) {
+        speakText(dNum + ' Kasım günü için ' + dels.length + ' teslimat siparişi bulundu.');
+      } else {
+        speakText(dNum + ' Kasım günü için ' + dels.length + ' teslimat ve ' + rets.length + ' iade alımı listelendi.');
+      }
+      return;
+    }
+
+    // 7. Otel veya Müşteri Arama (Örn: "Conrad siparişleri", "Viking River ne zaman?")
+    var hotKeywords = ['conrad', 'hilton', 'seasons', 'westin', 'viking', 'ramada', 'marriott', 'sofitel', 'radisson', 'ciragan', 'kempinski'];
+    var matchedHotel = null;
+    for (var h = 0; h < hotKeywords.length; h++) {
+      if (norm.indexOf(hotKeywords[h]) !== -1) {
+        matchedHotel = hotKeywords[h];
+        break;
+      }
+    }
+    if (matchedHotel) {
+      var searchBox = $('#search');
+      if (searchBox) {
+        searchBox.value = matchedHotel;
+        $('#search-clear').hidden = false;
+      }
+      setState({ search: matchedHotel, onlyChanged: false });
+      render(true);
+      var count = filteredOrders().length;
+      speakText(matchedHotel + ' için ' + count + ' adet sipariş filtrelendi.');
+      return;
+    }
+
+    // 8. Yarın ve Bugün Yönlü Sorgular
+    if (/yar[ıi]n/.test(norm)) {
+      goToDate(state.tomorrow);
+      if (/al[ıi]nacak|[ıi]ade/.test(norm)) { selectTab('returns', false); speakVoiceReturns(); }
+      else if (/verilecek|teslim/.test(norm)) { selectTab('deliveries', false); speakVoiceDeliveries(); }
+      else { speakText('Yarının siparişleri listelendi.'); }
+      return;
+    }
+
+    if (/bug[üu]n/.test(norm)) {
+      goToDate(state.today);
+      if (/al[ıi]nacak|[ıi]ade/.test(norm)) { selectTab('returns', false); speakVoiceReturns(); }
+      else if (/verilecek|teslim/.test(norm)) { selectTab('deliveries', false); speakVoiceDeliveries(); }
+      else { speakVoiceToday(); }
+      return;
+    }
+
+    if (/verilecek|teslim/.test(norm)) {
+      speakVoiceDeliveries();
+      return;
+    }
+    if (/al[ıi]nacak|[ıi]ade/.test(norm)) {
+      speakVoiceReturns();
+      return;
+    }
+
+    // Genel özet fallback
+    speakVoiceToday();
   }
 
   var voiceRecognition = null;
@@ -6153,6 +6452,52 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     input.placeholder = 'github_pat_…';
     input.value = state.token;
     input.setAttribute('aria-label', 'GitHub erişim anahtarı');
+
+    // Görünüm Modu Seçimi (Klasik Kart vs Sade Liste)
+    var modeLabel = el('p', '', 'Görünüm Modu (Arayüz Tercihi):');
+    modeLabel.style.marginTop = '16px';
+    modeLabel.style.marginBottom = '6px';
+    modeLabel.style.fontSize = '13px';
+    modeLabel.style.fontWeight = '600';
+    modeLabel.style.color = '#F3F4F6';
+
+    var modeGroup = el('div', 'view-mode-row');
+    modeGroup.style.display = 'flex';
+    modeGroup.style.gap = '8px';
+    modeGroup.style.marginBottom = '14px';
+
+    var btnClassic = el('button', 'btn-vm-opt', '🎴 Klasik Kart');
+    btnClassic.type = 'button';
+    btnClassic.setAttribute('aria-pressed', state.viewMode !== 'minimal' ? 'true' : 'false');
+    btnClassic.style.flex = '1';
+
+    var btnMinimal = el('button', 'btn-vm-opt', '📋 Sade Liste');
+    btnMinimal.type = 'button';
+    btnMinimal.setAttribute('aria-pressed', state.viewMode === 'minimal' ? 'true' : 'false');
+    btnMinimal.style.flex = '1';
+
+    btnClassic.addEventListener('click', function () {
+      setState({ viewMode: 'classic' });
+      lsWrite(LS_VIEW_MODE, 'classic');
+      btnClassic.setAttribute('aria-pressed', 'true');
+      btnMinimal.setAttribute('aria-pressed', 'false');
+      updateViewModeButtons();
+      render(true);
+      showToast('Klasik Kart Görünümü aktif ✓');
+    });
+
+    btnMinimal.addEventListener('click', function () {
+      setState({ viewMode: 'minimal' });
+      lsWrite(LS_VIEW_MODE, 'minimal');
+      btnClassic.setAttribute('aria-pressed', 'false');
+      btnMinimal.setAttribute('aria-pressed', 'true');
+      updateViewModeButtons();
+      render(true);
+      showToast('Sade Liste Modu aktif ✓');
+    });
+
+    append(modeGroup, btnClassic, btnMinimal);
+
     var buttons = el('div', 'dlg-btns');
     append(buttons,
       dialogButton('btn-ghost', 'Kapat', closeDialog),
@@ -6169,6 +6514,8 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
       }));
     showDialog([
       title,
+      modeLabel,
+      modeGroup,
       el('p', '', 'Quietvox\'a yazabilmek için GitHub erişim anahtarı (yalnızca bu cihazda saklanır):'),
       input,
       el('p', 'dlg-note', slug ? 'Repo: ' + slug : 'Bu adres GitHub Pages olmadığı için Quietvox\'a yazma kapalı.'),
@@ -6543,14 +6890,15 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
   /* ========================================================================
      UYGULAMA İÇİ OTOMATİK GÜNCELLEME SİSTEMİ
      ======================================================================== */
-  var CURRENT_BUILD = 2026111501;
+  var CURRENT_BUILD = 1;
 
   function checkAppUpdate() {
-    fetch('./version.json?t=' + Date.now(), { cache: 'no-store' })
-      .then(function (res) {
-        if (!res.ok) throw new Error('version check failed');
-        return res.json();
-      })
+    var candidateUrls = [
+      resolveAppUrl('version.json') + '?t=' + Date.now(),
+      './version.json?t=' + Date.now(),
+      'https://raw.githubusercontent.com/burakkayadev/qv-takip-b5d52d35/main/version.json?t=' + Date.now()
+    ];
+    fetchJsonWithFallbacks(candidateUrls)
       .then(function (data) {
         if (data && data.build && data.build > CURRENT_BUILD) {
           var banner = $('#update-banner');
@@ -6614,6 +6962,18 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     $('#lightbox-close').addEventListener('click', closePhotoLightbox);
     $('#photo-lightbox').addEventListener('click', function (ev) { if (ev.target === ev.currentTarget) closePhotoLightbox(); });
 
+    // Görünüm Modu Butonları (Klasik Kart vs Sade Liste)
+    document.querySelectorAll('[data-view-mode]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var mode = btn.getAttribute('data-view-mode');
+        setState({ viewMode: mode });
+        lsWrite(LS_VIEW_MODE, mode);
+        updateViewModeButtons();
+        render(true);
+        showToast(mode === 'minimal' ? 'Sade Liste Modu aktif ✓' : 'Klasik Kart Görünümü aktif ✓');
+      });
+    });
+
     // Quietvox Takvim Etkinlikleri
     $('#cal-close').addEventListener('click', closeQuietvoxCalendar);
     $('#cal-prev').addEventListener('click', function () { calNavigate(-1); });
@@ -6624,6 +6984,16 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
         document.querySelectorAll('.qv-cal-vbtn').forEach(function (b) { b.classList.remove('active'); });
         btn.classList.add('active');
         calState.view = btn.getAttribute('data-cal-view') || 'month';
+        renderQuietvoxCalendar();
+      });
+    });
+
+    // Takvim Filtre Sekmeleri (Tümü | Verilecekler | Alınacaklar)
+    document.querySelectorAll('.qv-cal-ftab').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        document.querySelectorAll('.qv-cal-ftab').forEach(function (b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        calState.filter = btn.getAttribute('data-cal-filter') || 'all';
         renderQuietvoxCalendar();
       });
     });
@@ -6775,12 +7145,15 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     var github = lsRead(LS_GITHUB);
     var pending = lsRead(LS_PENDING);
     var queue = lsRead(LS_QUEUE);
+    var viewMode = lsRead(LS_VIEW_MODE) || 'classic';
     setState({
       today: today, tomorrow: addDays(today, 1), marks: loadMarks(),
       token: github && typeof github.token === 'string' ? github.token : '',
       pending: pending && typeof pending === 'object' && !Array.isArray(pending) ? pending : {},
-      queue: queue && typeof queue === 'object' && !Array.isArray(queue) ? queue : {}
+      queue: queue && typeof queue === 'object' && !Array.isArray(queue) ? queue : {},
+      viewMode: viewMode
     });
+    updateViewModeButtons();
     applyFont();
     applyUrlParams();
     bindEvents();

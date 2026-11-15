@@ -1,7 +1,7 @@
 {
-  "version": "3.0.0",
+  "version": "4.0.0",
   "build": 1,
   "commit": "c3edc61",
-  "updated_at": "2026-11-15T15:03:46.898203+00:00",
-  "notes": "\u00d6nceden Al\u0131nanlar paneli, Kan\u0131t Foto\u011fraf\u0131, S\u0131ral\u0131 Toplu Bask\u0131, Quietvox Takvim Paneli ve Otomatik G\u00fcncelleme"
+  "updated_at": "2026-11-15T16:13:00.000000+00:00",
+  "notes": "v4.0: Görünüm Modu (Klasik Kart vs Sade Liste), Takvim filtre sekmeleri ve esnek hücreler, Sesli Asistan yankı önleme ve NLP geliştirmesi, Multi-URL kesintisiz veri hattı"
 }

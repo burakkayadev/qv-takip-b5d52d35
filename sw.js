@@ -12,7 +12,7 @@
 'use strict';
 
 // Kabukta değişiklik yapınca bu sürümü artırın: eski önbellekler silinir.
-const VERSION = 'v8';
+const VERSION = 'v9';
 const SHELL_CACHE = 'qv-shell-' + VERSION;
 const DATA_CACHE = 'qv-data-' + VERSION;
 const CDN_CACHE = 'qv-cdn-' + VERSION;
@@ -71,10 +71,14 @@ function isCacheable(response) {
 async function networkFirstData(request) {
   const cache = await caches.open(DATA_CACHE);
   try {
-    const response = await fetch(request, { cache: 'no-cache' });
-    if (response.ok) {
+    const targetUrl = typeof request === 'string' ? request : (request.url || DATA_KEY);
+    const response = await fetch(targetUrl, { cache: 'no-cache' });
+    if (response && response.ok) {
       await cache.put(DATA_KEY, response.clone());
+      return response;
     }
+    const cached = await cache.match(DATA_KEY);
+    if (cached) return cached;
     return response;
   } catch (err) {
     const cached = await cache.match(DATA_KEY);
