@@ -2879,7 +2879,26 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
 .cal-det-actions { display: flex; flex-direction: column; gap: 8px; }
 .cal-det-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 
-/* ---- Takvim: telefon ekranı (< 768px) ---- */
+.cal-more-badge {
+  width: 100%;
+  border: 0;
+  border-radius: 5px;
+  background: #E2E8F0;
+  color: #1E293B;
+  font-size: 10.5px;
+  font-weight: 800;
+  padding: 3px 4px;
+  cursor: pointer;
+  text-align: center;
+  line-height: 1.2;
+}
+.cal-more-badge:hover { background: #CBD5E1; }
+
+/* ---- Takvim: telefon ekranı (< 768px) — Seçenek B: Tam Ölçekli 7 Sütunlu Aylık Izgara + "+N daha" ----
+   LEGACY MOBİL AY GÖRÜNÜMÜ YEDEĞİ (CSS):
+   Eski dikey kart görünümüne dönmek için aşağıdaki @media bloğunu
+   `.qv-cal-grid-header { display: none; } .qv-cal-days { display: flex; flex-direction: column; ... }`
+   biçiminde değiştirebilirsiniz (bkz. MODEL_BRIDGE.md). */
 @media (max-width: 767px) {
   .qv-cal-modal { padding: 0 !important; }
   .qv-cal-container {
@@ -2901,42 +2920,59 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
   .qv-cal-filter-bar { gap: 4px; padding: 6px 8px; }
   .qv-cal-ftab { font-size: 11px; padding: 7px 3px; gap: 3px; }
   .qv-cal-legend { padding: 6px 10px; column-gap: 10px; row-gap: 4px; font-size: 11.5px; }
-  /* Mobil Ay/Hafta görünümü: sağdan taşmayan, harfleri dikey kırmayan okunaklı kart listesi */
-  .qv-cal-grid-wrap { overflow-x: hidden; background: #F1F5F9; }
-  .qv-cal-grid-header { display: none; }
+  /* Seçenek B: 7 sütunlu (Pzt-Paz) sabit ızgara, sıfır taşma ve sıfır dikey harf kırılması */
+  .qv-cal-grid-wrap { overflow-x: hidden; background: #E2E8F0; }
+  .qv-cal-grid-header,
   .qv-cal-days {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    padding: 10px;
-    background: #F1F5F9;
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
     width: 100%;
+    table-layout: fixed;
     box-sizing: border-box;
   }
+  .qv-cal-grid-header { font-size: 11px; }
+  .qv-cal-grid-header > div { padding: 6px 2px; min-width: 0; overflow: hidden; }
+  .qv-cal-days { grid-auto-rows: minmax(76px, auto); }
   .cal-day-cell {
-    width: 100%;
-    min-height: auto;
-    border-radius: 10px;
-    border: 1px solid #CBD5E1;
-    padding: 10px;
-    gap: 6px;
+    min-height: 76px;
+    padding: 3px 2px;
+    gap: 3px;
+    min-width: 0;
+    overflow: hidden;
   }
-  .cal-day-cell.other-month { display: none; }
-  .cal-day-cell.cal-empty-day:not(.today) {
-    padding: 7px 10px;
-    opacity: 0.65;
-  }
-  .cal-day-cell.cal-empty-day:not(.today) .cal-orders-list { display: none; }
   .cal-day-cell.today {
-    border: 2px solid #D97706;
+    outline: 2px solid #D97706;
+    outline-offset: -2px;
     background: #FFFBEB;
   }
-  .cal-day-mobile-title { display: inline; }
-  .cal-day-num { display: none; }
-  .cal-day-count { margin-left: auto; font-size: 11.5px; }
-  .cal-company { font-size: 13.5px; }
-  .cal-hotel { font-size: 13px; }
-  .cal-badge { font-size: 10.5px; padding: 2px 6px; }
+  .cal-day-head { padding: 1px 2px; margin-bottom: 1px; gap: 2px; }
+  .cal-day-mobile-title { display: none; }
+  .cal-day-count { display: none; }
+  .cal-day-num { display: inline-block; font-size: 11px; margin-left: auto; }
+  .cal-orders-list { gap: 2px; min-width: 0; }
+  .qv-cal-container:not(.agenda) .cal-order-chip {
+    min-height: 20px !important;
+    padding: 2px 3px;
+    border-width: 1px;
+    border-left-width: 4px;
+    border-radius: 4px;
+  }
+  .qv-cal-container:not(.agenda) .cal-chip-top { margin-bottom: 0; gap: 0; }
+  .qv-cal-container:not(.agenda) .cal-badge { display: none; }
+  .qv-cal-container:not(.agenda) .cal-company { display: none; }
+  .qv-cal-container:not(.agenda) .cal-hotel {
+    font-size: 9.5px;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.25;
+  }
+  .cal-more-badge { font-size: 9px; padding: 2px; border-radius: 3px; }
+  /* Liste / Gün (agenda) görünümü ferah kalır */
+  .qv-cal-container.agenda .cal-company { font-size: 13.5px; }
+  .qv-cal-container.agenda .cal-hotel { font-size: 13px; }
+  .qv-cal-container.agenda .cal-badge { font-size: 10.5px; padding: 2px 6px; }
 }
 
 /* Baskı ve Önizleme Eşitlemesi & Güvenli Metin Kırılmaları */
@@ -2964,16 +3000,6 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
   <div class="orb orb-gold"></div>
   <div class="orb orb-emerald"></div>
   <div class="orb orb-amber"></div>
-</div>
-
-<!-- ÖZEL AÇILIŞ EKRANI (SPLASH SCREEN): "Hoş geldin Mehmet / Kolay gelsin" -->
-<div id="qv-splash" class="qv-splash" role="status" aria-live="polite" aria-label="Hoş geldin Mehmet, Kolay gelsin">
-  <div class="qv-splash-card">
-    <div class="qv-splash-logo" aria-hidden="true">QV</div>
-    <div class="qv-splash-title">Hoş geldin Mehmet</div>
-    <div class="qv-splash-divider" aria-hidden="true"></div>
-    <div class="qv-splash-sub">Kolay gelsin</div>
-  </div>
 </div>
 
 <!-- ÜST ÇUBUK -->
@@ -5106,15 +5132,7 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     applyTheme();
   }
 
-  function initSplash() {
-    var splash = $('#qv-splash');
-    if (!splash) return;
-    var dismiss = function () {
-      splash.classList.add('hide');
-    };
-    splash.addEventListener('click', dismiss);
-    window.setTimeout(dismiss, reducedMotion() ? 200 : 1850);
-  }
+  /* Açılış karşılama ekranı kaldırıldı: uygulama doğrudan ana ekrana açılır */
 
   /* ========================================================================
      YARDIMCI: yazdırmadan önce yazı tiplerini bekle
@@ -7956,13 +7974,35 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     cell.appendChild(dayHead);
 
     var eventsEl = el('div', 'cal-orders-list qv-cal-events');
-    items.forEach(function (item) { eventsEl.appendChild(buildCalChip(item)); });
+    var maxInline = isDayView ? items.length : 2;
+    items.slice(0, maxInline).forEach(function (item) { eventsEl.appendChild(buildCalChip(item)); });
+    if (!isDayView && items.length > maxInline) {
+      var moreBtn = el('button', 'cal-more-badge', '+' + (items.length - maxInline) + ' daha');
+      moreBtn.type = 'button';
+      moreBtn.addEventListener('click', function (ev) {
+        ev.stopPropagation();
+        openCalDayOrders(dateStr);
+      });
+      eventsEl.appendChild(moreBtn);
+    }
 
     cell.appendChild(eventsEl);
     cell.addEventListener('click', function () {
       openCalDayOrders(dateStr);
     });
     return cell;
+  }
+
+  // YEDEK: Önceki tam listeli aylık takvim görünümü (istenirse tekrar çağrılabilir)
+  function renderLegacyMonthView(container, year, month) {
+    var firstDay = (new Date(year, month, 1).getDay() + 6) % 7;
+    var daysInMonth = new Date(year, month + 1, 0).getDate();
+    for (var day = 1; day <= daysInMonth + firstDay; day++) {
+      if (day <= firstDay) continue;
+      var dNum = day - firstDay;
+      var dateStr = year + '-' + ('0' + (month + 1)).slice(-2) + '-' + ('0' + dNum).slice(-2);
+      container.appendChild(buildCalCell(dateStr, dNum, false, true));
+    }
   }
 
   /* ========================================================================
@@ -8210,7 +8250,6 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
   function init() {
     var today = istanbulDate(new Date());
     applyTheme();
-    initSplash();
     printedMap = loadPrinted();
     lsWrite(LS_PRINTED, printedMap);
     var github = lsRead(LS_GITHUB);
