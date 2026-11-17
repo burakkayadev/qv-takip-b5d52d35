@@ -408,6 +408,13 @@ def run_all_checks(root: Path = ROOT, portal_check: bool = False,
     checks.append(check_index_syntax_and_badges(root=root))
 
     data_check, data_metrics = check_data_freshness(root=root)
+    if not data_check["ok"] and auto_heal and os.environ.get("GH_TOKEN"):
+        if "senkron gecikmesi" in str(data_check.get("detail", "")):
+            subprocess.run(
+                ["gh", "workflow", "run", "sync.yml", "-R", GH_REPO],
+                capture_output=True, text=True, timeout=15,
+            )
+            data_check["detail"] += " (Otomatik sync.yml tetiklendi)"
     checks.append(data_check)
     metrics.update(data_metrics)
 

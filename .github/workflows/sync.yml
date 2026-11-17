@@ -2,10 +2,10 @@ name: Quietvox Senkronizasyon
 
 on:
   schedule:
-    # Her 30 dakikada bir veri senkronizasyonu (UTC). Hatırlatmalar da bu çalışmalara
-    # bağlıdır (ayrı Chromium başlatılmaz): 05:05 UTC = 08:00 TR sabah, 10:05 UTC = 13:00 TR öğle,
-    # 15:05 UTC = 18:00 TR akşam. Tür aşağıdaki "Hatırlatma türünü belirle" adımında seçilir.
-    - cron: '5,35 * * * *'
+    # Her saat başı :15'te veri senkronizasyonu (UTC). (30 dakikalık sık cron GitHub tarafından
+    # ertelendiği için saatlik :15 seçildi). Hatırlatmalar da bu çalışmalara bağlıdır:
+    # 05:15 UTC = 08:15 TR sabah, 10:15 UTC = 13:15 TR öğle, 15:15 UTC = 18:15 TR akşam.
+    - cron: '15 * * * *'
   workflow_dispatch:
     inputs:
       send_reminder:

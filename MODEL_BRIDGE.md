@@ -1,11 +1,24 @@
 # MODEL_BRIDGE — Uygulamalar Arası Ortak Hafıza
 
 > **Son Aktif Uygulama:** Antigravity  
-> **Son Güncelleme:** 15 Kasım 2026 23:51 (UTC+3) — **Takvim Mobil Tam Ekran (`100vw × 100dvh`), Yüksek Kontrastlı Durum Renkleri (`#F59E0B`/`#2563EB`/`#16A34A`/`#7C3AED`), Sipariş Detay Modalı & Pzt–Paz Sade Ay Görünümü Tamamlandı.**
+> **Son Güncelleme:** 17 Kasım 2026 23:39 (UTC+3) — **Veri Tazeliği Saatlik Cron & Auto-Heal (sync.yml, system_check.py), Tam Türkçe Durum Rengi, Taşmasız Mobil Ay Takvimi & Sade Ana Sipariş Kartları Tamamlandı.**
 
 ---
 
-## 📌 SON DURUM ÖZETİ — Son Aktif Uygulama: Antigravity (Takvim Mobil & Sipariş Detay Modalı)
+## 📌 SON DURUM ÖZETİ — Son Aktif Uygulama: Antigravity (Veri Tazeliği, Sade Kartlar & Mobil Ay Takvimi)
+
+| Başlık | Detay |
+|---|---|
+| **Son Aktif Uygulama** | Antigravity |
+| **Tarih / Saat** | 17.11.2026 23:39 (İstanbul) |
+| **Tamamlanan İşler** | 1. **Veri Tazeliği Çözümü (.github/workflows/sync.yml, 	ests/system_check.py):**<br>   - sync.yml çalıştırılıp güncel data.json çekildi (50 dk taze, 327 teslimat, 341 iade).<br>   - GitHub Actions'ın 30 dakikalık cron'u (5,35 * * * *) 8 saat ertelemesini önlemek için saatlik 15 * * * * düzenine geçildi (05:15/10:15/15:15 UTC hatırlatmaları korundu). 	ests/system_check.py --auto-heal artık veri gecikmesinde sync.yml iş akışını otomatik tetikliyor.<br>2. **Tam Türkçe Takvim Açıklamaları & Belirgin Durum Renkleri (index.html):**<br>   - Status color: Reserved \| Confirmed \| Delivered \| Returned \| Cancelled → **Durum Rengi: Rezerve \| Onaylı \| Teslim Edildi \| İade Alındı \| İptal** olarak Türkçeleştirildi; kartlarda 7px sol şerit ve yüksek kontrastlı zeminler güçlendirildi.<br>3. **Taşmasız & Okunaklı Mobil Ay Takvimi (index.html):**<br>   - overflow-wrap: anywhere kaldırılarak V-i-k-i-n-g gibi dikey harf kırılmaları tamamen önlendi (white-space: nowrap; text-overflow: ellipsis).<br>   - < 768px ekranlarda Ay görünümü sağdan taşmayan (100vw), 17 Salı / BUGÜN · 17 Salı başlıklı okunaklı gün kartlarına dönüştürüldü; iç içe kaydırma çubukları kaldırıldı.<br>4. **Sadeleştirilmiş Ana Sipariş Kartları (index.html):**<br>   - uildCard kapalı konumda yalnızca Tarih, Durum Rozeti, QV ID, Otel Adı, Acente • Kişi • Rehber özeti ve tek bir **Ayrıntılar** satırı gösteriyor.<br>   - Hazırlandı, Kanıt Fotoğrafı Çek, Ara, WhatsApp, Harita, Yazdır, Hatırlatıcı ve checklist tamamen Ayrıntılar (.more-body) içine taşındı (
+ull düğüm filtrelendi).<br>5. **Doğrulama:** Playwright (390×844 sıfır taşma, sıfır konsol hatası), 	ests/system_check.py (tüm satırlar **Aktif / Sorunsuz**) ve pytest tam paketi çalıştırıldı. |
+| **Değişen Dosyalar** | .github/workflows/sync.yml, 	ests/system_check.py, index.html, MODEL_BRIDGE.md, Quietvox_Kullanim_Kilavuzu.pdf (yedek: _backup_before_antigravity_v13/) |
+| **Bir Sonraki Uygulamanın Yapacağı İş** | MODEL_BRIDGE.md dosyasını okuyarak mevcut çalışan özellikleri bozmadan devam etmek. |
+
+### Önceki kayıt — Antigravity (15.11.2026 23:51)
+
+### (15.11.2026 23:51 özeti) Takvim Mobil & Sipariş Detay Modalı
 
 | Başlık | Detay |
 |---|---|

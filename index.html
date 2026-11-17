@@ -2681,24 +2681,33 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 4px;
+  gap: 6px;
   width: 100%;
   background: transparent;
   border: 0;
-  padding: 2px 3px;
-  margin-bottom: 2px;
+  padding: 3px 4px;
+  margin-bottom: 3px;
   cursor: pointer;
   font: inherit;
   border-radius: 6px;
+  text-align: left;
 }
 .cal-day-head:hover { background: rgba(15, 23, 42, 0.06); }
+.cal-day-mobile-title {
+  display: none;
+  font-size: 15px;
+  font-weight: 800;
+  color: #0F172A;
+}
+.cal-day-cell.today .cal-day-mobile-title { color: #B45309; }
 .cal-day-count {
   font-size: 10.5px;
   font-weight: 700;
   color: #475569;
   background: #E2E8F0;
-  padding: 1px 6px;
+  padding: 1px 7px;
   border-radius: 999px;
+  white-space: nowrap;
 }
 .cal-day-num {
   font-size: 12.5px;
@@ -2717,24 +2726,24 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
   display: flex;
   flex-direction: column;
   gap: 5px;
-  overflow-y: auto;
-  max-height: 250px;
-  padding-right: 1px;
 }
 .cal-order-chip {
   flex-shrink: 0 !important;
-  min-height: 40px !important;
-  border-radius: 6px;
-  padding: 5px 7px;
+  min-height: 42px !important;
+  border-radius: 7px;
+  padding: 6px 8px;
   cursor: pointer;
-  border: 1px solid rgba(15, 23, 42, 0.12);
-  border-left: 6px solid;
+  border: 1.5px solid rgba(15, 23, 42, 0.16);
+  border-left: 7px solid;
   display: flex;
   flex-direction: column;
   justify-content: center;
   text-align: left;
   box-sizing: border-box;
   text-decoration: none;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
 }
 .cal-order-chip:active { opacity: 0.85; }
 .cal-order-chip.st-reserved  { background: #FEF3C7; border-left-color: #F59E0B; color: #78350F; }
@@ -2745,19 +2754,22 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
 
 .cal-chip-top {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 5px;
   margin-bottom: 2px;
-  line-height: 1.3;
+  line-height: 1.25;
+  min-width: 0;
+  width: 100%;
 }
 .cal-badge {
   flex: none;
-  font-size: 9.5px;
+  font-size: 10px;
   font-weight: 800;
   padding: 2px 5px;
   border-radius: 4px;
   line-height: 1.1;
   letter-spacing: 0.2px;
+  white-space: nowrap;
 }
 .cal-badge.badge-del {
   background: #EA580C;
@@ -2767,24 +2779,25 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
   background: #1E3A8A;
   color: #FFFFFF;
 }
-/* Otel ve acente adları ASLA kırpılmaz: alt satıra kayarak tam okunur */
+/* Otel ve acente adları yatay tek satırda taşmadan okunur; dikey harf kırılması olmaz */
 .cal-company {
+  flex: 1 1 auto;
+  min-width: 0;
   font-weight: 800;
-  font-size: 11.5px;
-  white-space: normal;
-  overflow: visible;
-  text-overflow: clip;
-  overflow-wrap: anywhere;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   color: inherit;
   line-height: 1.3;
 }
 .cal-hotel {
   font-weight: 700;
-  font-size: 11px;
-  white-space: normal;
-  overflow: visible;
-  text-overflow: clip;
-  overflow-wrap: anywhere;
+  font-size: 11.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
   color: inherit;
   line-height: 1.3;
 }
@@ -2888,13 +2901,42 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
   .qv-cal-filter-bar { gap: 4px; padding: 6px 8px; }
   .qv-cal-ftab { font-size: 11px; padding: 7px 3px; gap: 3px; }
   .qv-cal-legend { padding: 6px 10px; column-gap: 10px; row-gap: 4px; font-size: 11.5px; }
-  /* Ay görünümü: 7 sütunlu (Pzt-Paz) sade tablo, yatayda tablo içinde kayar */
-  .qv-cal-grid-header, .qv-cal-days { grid-template-columns: repeat(7, minmax(132px, 1fr)); }
-  .qv-cal-grid-header { font-size: 12.5px; }
-  .cal-day-num { font-size: 13px; }
-  .cal-company { font-size: 12px; }
-  .cal-hotel { font-size: 12px; }
-  .cal-badge { font-size: 10px; }
+  /* Mobil Ay/Hafta görünümü: sağdan taşmayan, harfleri dikey kırmayan okunaklı kart listesi */
+  .qv-cal-grid-wrap { overflow-x: hidden; background: #F1F5F9; }
+  .qv-cal-grid-header { display: none; }
+  .qv-cal-days {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px;
+    background: #F1F5F9;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .cal-day-cell {
+    width: 100%;
+    min-height: auto;
+    border-radius: 10px;
+    border: 1px solid #CBD5E1;
+    padding: 10px;
+    gap: 6px;
+  }
+  .cal-day-cell.other-month { display: none; }
+  .cal-day-cell.cal-empty-day:not(.today) {
+    padding: 7px 10px;
+    opacity: 0.65;
+  }
+  .cal-day-cell.cal-empty-day:not(.today) .cal-orders-list { display: none; }
+  .cal-day-cell.today {
+    border: 2px solid #D97706;
+    background: #FFFBEB;
+  }
+  .cal-day-mobile-title { display: inline; }
+  .cal-day-num { display: none; }
+  .cal-day-count { margin-left: auto; font-size: 11.5px; }
+  .cal-company { font-size: 13.5px; }
+  .cal-hotel { font-size: 13px; }
+  .cal-badge { font-size: 10.5px; padding: 2px 6px; }
 }
 
 /* Baskı ve Önizleme Eşitlemesi & Güvenli Metin Kırılmaları */
@@ -3143,14 +3185,14 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
       <button type="button" class="qv-cal-ftab ftab-ret" data-cal-filter="returns">📥 Sadece Alınacaklar</button>
     </div>
 
-    <!-- Status Color Legend -->
+    <!-- Durum Rengi Açıklaması -->
     <div class="qv-cal-legend">
-      <span class="legend-title">Status color:</span>
-      <span class="legend-item"><span class="legend-color st-reserved"></span> Reserved</span>
-      <span class="legend-item"><span class="legend-color st-confirmed"></span> Confirmed</span>
-      <span class="legend-item"><span class="legend-color st-delivered"></span> Delivered</span>
-      <span class="legend-item"><span class="legend-color st-returned"></span> Returned</span>
-      <span class="legend-item"><span class="legend-color st-cancelled"></span> Cancelled</span>
+      <span class="legend-title">Durum Rengi:</span>
+      <span class="legend-item"><span class="legend-color st-reserved"></span> Rezerve</span>
+      <span class="legend-item"><span class="legend-color st-confirmed"></span> Onaylı</span>
+      <span class="legend-item"><span class="legend-color st-delivered"></span> Teslim Edildi</span>
+      <span class="legend-item"><span class="legend-color st-returned"></span> İade Alındı</span>
+      <span class="legend-item"><span class="legend-color st-cancelled"></span> İptal</span>
     </div>
 
     <!-- 7-Column Weekly Grid (Pazartesi - Pazar) -->
@@ -4584,8 +4626,9 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     remind.addEventListener('click', function () { openReminderDialog(order, tab); });
     append(quick, call, wa, map, print, remind);
 
-    // Ayrıntılar: otel telefonu, el işareti, teslim notu ekle/düzenle, adresler, ekipman
+    // Ayrıntılar: tüm aksiyon butonları (Hazırlandı, Fotoğraf, Ara, WhatsApp, Harita, Yazdır, Hatırlatıcı) ve detaylar
     var details = cardDetails(order, key);
+    var moreBody = details.querySelector('.more-body');
     var extra = el('div', 'more-extra');
     var hotelTel = normalizePhone(w.delivery_phone);
     order.changes.forEach(function (c) {
@@ -4597,7 +4640,10 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     noteBtn.addEventListener('click', function () { openNoteEditDialog(order, key); });
     append(extra, noteBtn);
     if (tab === 'deliveries') append(extra, checkButton(key, 'done', info.finalLabel, card));
-    if (extra.childNodes.length) details.querySelector('.more-body').prepend(extra);
+    if (extra.childNodes.length) moreBody.prepend(extra);
+    if (noteBar) moreBody.prepend(noteBar);
+    var topNodes = [primary, quick, photoSec, checklist].filter(Boolean);
+    if (topNodes.length) moreBody.prepend.apply(moreBody, topNodes);
 
     // Toplu seçim kipinde kartın köşesinde seçim kutusu
     var selectBox = null;
@@ -4610,7 +4656,7 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
       selectBox.setAttribute('aria-label', 'Seç: ' + hotelName);
       selectBox.addEventListener('click', function () { toggleSelected(key); });
     }
-    return append(card, selectBox, el('div', 'done-flag', '✓ ' + info.finalLabel), main, noteBar, checklist, photoSec, primary, quick, details);
+    return append(card, selectBox, el('div', 'done-flag', '✓ ' + info.finalLabel), main, details);
   }
 
   function emptyMessage() {
@@ -7883,15 +7929,25 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     return chip;
   }
 
+  var CAL_WEEKDAYS_TR = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
+
   function buildCalCell(dateStr, dayNum, isOtherMonth, isDayView) {
-    var cell = el('div', 'cal-day-cell qv-cal-day' + (isOtherMonth ? ' other-month' : '') + (dateStr === state.today ? ' today' : ''));
-    if (isDayView) cell.style.gridColumn = '1 / -1';
     var items = getOrdersForCalendarDate(dateStr);
+    var isToday = dateStr === state.today;
+    var cell = el('div', 'cal-day-cell qv-cal-day' +
+      (isOtherMonth ? ' other-month' : '') +
+      (isToday ? ' today' : '') +
+      (!items.length ? ' cal-empty-day' : ''));
+    if (isDayView) cell.style.gridColumn = '1 / -1';
+
+    var dayObj = new Date(dateStr + 'T00:00:00');
+    var mobileTitle = (isToday ? 'BUGÜN · ' : '') + dayNum + ' ' + CAL_WEEKDAYS_TR[dayObj.getDay()];
 
     var dayHead = el('button', 'cal-day-head');
     dayHead.type = 'button';
     dayHead.title = longDate(dateStr) + ' — tüm siparişleri aç';
-    if (items.length) append(dayHead, el('span', 'cal-day-count', String(items.length)));
+    append(dayHead, el('span', 'cal-day-mobile-title', mobileTitle));
+    if (items.length) append(dayHead, el('span', 'cal-day-count', items.length + ' sipariş'));
     append(dayHead, el('span', 'cal-day-num qv-cal-day-num', String(dayNum)));
     dayHead.addEventListener('click', function (ev) {
       ev.stopPropagation();
