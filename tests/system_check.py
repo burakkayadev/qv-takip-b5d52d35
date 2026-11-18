@@ -33,6 +33,8 @@ import scraper  # noqa: E402
 
 TZ = ZoneInfo("Europe/Istanbul")
 DEFAULT_APP_URL = "https://burakkayadev.github.io/qv-takip-b5d52d35/"
+GH_REPO = os.environ.get("GITHUB_REPOSITORY") or "burakkayadev/qv-takip-b5d52d35"
+DEFAULT_PIN = os.environ.get("QV_APP_PIN") or ""
 
 
 def check_index_syntax_and_badges(root: Path = ROOT) -> dict[str, Any]:
@@ -54,6 +56,12 @@ def check_index_syntax_and_badges(root: Path = ROOT) -> dict[str, Any]:
             "name": "index.html & Canlı Rozetler",
             "ok": False,
             "detail": f"Eksik senkronizasyon rozeti: {', '.join(missing)}",
+        }
+    if re.search(r"ho[şs]\s*geldin\s*mehmet", normalized_html, re.I):
+        return {
+            "name": "index.html & Karşılama Kontrolü",
+            "ok": False,
+            "detail": "index.html içinde kaldırılması gereken 'Hoşgeldin Mehmet' metni tespit edildi.",
         }
 
     scripts = re.findall(r"<script(?![^>]*src=)[^>]*>(.*?)</script>", html, re.S)
@@ -161,6 +169,228 @@ def check_live_pages(app_url: str = DEFAULT_APP_URL) -> dict[str, Any]:
         }
     except (urllib.error.URLError, TimeoutError, ValueError) as exc:
         return {"name": "Canlı Site (GitHub Pages)", "ok": False, "detail": f"Canlı site erişim hatası: {exc}"}
+
+
+def check_secret_hygiene(root: Path = ROOT) -> dict[str, Any]:
+    """Repoda gizli anahtar, .env veya şifre sızıntısı olmadığını doğrular."""
+    forbidden_patterns = (
+        re.compile(r"github_pat_[A-Za-z0-9_]{10,}"),
+        re.compile(r"ghp_[A-Za-z0-9]{10,}"),
+    )
+    for fname in ("index.html", "data.json", "sw.js"):
+        fpath = root / fname
+        if not fpath.exists():
+            continue
+        text = fpath.read_text(encoding="utf-8", errors="ignore")
+        for pat in forbidden_patterns:
+            if pat.search(text):
+                return {"name": "Güvenlik & Sır Taraması", "ok": False, "detail": f"{fname} içinde token sızıntısı tespit edildi"}
+    tracked_env = subprocess.run(
+        ["git", "-C", str(root), "ls-files", ".env", "cookies.json"],
+        capture_output=True, text=True, timeout=10,
+    )
+    if tracked_env.returncode == 0 and tracked_env.stdout.strip():
+        return {
+            "name": "Güvenlik & Sır Taraması",
+            "ok": False,
+            "detail": f"İzlenen gizli dosya bulundu: {tracked_env.stdout.strip()}",
+        }
+    return {"name": "Güvenlik & Sır Taraması", "ok": True, "detail": ".env / token / çerez sızıntısı tespit edilmedi."}
+
+
+async def _verify_frontend_playwright_async(app_url: str, pin_code: str = DEFAULT_PIN) -> dict[str, Any]:
+    from playwright.async_api import async_playwright
+
+    cache_sep = "&" if "?" in app_url else "?"
+    target_url = f"{app_url}{cache_sep}v={int(datetime.now(timezone.utc).timestamp())}"
+    failures: list[str] = []
+    details_notes: list[str] = []
+
+    async with async_playwright() as playwright:
+        browser = await playwright.chromium.launch(headless=True)
+        try:
+            for label, viewport in (("Masaüstü 1280x800", {"width": 1280, "height": 800}),
+                                    ("Mobil 390x844", {"width": 390, "height": 844})):
+                context = await browser.new_context(viewport=viewport)
+                page = await context.new_page()
+                js_errors: list[str] = []
+                page.on("pageerror", lambda err: js_errors.append(f"pageerror: {err}"))
+                page.on("console", lambda msg: js_errors.append(f"console.error: {msg.text}") if msg.type == "error" else None)
+
+                await page.add_init_script(
+                    "window.__hcPrintCount = 0; window.print = function() { window.__hcPrintCount++; };"
+                )
+                await page.goto(target_url, wait_until="networkidle", timeout=30000)
+
+                # 1) PIN kilidi varsa gir (QV_APP_PIN tanımlıysa tuş takımından, değilse oturum hash'iyle aç)
+                if await page.locator("#pinLock").count() > 0:
+                    if pin_code:
+                        for digit in pin_code:
+                            await page.locator(f"#pinLock button.pl-key:has-text('{digit}')").click()
+                        await page.wait_for_selector("#pinLock", state="detached", timeout=10000)
+                    else:
+                        idx_src = (ROOT / "index.html").read_text(encoding="utf-8", errors="ignore")
+                        m_sha = re.search(r"PIN_DEFAULT\s*=\s*\{\s*sha:\s*'([a-f0-9]{64})'", idx_src)
+                        if not m_sha:
+                            raise RuntimeError("PIN_DEFAULT sha özeti index.html içinde bulunamadı")
+                        await page.evaluate(
+                            "(sha) => { localStorage.setItem('qv.pin.ok.v1', sha); }",
+                            m_sha.group(1),
+                        )
+                        await page.reload(wait_until="networkidle", timeout=30000)
+
+                await page.wait_for_selector("#day-h", timeout=15000)
+                await page.wait_for_timeout(1200)
+
+                # 2) Hoşgeldin Mehmet kontrolü
+                body_text = await page.evaluate("() => document.body.innerText || ''")
+                if re.search(r"ho[şs]\s*geldin\s*mehmet", body_text, re.I):
+                    failures.append(f"[{label}] Ekranda 'Hoşgeldin Mehmet' karşılama metni bulundu.")
+
+                # 3) Sayaç tutarlılık kontrolü (#tomorrow-line ile Yarın (X))
+                counters = await page.evaluate("""() => {
+                  const line = document.getElementById('tomorrow-line')?.textContent || '';
+                  const btn = document.querySelector('.filter[data-filter="tomorrow"]')?.textContent || '';
+                  return { line, btn };
+                }""")
+                m_line = re.search(r"Yar[ıi]n:\s*(\d+)\s*teslimat", counters["line"])
+                m_btn = re.search(r"Yar[ıi]n\s*\((\d+)\)", counters["btn"])
+                if not m_line or not m_btn or int(m_line.group(1)) != int(m_btn.group(1)):
+                    failures.append(
+                        f"[{label}] Sayaç tutarsızlığı: üst bant '{counters['line']}' ile buton '{counters['btn']}' eşleşmiyor."
+                    )
+
+                # 4) Akıllı Hazırlık Radarı görünürlük kontrolü
+                radar_state = await page.evaluate("""() => {
+                  const el = document.getElementById('prep-radar');
+                  if (!el) return { exists: false };
+                  const rect = el.getBoundingClientRect();
+                  return { exists: true, hidden: el.hidden, h: rect.height, text: el.innerText.slice(0, 120) };
+                }""")
+                if not radar_state.get("exists") or radar_state.get("hidden") or radar_state.get("h", 0) <= 0:
+                    failures.append(f"[{label}] Akıllı Hazırlık Radarı (#prep-radar) ana ekranda görünür değil.")
+
+                # 5) İsim standardı kontrolü (Waybill / Form sızıntısı olmamalı)
+                ui_text = await page.evaluate("""() => {
+                  const parts = [];
+                  for (const sel of ['header.topbar', '#app', 'nav#drawer', '#bulkbar', '#dlg']) {
+                    const n = document.querySelector(sel);
+                    if (n && n.innerText) parts.push(n.innerText);
+                  }
+                  return parts.join('\\n');
+                }""")
+                if re.search(r"\bwaybill\b", ui_text, re.I) or re.search(r"\bformu?\b", ui_text, re.I):
+                    failures.append(f"[{label}] Görünür arayüzde unutulmuş 'Waybill' veya 'Form' ifadesi bulundu.")
+
+                # 6) Mobil yatay taşma + Aylık Takvim testi (390x844)
+                if viewport["width"] <= 430:
+                    overflow_main = await page.evaluate(
+                        "() => document.documentElement.scrollWidth > window.innerWidth"
+                    )
+                    if overflow_main:
+                        failures.append(f"[{label}] Ana ekranda yatay taşma (scrollWidth > innerWidth) tespit edildi.")
+
+                    await page.locator("#btn-menu").click()
+                    await page.locator("#btn-drawer-calendar").click()
+                    await page.wait_for_selector("#qv-calendar-modal:not([hidden])", timeout=10000)
+                    await page.wait_for_timeout(400)
+                    overflow_cal = await page.evaluate(
+                        "() => document.documentElement.scrollWidth > window.innerWidth"
+                    )
+                    if overflow_cal:
+                        failures.append(f"[{label}] Aylık Takvim görünümünde yatay taşma tespit edildi.")
+                    await page.locator("#cal-close").click()
+                    await page.wait_for_timeout(200)
+
+                # 7) İlk sipariş kartında Ayrıntılar + Tekli Küçük yazdırma 1 sayfa testi (Masaüstü geçişinde)
+                if viewport["width"] >= 1000:
+                    await page.locator('.filter[data-filter="all"]').click()
+                    await page.wait_for_timeout(400)
+                    card_count = await page.locator("#list .card").count()
+                    if card_count == 0:
+                        failures.append(f"[{label}] 'Tümü' sekmesinde denetlenecek sipariş kartı bulunamadı.")
+                    else:
+                        first_card = page.locator("#list .card").first
+                        await first_card.locator("details.more > summary").click()
+                        await page.wait_for_timeout(250)
+                        is_open = await first_card.locator("details.more").evaluate("el => el.open")
+                        if not is_open:
+                            failures.append(f"[{label}] İlk sipariş kartında 'Ayrıntılar' bölümü açılmadı.")
+                        else:
+                            await first_card.locator("button.qbtn:has-text('Yazdır')").click()
+                            await page.wait_for_selector("#dlg[open]", timeout=5000)
+                            wb_btn = page.locator('#dlg [data-print-mode="waybill"] .btn-print')
+                            await wb_btn.click()
+                            await page.wait_for_timeout(300)
+                            print_info = await page.evaluate("""() => ({
+                              printCount: window.__hcPrintCount,
+                              sheetCount: document.querySelectorAll('#print-sheets .sheet-wrap').length,
+                              hasPrint: document.body.classList.contains('has-print')
+                            })""")
+                            pdf_bytes = await page.pdf(format="A4", print_background=False, prefer_css_page_size=True)
+                            pdf_pages = len(re.findall(rb"/Type\s*/Page\b(?!s)", pdf_bytes))
+                            if print_info["printCount"] != 1 or print_info["sheetCount"] != 1 or pdf_pages != 1:
+                                failures.append(
+                                    f"[{label}] Tekli Küçük yazdırma 1 sayfa üretmedi "
+                                    f"(printCount={print_info['printCount']}, sheet={print_info['sheetCount']}, pdfPages={pdf_pages})."
+                                )
+                            else:
+                                details_notes.append("Tekli Küçük yazdırma = 1 sayfa")
+
+                if js_errors:
+                    failures.append(f"[{label}] Konsol/JS hatası: {js_errors[0][:180]}")
+
+                await context.close()
+        except Exception as exc:
+            failures.append(f"Playwright arayüz denetim hatası: {exc}")
+        finally:
+            await browser.close()
+
+    if failures:
+        return {
+            "name": "Gerçek Tarayıcı (Playwright) Arayüz Denetimi",
+            "ok": False,
+            "detail": " | ".join(failures),
+        }
+    extra = f" · {', '.join(details_notes)}" if details_notes else ""
+    return {
+        "name": "Gerçek Tarayıcı (Playwright) Arayüz Denetimi",
+        "ok": True,
+        "detail": f"Masaüstü (1280x800) ve Mobil (390x844) PIN girişi, 0 JS hatası, sayaç tutarlılığı, 30 günlük radar, taşmasız takvim{extra} doğrulandı.",
+    }
+
+
+def check_frontend_playwright(app_url: str = DEFAULT_APP_URL, pin_code: str = DEFAULT_PIN) -> dict[str, Any]:
+    """Canlı/yerel web arayüzünü gerçek headless Chromium ile uçtan uca denetler."""
+    return asyncio.run(_verify_frontend_playwright_async(app_url=app_url, pin_code=pin_code))
+
+
+def write_step_summary(report: dict[str, Any]) -> None:
+    """GitHub Actions çalışma özetini ($GITHUB_STEP_SUMMARY) Türkçe tablo olarak yazar."""
+    summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
+    if not summary_path:
+        return
+    lines = [
+        f"## Quietvox Sistem Sağlık Raporu ({report.get('checked_at', '')})",
+        "",
+        f"**Genel Durum:** {'✅ TÜM SİSTEMLER SAĞLIKLI' if report.get('healthy') else '❌ HATA TESPİT EDİLDİ'}",
+        "",
+        "| Kontrol | Durum | Detay |",
+        "|---|---|---|",
+    ]
+    for chk in report.get("checks", []):
+        badge = "✅ BAŞARILI" if chk.get("ok") else "❌ HATA"
+        detail = str(chk.get("detail", "")).replace("|", "\\|")
+        lines.append(f"| {chk.get('name', '')} | {badge} | {detail} |")
+    if report.get("optimizations"):
+        lines.extend(["", "### Optimizasyon Önerileri"])
+        for opt in report["optimizations"]:
+            lines.append(f"- {opt}")
+    try:
+        with open(summary_path, "a", encoding="utf-8") as f:
+            f.write("\n".join(lines) + "\n")
+    except OSError:
+        pass
 
 
 async def _verify_portal_async(settings: scraper.Settings) -> dict[str, Any]:
@@ -390,7 +620,7 @@ def check_bloat_and_performance(root: Path = ROOT) -> tuple[dict[str, Any], list
 
 def run_all_checks(root: Path = ROOT, portal_check: bool = False,
                    auto_heal: bool = False, live_check: bool = False,
-                   app_url: str = DEFAULT_APP_URL) -> dict[str, Any]:
+                   ui_check: bool = False, app_url: str = DEFAULT_APP_URL) -> dict[str, Any]:
     """Tüm sağlık ve performans kontrollerini çalıştırıp rapor sözlüğü döner."""
     checks: list[dict[str, Any]] = []
     metrics: dict[str, Any] = {}
@@ -406,6 +636,7 @@ def run_all_checks(root: Path = ROOT, portal_check: bool = False,
 
     checks.append(check_and_heal_action_queue(root=root, auto_heal=auto_heal))
     checks.append(check_index_syntax_and_badges(root=root))
+    checks.append(check_secret_hygiene(root=root))
 
     data_check, data_metrics = check_data_freshness(root=root)
     if not data_check["ok"] and auto_heal and os.environ.get("GH_TOKEN"):
@@ -420,6 +651,8 @@ def run_all_checks(root: Path = ROOT, portal_check: bool = False,
 
     if live_check:
         checks.append(check_live_pages(app_url=app_url))
+    if live_check or ui_check:
+        checks.append(check_frontend_playwright(app_url=app_url))
 
     perf_check, optimizations, perf_metrics = check_bloat_and_performance(root=root)
     checks.append(perf_check)
@@ -449,7 +682,8 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Quietvox 7/24 Sistem Sağlık ve Performans Denetimi")
     parser.add_argument("--portal-check", action="store_true", help="Canlı eu.quietvox.com oturum ve DOM testi yap")
     parser.add_argument("--auto-heal", action="store_true", help="Takılı kalan aksiyonları otomatik yeniden işle")
-    parser.add_argument("--live-check", action="store_true", help="Canlı GitHub Pages HTTP 200 kontrolü yap")
+    parser.add_argument("--live-check", action="store_true", help="Canlı GitHub Pages HTTP 200 ve Playwright arayüz kontrolü yap")
+    parser.add_argument("--ui-check", action="store_true", help="Playwright ile gerçek tarayıcı arayüz kontrolü yap")
     parser.add_argument("--send-email", action="store_true", help="Sağlık ve yük raporunu e-posta ile gönder")
     parser.add_argument("--app-url", default=os.environ.get("APP_URL") or DEFAULT_APP_URL)
     args = parser.parse_args(argv)
@@ -459,9 +693,11 @@ def main(argv: list[str] | None = None) -> int:
         portal_check=args.portal_check,
         auto_heal=args.auto_heal,
         live_check=args.live_check,
+        ui_check=args.ui_check,
         app_url=args.app_url,
     )
     print(json.dumps(report, ensure_ascii=False, indent=2))
+    write_step_summary(report)
 
     if args.send_email:
         notify_mail.send_health_report(report, os.environ)

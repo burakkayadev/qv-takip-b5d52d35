@@ -59,15 +59,17 @@
   --shadow: 0 20px 44px -10px rgba(0, 0, 0, 0.60), inset 0 1px 0 rgba(255, 255, 255, 0.28), inset 0 0 0 1px rgba(212, 175, 55, 0.08);
   --blur: 28px;
 
-  /* Durum renkleri (yüksek kontrastlı) */
+  /* Durum renkleri (yüksek kontrastlı cam hap rozetleri: Rezerve=Turuncu, Onaylı=Mavi, Teslim=Yeşil, İade=Mor, İptal=Kırmızı) */
   --ok: #6EE7B7;
   --ok-bg: rgba(16, 185, 129, 0.24);
   --warn-bg: rgba(245, 158, 11, 0.24);
-  --warn-ink: #FEF08A;
+  --warn-ink: #FDE68A;
   --err-bg: rgba(239, 68, 68, 0.26);
   --err-ink: #FECACA;
   --info-bg: rgba(59, 130, 246, 0.24);
   --info-ink: #DBEAFE;
+  --purple-bg: rgba(139, 92, 246, 0.26);
+  --purple-ink: #EDE9FE;
   --whatsapp: #059669;
 
   /* Ölçüler */
@@ -102,6 +104,8 @@
   --err-ink: #991B1B;
   --info-bg: #DBEAFE;
   --info-ink: #1E40AF;
+  --purple-bg: #EDE9FE;
+  --purple-ink: #4C1D95;
 }
 
 /* ==========================================================================
@@ -986,12 +990,18 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
 .date-pick.active { background: var(--gold-deep); border-color: var(--gold-deep); color: var(--white); }
 .date-pick:focus-within { outline: 3px solid var(--navy); outline-offset: 2px; }
 
-.chip.st { font-weight: 800; }
-.chip.st-reserved { background: #E4E6EC; color: #2B3040; }
-.chip.st-confirmed { background: var(--info-bg); color: var(--info-ink); }
-.chip.st-delivered { background: #EADCF3; color: #4B1F63; }
-.chip.st-returned { background: var(--ok-bg); color: var(--ok); }
-.chip.st-cancelled, .chip.st-lost, .chip.st-duplicated { background: var(--err-bg); color: var(--err-ink); }
+.chip.st {
+  font-weight: 800;
+  border: 1px solid transparent;
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+.chip.st-reserved { background: var(--warn-bg); border-color: rgba(251, 191, 36, 0.45); color: var(--warn-ink); }
+.chip.st-confirmed { background: var(--info-bg); border-color: rgba(96, 165, 250, 0.45); color: var(--info-ink); }
+.chip.st-delivered { background: var(--ok-bg); border-color: rgba(52, 211, 153, 0.48); color: var(--ok); }
+.chip.st-returned { background: var(--purple-bg); border-color: rgba(167, 139, 250, 0.48); color: var(--purple-ink); }
+.chip.st-cancelled, .chip.st-lost, .chip.st-duplicated { background: var(--err-bg); border-color: rgba(248, 113, 113, 0.45); color: var(--err-ink); }
 
 /* Otel filtresi: yatay kaydırılan düğmeler */
 .hotels { display: flex; gap: 8px; overflow-x: auto; padding: 2px 2px 6px; scrollbar-width: thin; -webkit-overflow-scrolling: touch; }
@@ -1234,8 +1244,6 @@ body.pv-open .pv-bar {
   color: #A7F3D0;
 }
 .check[aria-pressed="true"] .box { background: var(--emerald); border-color: var(--emerald); color: #052E16; }
-.chip.st-reserved { background: rgba(148, 163, 184, 0.22); color: #F1F5F9; }
-.chip.st-delivered { background: rgba(168, 85, 247, 0.26); color: #F3E8FF; }
 .pv-bar .btn-go { color: #0B1120; }
 dialog.dlg {
   background: rgba(15, 23, 42, 0.68);
@@ -1257,12 +1265,31 @@ dialog.dlg::backdrop {
    ========================================================================== */
 #reminder { display: none; } /* yarının özeti bugün panelinde tek satır + Çanta Hazırlık modunda */
 
-/* Mikro etkileşimler: tüm dokunmatik düğmelerde canlı geri bildirim */
-.btn, .tile, .filter, .hotel-chip, .qbtn, .check, .day-btn, .tool, .tab, .chk-item, .note-chip, .tomorrow-line {
-  transition: transform 0.14s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.16s ease, background-color 0.16s ease, border-color 0.16s ease;
+/* Mikro etkileşimler: tüm dokunmatik düğmelerde iOS hissiyatlı canlı geri bildirim */
+.btn, .tile, .filter, .hotel-chip, .qbtn, .check, .day-btn, .tool, .tab, .chk-item, .note-chip, .tomorrow-line, .prep-radar-item, .prep-radar-done-btn {
+  transition: transform 0.16s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+  touch-action: manipulation;
 }
-.btn:active, .tile:active, .filter:active, .hotel-chip:active, .qbtn:active, .check:active, .day-btn:active, .tool:active, .tab:active, .chk-item:active, .note-chip:active, .tomorrow-line:active {
-  transform: scale(0.97);
+.btn:active, .tile:active, .filter:active, .hotel-chip:active, .qbtn:active, .check:active, .day-btn:active, .tool:active, .tab:active, .chk-item:active, .note-chip:active, .tomorrow-line:active, .prep-radar-item:active, .prep-radar-done-btn:active {
+  transform: scale(0.98);
+}
+
+/* Rakam hizalaması (tabular-nums) */
+.tile .n, .tab .badge, .chip, .prep-radar-pill, .prep-radar-acc summary .cnt, .live-clock-time, .cal-day-num {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Açılır ayrıntılar ve modal geçiş animasyonları */
+@keyframes panelReveal {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+details.more[open] > .more-body,
+.prep-radar-acc[open] > .prep-radar-items {
+  animation: panelReveal 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@media (min-width: 900px) {
+  #app { max-width: 780px; padding-left: 20px; padding-right: 20px; }
 }
 
 /* Yüzen Alt Gezinme Çubuğu (Ultra-Saydam Pill-Tab Bar: rgba(15, 23, 42, 0.34)) */
@@ -1356,6 +1383,44 @@ dialog.dlg::backdrop {
   text-shadow: 0 1px 6px rgba(0, 0, 0, 0.4);
 }
 [data-theme="light"] .daypanel h2 { color: #1B2030; text-shadow: none; }
+.daypanel-head {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.live-clock {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.48);
+  border: 1px solid rgba(212, 175, 55, 0.38);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  font-size: 13px;
+  font-weight: 700;
+  color: #FDE68A;
+}
+[data-theme="light"] .live-clock {
+  background: rgba(156, 122, 75, 0.12);
+  border-color: rgba(156, 122, 75, 0.40);
+  color: #7A5B30;
+}
+.live-clock-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10B981;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.85);
+  animation: clockPulse 2s ease-in-out infinite;
+}
+@keyframes clockPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.45; transform: scale(0.8); }
+}
 
 /* Akıllı Hazırlık Radarı (Ön Hazırlık Öneri Kartı) */
 .prep-radar {
@@ -1427,7 +1492,8 @@ dialog.dlg::backdrop {
 .prep-radar-acc summary {
   cursor: pointer;
   list-style: none;
-  padding: 10px 12px;
+  min-height: 44px;
+  padding: 8px 12px;
   font-size: 13.5px;
   font-weight: 700;
   display: flex;
@@ -1454,12 +1520,19 @@ dialog.dlg::backdrop {
   gap: 6px;
   padding: 0 10px 10px;
 }
+.prep-radar-row {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+}
 .prep-radar-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  width: 100%;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 44px;
   text-align: left;
   padding: 8px 10px;
   border-radius: 10px;
@@ -1468,6 +1541,25 @@ dialog.dlg::backdrop {
   color: inherit;
   font: inherit;
   cursor: pointer;
+}
+.prep-radar-done-btn {
+  flex: none;
+  min-height: 44px;
+  padding: 0 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(52, 211, 153, 0.45);
+  background: rgba(16, 185, 129, 0.18);
+  color: #A7F3D0;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.prep-radar-done-btn:hover { background: rgba(16, 185, 129, 0.30); }
+[data-theme="light"] .prep-radar-done-btn {
+  background: #DCFCE7;
+  border-color: #86EFAC;
+  color: #065F46;
 }
 .prep-radar-item:hover { background: rgba(255, 255, 255, 0.10); }
 [data-theme="light"] .prep-radar-item {
@@ -3227,7 +3319,13 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
 
   <!-- Bugünün paneli (Komuta Merkezi) -->
   <section class="glass daypanel" id="daypanel" aria-labelledby="day-h">
-    <h2 id="day-h">Bugün</h2>
+    <div class="daypanel-head">
+      <h2 id="day-h">Bugün</h2>
+      <div class="live-clock" id="live-clock" aria-label="Canlı İstanbul saati">
+        <span class="live-clock-dot" aria-hidden="true"></span>
+        <span class="live-clock-time" id="live-clock-time">--:--:--</span>
+      </div>
+    </div>
     <button type="button" class="tile" id="tile-deliveries" data-tab="deliveries">
       <div class="n" id="tile-n-deliveries">0</div><div class="t">📦 Verilecek</div><div class="s" id="tile-s-deliveries"></div>
       <div class="tile-prog" aria-hidden="true"><div class="tile-prog-fill" id="prog-deliveries"></div></div>
@@ -3484,8 +3582,8 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
   var INACTIVE_STATUSES = { cancelled: true, lost: true, duplicated: true }; // yapılacak iş sayılmaz
   var STATUS_RANK = { reserved: 1, confirmed: 2, delivered: 5, returned: 6 };
   var ACTIONS = {
-    delivered: { field: 'prepared', label: 'Hazırlandı', quietvox: 'Delivered' },
-    returned:  { field: 'done',     label: 'Teslim Alındı', quietvox: 'Returned' }
+    delivered: { field: 'prepared', label: 'Hazırlandı', quietvox: 'Teslim Edildi' },
+    returned:  { field: 'done',     label: 'Teslim Alındı', quietvox: 'İade Alındı' }
   };
 
   var TAB_INFO = {
@@ -3575,6 +3673,27 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
   function addDays(dateStr, days) {
     var p = dateStr.split('-').map(Number);
     return new Date(Date.UTC(p[0], p[1] - 1, p[2] + days)).toISOString().slice(0, 10);
+  }
+
+  // Merkezi Europe/Istanbul takvim aralıkları (Bugün, Yarın, Bu Hafta, Bu Ay / 30 Gün)
+  function istanbulCalendarRanges(baseDate) {
+    var today = ISO_DATE.test(baseDate || '') ? baseDate : istanbulDate(new Date());
+    return {
+      today: today,
+      tomorrow: addDays(today, 1),
+      weekEnd: addDays(today, 7),
+      monthEnd: addDays(today, 30)
+    };
+  }
+
+  function updateLiveClock() {
+    var elClock = $('#live-clock-time');
+    if (!elClock) return;
+    try {
+      elClock.textContent = new Intl.DateTimeFormat('tr-TR', {
+        timeZone: TZ, hour: '2-digit', minute: '2-digit', second: '2-digit'
+      }).format(new Date());
+    } catch (e) { /* Intl desteklenmezse sessiz geç */ }
   }
 
   // "16 Kasım Pazartesi"
@@ -4236,16 +4355,15 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     $('#tile-overdue').hidden = overdue === 0;
     $('#tile-n-overdue').textContent = overdue;
 
-    // Yarının tek satırlık özeti (dokununca yarının listesi açılır)
-    var active = function (o) { return !INACTIVE_STATUSES[o.status]; };
-    var tomorrowDeliveries = rawOrdersOn('deliveries', state.tomorrow).filter(active).length;
-    var tomorrowReturns = rawOrdersOn('returns', state.tomorrow).filter(active).length;
+    // Yarının tek satırlık özeti (sekme butonu Yarın (X) ve hatırlatıcı ile birebir aynı veri kaynağı)
+    var tomorrowDeliveries = ordersOn('deliveries', state.tomorrow).length;
+    var tomorrowReturns = ordersOn('returns', state.tomorrow).length;
     $('#tomorrow-line').textContent = '🔔 Yarın: ' + tomorrowDeliveries + ' teslimat · ' + tomorrowReturns + ' iade';
   }
 
-  // Akıllı Hazırlık Radarı: 7 günlük takvimde sadece Onaylı (Confirmed) & hazırlanmamış siparişleri tarar
+  // Akıllı Hazırlık Radarı: Önümüzdeki 30 günlük takvimde sadece Onaylı & hazırlanmamış siparişleri tarar
   function isOrderPreparedForRadar(order) {
-    var key = orderKey(order);
+    var key = orderKey(order, 'delivery');
     if (reached(order, 'delivered')) return true;
     if (markOf(key).prepared === true) return true;
     if (isBagReady(order, key)) return true;
@@ -4255,7 +4373,20 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     return false;
   }
 
+  function markPreparedFromRadar(order) {
+    var key = orderKey(order, 'delivery');
+    setMark(key, 'prepared', true);
+    if (state.token && repoSlug() && navigator.onLine) {
+      sendAction(order, key, 'delivered');
+    } else {
+      enqueueAction(order, key, 'delivered', true);
+      showToast('✓ Hazırlandı işaretlendi (Quietvox kuyruğuna eklendi)');
+    }
+    render(true);
+  }
+
   function radarOrderRow(order) {
+    var wrap = el('div', 'prep-radar-row');
     var row = el('button', 'prep-radar-item');
     row.type = 'button';
     var main = el('div', 'prep-radar-item-main');
@@ -4268,7 +4399,15 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
       el('div', 'prep-radar-item-sub', '#' + qv + (client ? ' · ' + client : '') + pax));
     append(row, main, el('span', 'prep-radar-item-date', shortDate(order.date)));
     row.addEventListener('click', function () { openCalendarOrderDetail({ type: 'deliveries', order: order }); });
-    return row;
+
+    var doneBtn = el('button', 'prep-radar-done-btn', '✓ Hazırlandı');
+    doneBtn.type = 'button';
+    doneBtn.setAttribute('aria-label', hotel + ' siparişini hazırlandı işaretle');
+    doneBtn.addEventListener('click', function (ev) {
+      ev.stopPropagation();
+      markPreparedFromRadar(order);
+    });
+    return append(wrap, row, doneBtn);
   }
 
   function radarAccordion(titleText, list, emptyText, openByDefault) {
@@ -4290,14 +4429,14 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
 
   function renderPrepRadar() {
     var card = $('#prep-radar');
-    if (!card || !state.data || !state.today) {
+    if (!card || !state.data) {
       if (card) card.hidden = true;
       return;
     }
+    var ranges = istanbulCalendarRanges(state.today);
     var deliveries = state.data.deliveries || [];
-    var endDay = addDays(state.today, 7);
     var inWindow = deliveries.filter(function (o) {
-      return o.date && o.date >= state.tomorrow && o.date <= endDay;
+      return o.date && o.date >= ranges.tomorrow && o.date <= ranges.monthEnd;
     });
     // Sıfır Risk: yalnızca Onaylı (confirmed) ve henüz "Hazırlandı" işaretlenmemiş siparişler
     var confirmed = inWindow.filter(function (o) {
@@ -4312,44 +4451,47 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     });
 
     var busyDays = Object.keys(byDate).filter(function (d) { return byDate[d].length >= 6; }).sort();
-    if (busyDays.length === 0) {
-      card.hidden = true;
-      return;
-    }
-
-    var peakDay = busyDays[0];
-    busyDays.forEach(function (d) {
-      if (byDate[d].length > byDate[peakDay].length) peakDay = d;
-    });
-
-    var tomorrowList = (byDate[state.tomorrow] || []).slice();
-    // İlerideki 2-7 gün içindeki (özellikle 6+ siparişli yoğun günlerden) öne çekilebilecek 3-5 sipariş
+    var tomorrowList = (byDate[ranges.tomorrow] || []).slice();
+    // 2–30 gün aralığındaki yoğun günlerden (yoksa diğer Onaylı günlerden) öne çekilebilecek siparişler
     var futureBusy = [];
     var futureOther = [];
     Object.keys(byDate).sort().forEach(function (d) {
-      if (d <= state.tomorrow) return;
+      if (d <= ranges.tomorrow) return;
       if (byDate[d].length >= 6) futureBusy = futureBusy.concat(byDate[d]);
       else futureOther = futureOther.concat(byDate[d]);
     });
-    var pullForward = futureBusy.concat(futureOther).slice(0, 5);
+    var pullForward = (futureBusy.length ? futureBusy : futureOther).slice(0, 8);
 
-    $('#prep-radar-pill').textContent = confirmed.length + ' Onaylı · Yoğun: ' + shortDate(peakDay) + ' (' + byDate[peakDay].length + ')';
-    $('#prep-radar-msg').textContent =
-      'Önümüzdeki 7 günde toplam ' + confirmed.length + ' Onaylı sipariş var (özellikle ' +
-      shortDate(peakDay) + ' günü ' + byDate[peakDay].length + ' sipariş ile yoğun). ' +
-      'Son güne yığılmaması için bugünden ' + pullForward.length + ' siparişi önceden hazırlayıp kenara alabilirsiniz.';
+    if (busyDays.length > 0) {
+      var peakSummary = busyDays.slice(0, 2).map(function (d) {
+        return shortDate(d) + ' (' + byDate[d].length + ' sipariş)';
+      }).join(' ve ');
+      $('#prep-radar-pill').textContent = confirmed.length + ' Onaylı · ' + busyDays.length + ' Yoğun Gün';
+      $('#prep-radar-msg').textContent =
+        '💡 Hazırlık Radarı (30 Günlük): Önümüzdeki 1 ayda toplam ' + confirmed.length + ' Onaylı sipariş var. ' +
+        'Özellikle ' + peakSummary + ' günleri yoğun görünüyor; son güne yığılmaması için bugünden öne çekebileceğiniz siparişler aşağıda listelendi.';
+    } else if (confirmed.length > 0) {
+      $('#prep-radar-pill').textContent = confirmed.length + ' Onaylı · 30 Gün';
+      $('#prep-radar-msg').textContent =
+        '💡 Hazırlık Radarı (30 Günlük): Önümüzdeki 1 ayda toplam ' + confirmed.length + ' Onaylı sipariş var. ' +
+        'Günlük 6+ yoğunluk eşiği henüz aşılmadı; ancak son güne kalmaması için aşağıdaki Onaylı siparişleri bugünden hazırlayıp kenara alabilirsiniz.';
+    } else {
+      $('#prep-radar-pill').textContent = '0 Onaylı · Hazır ✓';
+      $('#prep-radar-msg').textContent =
+        '💡 Hazırlık Radarı (30 Günlük): Önümüzdeki 1 ayda bekleyen Onaylı sipariş bulunmuyor ✓';
+    }
 
     var listsBox = $('#prep-radar-lists');
     listsBox.replaceChildren(
       radarAccordion('1. Yarın Teslim Edilecekler (Mutlaka Hazırlanacak)', tomorrowList,
         'Yarın için bekleyen Onaylı sipariş yok ✓', tomorrowList.length > 0),
-      radarAccordion('2. İlerideki Yoğun Günlerden Öne Çekilebilecekler', pullForward,
+      radarAccordion('2. Önümüzdeki 1 Aydaki Yoğun Günlerden Öne Çekilebilecekler', pullForward,
         'Öne çekilecek başka Onaylı sipariş yok ✓', tomorrowList.length === 0 && pullForward.length > 0)
     );
 
     var noteEl = $('#prep-radar-note');
     if (reservedCount > 0) {
-      noteEl.textContent = 'ℹ️ Ayrıca ' + reservedCount + ' adet Rezerve sipariş var, onaylanınca eklenecek.';
+      noteEl.textContent = 'ℹ️ Önümüzdeki 30 günde ayrıca ' + reservedCount + ' adet Rezerve sipariş var; onaylandığında öneri listesine otomatik eklenecek.';
       noteEl.hidden = false;
     } else {
       noteEl.hidden = true;
@@ -5340,12 +5482,18 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
   }
 
   // Çift tıklama / touch+click çift basım koruması (tek seferde yalnızca 1 yazdırma)
+  var isPrinting = false;
   var _printLockUntil = 0;
   function triggerWindowPrint() {
     var now = Date.now();
-    if (now < _printLockUntil) return false;
+    if (isPrinting || now < _printLockUntil) return false;
+    isPrinting = true;
     _printLockUntil = now + 1200;
-    window.print();
+    try {
+      window.print();
+    } finally {
+      window.setTimeout(function () { isPrinting = false; }, 1200);
+    }
     return true;
   }
 
@@ -5586,7 +5734,7 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     });
     var note = action === 'returned'
       ? 'İade adetleri her siparişte kurala göre yazılır: pil ve kulaklık teslimin %3\'ü, diğerleri teslim adedi.'
-      : 'Hepsi Delivered yapılır; Self Delivery ve Self Return işaretlenir.';
+      : 'Hepsi Teslim Edildi yapılır; elden teslim ve elden iade işaretlenir.';
     var buttons = el('div', 'dlg-btns');
     append(buttons, dialogButton('btn-ghost', 'Vazgeç', closeDialog),
       dialogButton('btn-print', 'Onayla ve gönder', function () { closeDialog(); runBulk(todo, action, kind); }));
@@ -5859,7 +6007,7 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     });
     nodes.push(modes);
     nodes.push(el('p', 'dlg-note', '“Büyük” içeren baskıda siparişlere 🖨️ Büyük Yazdırıldı ✓ eklenir, Quietvox\'a ' +
-      'Delivered olarak gönderilir ve bilgilendirme e-postası gider. Sadece Küçük bunları yapmaz. ' +
+      'Teslim Edildi olarak gönderilir ve bilgilendirme e-postası gider. Sadece Küçük bunları yapmaz. ' +
       'Kâğıt A4, ölçek %100.'));
     nodes.push(dialogButton('btn-link', 'Vazgeç', closeDialog));
     showDialog(nodes);
@@ -5909,13 +6057,13 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     var finish = function () {
       var parts = [unique.length + ' sipariş için Büyük basıldı, \'Yazdırıldı ✓\' işaretlendi'];
       if (!canSend) {
-        showErrorAlert('❌ Dikkat: GitHub erişim anahtarı eksik! Büyük yazdırıldı ancak Quietvox portalına otomatik Delivered işlenemedi. ⚙ Ayarlar\'ı açmak için dokunun.', true);
+        showErrorAlert('❌ Dikkat: GitHub erişim anahtarı eksik! Büyük yazdırıldı ancak Quietvox portalına otomatik Teslim Edildi işlenemedi. ⚙ Ayarlar\'ı açmak için dokunun.', true);
         render(true);
         return;
       }
-      if (sent) parts.push(sent + ' sipariş Quietvox sistemine Delivered olarak işleniyor');
+      if (sent) parts.push(sent + ' sipariş Quietvox sistemine Teslim Edildi olarak işleniyor');
       if (queued) parts.push(queued + ' sipariş bağlantı gelince gönderilecek');
-      if (already) parts.push(already + ' sipariş zaten Delivered');
+      if (already) parts.push(already + ' sipariş zaten Teslim Edildi');
       parts.push(sendNotify(notifyOrders, printedAt));
       render(true);
       showToast(parts.join(', ') + '.');
@@ -7361,7 +7509,7 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     if (action === 'returned') {
       nodes.push(el('p', 'dlg-note', 'İade adetleri şöyle yazılacak (teslim → iade):'), returnPreviewList(order));
     } else {
-      nodes.push(el('p', 'dlg-note', 'Durum Delivered yapılacak; Self Delivery ve Self Return işaretlenecek.'));
+      nodes.push(el('p', 'dlg-note', 'Durum Teslim Edildi yapılacak; elden teslim ve elden iade işaretlenecek.'));
     }
     nodes.push(noteBox);
     if (canSend) {
@@ -8540,7 +8688,7 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
      BAŞLAT
      ======================================================================== */
   function init() {
-    var today = istanbulDate(new Date());
+    var ranges = istanbulCalendarRanges();
     applyTheme();
     printedMap = loadPrinted();
     lsWrite(LS_PRINTED, printedMap);
@@ -8548,11 +8696,13 @@ html.fs-xl #app, html.fs-xl .topbar, html.fs-xl .drawer, html.fs-xl dialog.dlg, 
     var pending = lsRead(LS_PENDING);
     var queue = lsRead(LS_QUEUE);
     setState({
-      today: today, tomorrow: addDays(today, 1), marks: loadMarks(),
+      today: ranges.today, tomorrow: ranges.tomorrow, marks: loadMarks(),
       token: github && typeof github.token === 'string' ? github.token : '',
       pending: pending && typeof pending === 'object' && !Array.isArray(pending) ? pending : {},
       queue: queue && typeof queue === 'object' && !Array.isArray(queue) ? queue : {}
     });
+    updateLiveClock();
+    window.setInterval(updateLiveClock, 1000);
     // Kaldırılan "Sade Mod" tercihinin eski kaydı temizlenir
     try { window.localStorage.removeItem('qv.view_mode.v1'); } catch (e) { /* depolama kapalı olabilir */ }
     applyFont();

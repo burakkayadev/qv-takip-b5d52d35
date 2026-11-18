@@ -44,6 +44,10 @@ jobs:
       - name: Playwright Chromium kur
         run: python -m playwright install --with-deps chromium
 
+      - name: GitHub Pages yayınının güncellenmesini bekle (push sonrası)
+        if: github.event_name == 'push'
+        run: sleep 45
+
       - name: Uçtan uca sağlık ve performans/yük denetimini çalıştır ve rapor e-postasını gönder
         env:
           QV_USER: ${{ secrets.QV_USER }}
@@ -51,6 +55,7 @@ jobs:
           QV_PASS_BACKUP: ${{ secrets.QV_PASS_BACKUP }}
           QV_HTTP_USER: ${{ secrets.QV_HTTP_USER }}
           QV_HTTP_PASS: ${{ secrets.QV_HTTP_PASS }}
+          QV_APP_PIN: ${{ secrets.QV_APP_PIN }}
           MAIL_TO: ${{ secrets.MAIL_TO }}
           ALERT_TO: ${{ secrets.ALERT_TO }}
           SMTP_USER: ${{ secrets.SMTP_USER }}
