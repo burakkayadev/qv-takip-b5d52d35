@@ -270,7 +270,7 @@ async def _verify_frontend_playwright_async(app_url: str, pin_code: str = DEFAUL
                 if not radar_state.get("exists") or radar_state.get("hidden") or radar_state.get("h", 0) <= 0:
                     failures.append(f"[{label}] Akıllı Hazırlık Radarı (#prep-radar) ana ekranda görünür değil.")
 
-                # 5) İsim standardı kontrolü (Waybill / Form sızıntısı olmamalı)
+                # 5) İsim standardı ve %100 Türkçe kontrolü (Waybill / Delivery & Return sızıntısı olmamalı)
                 ui_text = await page.evaluate("""() => {
                   const parts = [];
                   for (const sel of ['header.topbar', '#app', 'nav#drawer', '#bulkbar', '#dlg']) {
@@ -279,8 +279,23 @@ async def _verify_frontend_playwright_async(app_url: str, pin_code: str = DEFAUL
                   }
                   return parts.join('\\n');
                 }""")
-                if re.search(r"\bwaybill\b", ui_text, re.I) or re.search(r"\bformu?\b", ui_text, re.I):
-                    failures.append(f"[{label}] Görünür arayüzde unutulmuş 'Waybill' veya 'Form' ifadesi bulundu.")
+                if (re.search(r"\bwaybill\b", ui_text, re.I)
+                        or re.search(r"delivery\s*[&and]+\s*return", ui_text, re.I)
+                        or re.search(r"\bformu?\b", ui_text, re.I)):
+                    failures.append(f"[{label}] Görünür arayüzde unutulmuş 'Waybill', 'Delivery & Return' veya 'Form' ifadesi bulundu.")
+
+                # 5b) Çift filtre (Otel & Tur/Acente) doluluğu kontrolü
+                dd_counts = await page.evaluate("""() => ({
+                  hotels: document.querySelectorAll('#select-hotel option').length - 1,
+                  agencies: document.querySelectorAll('#select-agency option').length - 1,
+                  hasGroupBtn: !!document.getElementById('btn-group-hotel'),
+                  hasThemeSwitch: document.querySelectorAll('[data-theme-pick]').length === 2
+                })""")
+                if dd_counts["hotels"] < 1 or dd_counts["agencies"] < 1 or not dd_counts["hasGroupBtn"] or not dd_counts["hasThemeSwitch"]:
+                    failures.append(
+                        f"[{label}] Çift filtre / paket modu / tema seçici eksik "
+                        f"(otel={dd_counts['hotels']}, acente={dd_counts['agencies']})."
+                    )
 
                 # 6) Mobil yatay taşma + Aylık Takvim testi (390x844)
                 if viewport["width"] <= 430:
@@ -336,6 +351,10 @@ async def _verify_frontend_playwright_async(app_url: str, pin_code: str = DEFAUL
                                 )
                             else:
                                 details_notes.append("Tekli Küçük yazdırma = 1 sayfa")
+                            # Baskı şablonunda İngilizce kalıntı yokluğu
+                            sheet_text = await page.evaluate("() => document.getElementById('print-sheets')?.innerText || ''")
+                            if re.search(r"\b(waybill|tour manager|delivery location|return location|instruction language)\b", sheet_text, re.I):
+                                failures.append(f"[{label}] Baskı şablonunda İngilizce etiket kalıntısı bulundu.")
 
                 if js_errors:
                     failures.append(f"[{label}] Konsol/JS hatası: {js_errors[0][:180]}")

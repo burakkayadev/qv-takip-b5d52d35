@@ -41,6 +41,7 @@ QuietVox_Tam_Yedek_*.zip
 rclone.conf
 *_backup_*
 _backup_before_*/
+_backup_pre_redesign/
 *.log
 cookies*.json
 *.cookies
