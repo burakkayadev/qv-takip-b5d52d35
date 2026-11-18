@@ -65,18 +65,3 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           APP_URL: https://burakkayadev.github.io/qv-takip-b5d52d35/
         run: python tests/system_check.py --portal-check --auto-heal --live-check --send-email
-
-      - name: Sağlık kontrolü başarısızsa WhatsApp uyarısı gönder
-        if: failure()
-        env:
-          FATHER_PHONE: ${{ secrets.FATHER_PHONE }}
-          CALLMEBOT_APIKEY: ${{ secrets.CALLMEBOT_APIKEY }}
-        run: |
-          if [ -z "${FATHER_PHONE:-}" ] || [ -z "${CALLMEBOT_APIKEY:-}" ]; then
-            echo "Bilgi: FATHER_PHONE veya CALLMEBOT_APIKEY tanımlı değil; WhatsApp hata uyarısı atlandı."
-            exit 0
-          fi
-          curl -fsS -G "https://api.callmebot.com/whatsapp.php" \
-            --data-urlencode "phone=${FATHER_PHONE}" \
-            --data-urlencode "apikey=${CALLMEBOT_APIKEY}" \
-            --data-urlencode "text=⚠️ Quietvox 09:00 Sağlık Kontrolünde hata tespit edildi! Lütfen GitHub Actions özetini kontrol edin: https://github.com/burakkayadev/qv-takip-b5d52d35/actions" || true
