@@ -152,3 +152,22 @@ jobs:
           fi
           gh workflow run sync.yml -R "$GITHUB_REPOSITORY" --ref main
           echo "Bir sonraki senkron başlatıldı."
+
+      # 5 kapılı sağlık denetimi günde 3 kez; GitHub cron'una güvenilemediği için zincir başlatır.
+      - name: Sırası geldiyse sağlık denetimini başlat (05/11/17 UTC)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          hour=$((10#$(date -u +%H)))
+          case "$hour" in
+            5|11|17) ;;
+            *) echo "Sağlık denetimi saati değil ($hour UTC)."; exit 0 ;;
+          esac
+          last=$(gh run list -R "$GITHUB_REPOSITORY" -w healthcheck.yml -L 1 --json createdAt --jq '.[0].createdAt // ""')
+          if [ -n "$last" ] && [ $(( $(date -u +%s) - $(date -u -d "$last" +%s) )) -lt 7200 ]; then
+            echo "Son sağlık denetimi 2 saatten yeni ($last); atlanıyor."
+            exit 0
+          fi
+          gh workflow run healthcheck.yml -R "$GITHUB_REPOSITORY" --ref main
+          echo "Sağlık denetimi başlatıldı."

@@ -4006,6 +4006,10 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
     var stClass = order.status ? (' st-' + order.status) : '';
     var stripeClass = isOverdueCard ? ' kind-overdue' : (cardKind === 'return' ? ' kind-return' : ' kind-delivery');
     var card = el('article', 'glass card' + stripeClass + stClass + (finished ? ' done' : ''));
+    // Sağlık denetimi (tests/ui_gates.py) rozetleri gerçek portal durumuyla buradan eşleştirir
+    card.setAttribute('data-qv-id', order.id || '');
+    card.setAttribute('data-status', order.status || '');
+    card.setAttribute('data-kind', cardKind);
     var hotelName = order.location_name || order.title || 'Adı belirtilmemiş';
 
     var main = el('div', 'card-main');

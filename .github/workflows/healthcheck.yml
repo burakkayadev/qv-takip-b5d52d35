@@ -1,18 +1,20 @@
-name: Quietvox Sağlık ve Performans Kontrolü
+name: Quietvox Sağlık Kontrolü (5 Kapı)
 
 on:
+  # Asıl tetik: senkron zinciri (sync.yml "next" işi) bunu günde 3 kez (05/11/17 UTC) başlatır.
+  # cron yedektir: GitHub zamanlayıcısı çalıştırma atlayabildiği için tek başına güvenilmez.
   schedule:
-    # Her gün yalnızca 1 kez Türkiye saatiyle 09:00 (06:00 UTC)
-    - cron: '0 6 * * *'
+    - cron: '23 5,11,17 * * *'
   push:
     branches: [main]
     paths-ignore:
       - 'data.json'
   workflow_dispatch:
 
+# Salt okuma: denetim portala ya da depoya hiçbir şey yazmaz (eski --auto-heal kaldırıldı)
 permissions:
   contents: read
-  actions: write
+  actions: read
 
 concurrency:
   group: quietvox-healthcheck
@@ -21,7 +23,7 @@ concurrency:
 jobs:
   healthcheck:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     if: "!startsWith(github.event.head_commit.message, 'chore: sürüm numarası güncellendi') && !startsWith(github.event.head_commit.message, 'chore: data.json güncellendi')"
     steps:
       - name: Depoyu al
@@ -44,11 +46,10 @@ jobs:
       - name: Playwright Chromium kur
         run: python -m playwright install --with-deps chromium
 
-      - name: GitHub Pages yayınının güncellenmesini bekle (push sonrası)
-        if: github.event_name == 'push'
-        run: sleep 45
-
-      - name: Uçtan uca sağlık ve performans/yük denetimini çalıştır ve rapor e-postasını gönder
+      # Kapı 1 veri tazeliği · 2 iş akışları · 3 canlı portal ↔ data.json (salt okunur)
+      # 4 canlı uygulama (masaüstü + iPhone, PIN) · 5 sıfır gerileme.
+      # Biri bile kırmızıysa iş kırmızı olur ve uyarı e-postası gönderilir.
+      - name: 5 kapı denetimi
         env:
           QV_USER: ${{ secrets.QV_USER }}
           QV_PASS: ${{ secrets.QV_PASS }}
@@ -63,5 +64,22 @@ jobs:
           SMTP_HOST: ${{ secrets.SMTP_HOST }}
           SMTP_PORT: ${{ secrets.SMTP_PORT }}
           GH_TOKEN: ${{ github.token }}
-          APP_URL: https://burakkayadev.github.io/qv-takip-b5d52d35/
-        run: python tests/system_check.py --portal-check --auto-heal --live-check --send-email
+          APP_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
+        run: |
+          # Push sonrası önce GitHub Pages yayınının bu commit'e geçmesi beklenir
+          if [ "$GITHUB_EVENT_NAME" = "push" ]; then
+            python tests/system_check.py --send-email --wait-deploy
+          else
+            python tests/system_check.py --send-email
+          fi
+
+      - name: Raporları sakla
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: saglik-raporu-${{ github.run_id }}
+          path: |
+            debug/system_check.json
+            debug/portal_audit.json
+          retention-days: 7
+          if-no-files-found: ignore
