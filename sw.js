@@ -3,7 +3,8 @@
  * Strateji:
  *  - Uygulama kabuğu (index.html, manifest, ikonlar): önce önbellek (cache-first),
  *    arka planda sessizce güncellenir; böylece yeni sürüm bir sonraki açılışta gelir.
- *  - data.json: önce ağ (network-first); çevrimdışıysa son kaydedilen kopya.
+ *  - data.json: yalnızca ağ (no-store); ağa hiç ulaşılamazsa son kopya "X-QV-Offline" ile işaretli döner.
+ *  - version.json: Service Worker'a hiç uğramaz (her zaman doğrudan ağ).
  *  - Font ve QR kütüphanesi (CDN): önce önbellek, arka planda güncelle.
  *  - Diğer tüm istekler: dokunulmaz (tarayıcı kendi halleder).
  *
@@ -69,23 +70,24 @@ function isCacheable(response) {
   return Boolean(response) && (response.ok || response.type === 'opaque');
 }
 
-// Önce ağ; olmazsa önbellek (data.json için)
-async function networkFirstData(request) {
+// data.json: YALNIZCA AĞ (no-store). Kayıtlı kopya yalnızca ağa hiç ulaşılamazsa (tam çevrimdışı)
+// döner ve "X-QV-Offline: 1" başlığıyla işaretlenir; uygulama onu canlı veri saymaz (yeşil
+// "Doğrulandı" rozeti göstermez). Sunucu hata verirse eski kopya gösterilmez, hata iletilir.
+async function networkOnlyData(request) {
   const cache = await caches.open(DATA_CACHE);
   try {
     const targetUrl = typeof request === 'string' ? request : (request.url || DATA_KEY);
-    const response = await fetch(targetUrl, { cache: 'no-cache' });
+    const response = await fetch(targetUrl, { cache: 'no-store' });
     if (response && response.ok) {
       await cache.put(DATA_KEY, response.clone());
-      return response;
     }
-    const cached = await cache.match(DATA_KEY);
-    if (cached) return cached;
     return response;
   } catch (err) {
     const cached = await cache.match(DATA_KEY);
-    if (cached) return cached;
-    throw err;
+    if (!cached) throw err;
+    const headers = new Headers(cached.headers);
+    headers.set('X-QV-Offline', '1');
+    return new Response(await cached.blob(), { status: 200, statusText: 'OK (cevrimdisi kopya)', headers });
   }
 }
 
@@ -154,7 +156,7 @@ self.addEventListener('fetch', (event) => {
       return;
     }
     if (url.origin + url.pathname === DATA_KEY) {
-      event.respondWith(networkFirstData(request));
+      event.respondWith(networkOnlyData(request));
       return;
     }
     if (request.mode === 'navigate') {

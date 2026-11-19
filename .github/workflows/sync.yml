@@ -1,11 +1,13 @@
 name: Quietvox Senkronizasyon
 
 on:
+  # YEDEK zamanlayıcı. GitHub'ın cron'u yoğun saatlerde çalıştırmaları atlıyor: saatlik cron'dan
+  # günde yalnızca ~3 çalıştırma geldi ve uygulama 6+ saat eski veride kaldı (19.11.2026). Asıl
+  # düzen aşağıdaki "next" işidir: her senkron bittikten ~20 dk sonra bir sonrakini kendisi
+  # başlatır (zincir). cron yalnızca zincir koparsa (ör. GitHub kesintisi) yeniden başlatır;
+  # yoğun :00/:15 dakikalarından kaçınmak için :07 ve :37 seçildi.
   schedule:
-    # Her saat başı :15'te veri senkronizasyonu (UTC). (30 dakikalık sık cron GitHub tarafından
-    # ertelendiği için saatlik :15 seçildi). Hatırlatmalar da bu çalışmalara bağlıdır:
-    # 05:15 UTC = 08:15 TR sabah, 10:15 UTC = 13:15 TR öğle, 15:15 UTC = 18:15 TR akşam.
-    - cron: '15 * * * *'
+    - cron: '7,37 * * * *'
   workflow_dispatch:
     inputs:
       send_reminder:
@@ -23,15 +25,15 @@ permissions:
   contents: write
   actions: read
 
-# Aynı anda tek çalışma; süren iş iptal edilmez, yenisi sıraya girer
-concurrency:
-  group: quietvox-sync
-  cancel-in-progress: false
-
 jobs:
   sync:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    # Aynı anda tek senkron; süren iş iptal edilmez, yenisi sıraya girer. Kilit iş düzeyindedir:
+    # zincirin bekleyen "next" işi yeni senkronları (ör. bir işlem sonrası) bekletmez.
+    concurrency:
+      group: quietvox-sync
+      cancel-in-progress: false
     steps:
       - name: Depoyu al
         uses: actions/checkout@v4
@@ -48,25 +50,22 @@ jobs:
       - name: Playwright Chromium kur
         run: python -m playwright install --with-deps chromium
 
+      # auto: sırası gelen hatırlatma (08:00 / 13:00 / 18:00 İstanbul, 3 saatlik pencere) günde
+      # BİR kez gönderilir; scraper.py gönderileni data.json'a işler (zincir sık çalışsa da tekrar
+      # etmez). Elle çalıştırmada seçilen tür doğrudan gönderilir (deneme amaçlı, kaydedilmez).
       - name: Hatırlatma türünü belirle
         id: rem
         env:
           IN_SEND: ${{ inputs.send_reminder }}
           IN_KIND: ${{ inputs.reminder }}
         run: |
-          kind=""
-          if [ "$GITHUB_EVENT_NAME" = "schedule" ]; then
-            hour=$((10#$(date -u +%H))); minute=$((10#$(date -u +%M)))
-            # Yalnızca :05 çalışması hatırlatma yapar (:35 çalışması yapmaz)
-            if [ "$minute" -lt 30 ]; then
-              case "$hour" in 5) kind=morning;; 10) kind=noon;; 15) kind=evening;; esac
-            fi
-          elif [ "$IN_KIND" != "" ] && [ "$IN_KIND" != "yok" ]; then
+          kind=auto
+          if [ -n "$IN_KIND" ] && [ "$IN_KIND" != "yok" ]; then
             kind="$IN_KIND"
           elif [ "$IN_SEND" = "true" ]; then
             kind=evening
           fi
-          echo "Hatırlatma türü: ${kind:-yok}"
+          echo "Hatırlatma türü: $kind"
           echo "kind=$kind" >> "$GITHUB_OUTPUT"
 
       - name: Kazıyıcıyı çalıştır
@@ -86,7 +85,6 @@ jobs:
           QV_HTTP_USER: ${{ secrets.QV_HTTP_USER }}
           QV_HTTP_PASS: ${{ secrets.QV_HTTP_PASS }}
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
-          # Hatırlatma türü zamanlamaya göre seçilir; elle çalıştırmada girdiden alınır
           REMINDER: ${{ steps.rem.outputs.kind }}
           # Geçmişe ve ileriye bakılacak gün sayısı (tarih seçici ve aylık rapor için:
           # 62 gün geriye bakınca önceki ayın tamamı her zaman eldedir)
@@ -96,12 +94,13 @@ jobs:
           APP_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
         run: python scraper.py
 
-      # Giriş başarısız olsa bile (login_failed durumu) data.json commit edilebilmeli
+      # Giriş başarısız olsa bile (login_failed durumu) data.json commit edilebilmeli.
+      # Yalnızca data.json eklenir; cookies.json ve debug/ asla commit edilmez.
       - name: data.json değiştiyse commit et ve gönder
-        if: always()
+        if: ${{ !cancelled() }}
         run: |
-          # Yalnızca data.json eklenir; cookies.json ve debug/ asla commit edilmez
-          git add data.json 2>/dev/null || true
+          set -euo pipefail
+          git add data.json
           if git diff --cached --quiet; then
             echo "data.json değişmedi; commit atlanıyor."
             exit 0
@@ -110,29 +109,46 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           # Not: "[skip ci]" eklenmez; GitHub Pages yayınının tetiklenmesini engelleyebilir
           git commit -m "chore: data.json güncellendi"
-          # Araya başka commit girdiyse üzerine taşı ve gönder; data.json çakışırsa
-          # bu çalıştırmanın (en yeni) verisi kazanır. Gönderim 3 kez denenir.
-          for attempt in 1 2 3; do
-            git pull --rebase -X theirs origin "${GITHUB_REF_NAME}" || { git rebase --abort || true; }
-            if git push origin "HEAD:${GITHUB_REF_NAME}"; then exit 0; fi
-            echo "Gönderim başarısız (deneme $attempt); yeniden deneniyor."
-            sleep 5
-          done
-          exit 1
+          bash .github/scripts/push-retry.sh "${GITHUB_REF_NAME}"
 
       # Senkron bozulursa telefona BİR KEZ haber ver: yalnızca bir önceki çalıştırma başarılıysa
-      # (sorun sürdükçe her 30 dakikada bir bildirim gelmez). Şifre hatası zaten ayrıca bildirilir.
+      # (sorun sürdükçe her çalıştırmada bildirim gelmez). Şifre hatası zaten ayrıca bildirilir.
       - name: Senkron bozulduysa bildir
         if: failure()
         env:
           GH_TOKEN: ${{ github.token }}
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
         run: |
-          [ -n "$NTFY_TOPIC" ] || exit 0
-          if grep -q '"status":"login_failed"' data.json 2>/dev/null; then exit 0; fi
-          previous=$(gh run list -R "$GITHUB_REPOSITORY" -w sync.yml -s completed -L 1 --json conclusion --jq '.[0].conclusion' || echo "")
-          if [ "$previous" != "success" ]; then echo "Önceki çalıştırma da başarısızdı; tekrar bildirilmiyor."; exit 0; fi
-          curl -s -H "Title: Quietvox" -H "Priority: high" \
+          if [ -z "$NTFY_TOPIC" ]; then echo "NTFY_TOPIC tanımlı değil; bildirim atlanıyor."; exit 0; fi
+          if grep -q '"status":"login_failed"' data.json; then echo "Giriş hatası ayrıca bildirildi."; exit 0; fi
+          previous=$(gh run list -R "$GITHUB_REPOSITORY" -w sync.yml -s completed -L 1 --json conclusion --jq '.[0].conclusion')
+          if [ "$previous" != "success" ]; then echo "Önceki çalıştırma da başarısızdı ($previous); tekrar bildirilmiyor."; exit 0; fi
+          curl -sS --fail -H "Title: Quietvox" -H "Priority: high" \
             -H "Click: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" \
             --data-binary "⚠️ Quietvox senkronu başarısız oldu; uygulamadaki veriler güncellenmiyor olabilir." \
             "https://ntfy.sh/${NTFY_TOPIC}" > /dev/null
+
+  # Zincir: senkron bittikten 20 dk sonra bir sonrakini başlatır (senkron başarısız olsa bile;
+  # elle iptal edilen çalıştırma zinciri durdurur). O arada daha yeni bir senkron başladıysa
+  # (işlem sonrası, cron ya da uygulama) zinciri o devralır; bu iş yeni çalıştırma başlatmaz.
+  next:
+    needs: sync
+    if: ${{ !cancelled() && github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      actions: write
+    steps:
+      - name: 20 dakika bekle ve bir sonraki senkronu başlat
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          sleep 1200
+          newest=$(gh run list -R "$GITHUB_REPOSITORY" -w sync.yml -L 1 --json databaseId --jq '.[0].databaseId')
+          if [ "$newest" != "$GITHUB_RUN_ID" ]; then
+            echo "Daha yeni bir senkron ($newest) zinciri devraldı; yeni çalıştırma başlatılmıyor."
+            exit 0
+          fi
+          gh workflow run sync.yml -R "$GITHUB_REPOSITORY" --ref main
+          echo "Bir sonraki senkron başlatıldı."

@@ -56,4 +56,7 @@ jobs:
           rclone copy "${NAME}.zip" "gdrive:${FOLDER}/"
           echo "Drive'a yüklendi: ${FOLDER}/${NAME}.zip"
           # 120 günden eski haftalık yedekler silinir (Drive dolmasın)
-          rclone delete "gdrive:${FOLDER}/" --min-age 120d --include "QuietVox_Yedek_*.zip" || true
+          # Temizlik başarısız olursa yedek yine de alınmıştır; sorun uyarı olarak görünür kalır
+          if ! rclone delete "gdrive:${FOLDER}/" --min-age 120d --include "QuietVox_Yedek_*.zip"; then
+            echo "::warning::120 günden eski Drive yedekleri silinemedi; Drive kotasını kontrol edin."
+          fi

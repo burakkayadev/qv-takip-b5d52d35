@@ -210,28 +210,77 @@ def test_reminder_kinds_choose_their_messages():
     assert scraper.reminder_messages("", document, TODAY) == []
 
 
-def test_green_return_events_and_past_return_items_resolve_to_returned():
+def test_feed_status_is_the_raw_portal_status_and_never_guessed():
+    # Canlı denetimde (19.11.2026) yeşil renk / geçmiş tarih tahmini 50 Delivered siparişi
+    # "returned" gösteriyordu. Durum yalnızca portalın ham kodundan gelir.
     payload = [
         {"id": 101, "title": "Yeşil Hex", "start": "2026-11-14", "status": 2, "backgroundColor": "#28a745"},
         {"id": 102, "title": "Yeşil Sınıf", "start": "2026-11-14", "status": 2, "className": "event-green returned"},
         {"id": 103, "title": "Geçmiş İade", "start": "2026-11-13", "status": 2},
-        {"id": 104, "title": "Bugün Bekleyen", "start": "2026-11-14", "status": 2},
+        {"id": 104, "title": "Gerçekten Alınmış", "start": "2026-11-13", "status": 6},
+        {"id": 105, "title": "Kodsuz", "start": "2026-11-13"},
     ]
 
-    items = scraper.parse_feed_items(payload, TODAY, 10, past=7, kind="return")
+    items = scraper.parse_feed_items(payload, TODAY, 10, past=7)
 
-    assert [item["status"] for item in items] == ["returned", "returned", "returned", "delivered"]
+    assert [item["status"] for item in items] == ["delivered", "delivered", "delivered", "returned", ""]
 
 
-def test_missed_return_excludes_completed_or_green_flagged_orders():
-    done_by_flag = {**_order("2026-11-13", "delivered", "Yeşil Otel"), "qv_done": True}
-    done_by_qty = {
+def test_resolve_order_status_maps_codes_without_heuristics():
+    assert [scraper.resolve_order_status(code) for code in (1, 2, 3, 4, 5, 6, 8, "6", "Returned", None, 7)] == [
+        "reserved", "delivered", "lost", "cancelled", "confirmed", "returned", "duplicated",
+        "returned", "returned", "", "7",
+    ]
+
+
+def test_due_reminder_picks_each_slot_once_within_its_window():
+    from datetime import datetime
+
+    def at(hour):
+        return datetime(2026, 11, 14, hour, 30)
+
+    assert scraper.due_reminder(at(7), []) == ""
+    assert scraper.due_reminder(at(8), []) == "morning"
+    assert scraper.due_reminder(at(10), []) == "morning"
+    assert scraper.due_reminder(at(10), ["morning"]) == ""  # bugün gönderildi: tekrar yok
+    assert scraper.due_reminder(at(11), []) == ""  # pencere (3 saat) kapandı
+    assert scraper.due_reminder(at(14), ["morning"]) == "noon"
+    assert scraper.due_reminder(at(20), ["morning", "noon"]) == "evening"
+    assert scraper.due_reminder(at(21), []) == ""
+
+
+def test_sent_reminders_only_counts_today():
+    previous = {"reminders_sent": {"date": "2026-11-14", "kinds": ["morning", 5]}}
+    assert scraper.sent_reminders(previous, TODAY) == ["morning"]
+    assert scraper.sent_reminders({"reminders_sent": {"date": "2026-11-13", "kinds": ["noon"]}}, TODAY) == []
+    assert scraper.sent_reminders(None, TODAY) == []
+
+
+def test_explicit_reminder_is_sent_but_not_recorded(monkeypatch):
+    from types import SimpleNamespace
+
+    sent = []
+    monkeypatch.setattr(scraper, "maybe_send_reminder", lambda settings, document: sent.append(settings.reminder) or True)
+    monkeypatch.setattr(scraper, "replace", lambda settings, **changes: SimpleNamespace(**{**vars(settings), **changes}))
+    settings = SimpleNamespace(reminder="evening", today=TODAY)
+    document = {"deliveries": [], "returns": []}
+
+    assert scraper.send_due_reminders(settings, None, document) == document  # elle deneme günü kilitlemez
+    assert sent == ["evening"]
+
+
+def test_missed_return_lists_every_return_still_delivered_on_the_portal():
+    # Uygulama tarafındaki işaret ya da D&R'deki iade adedi portal durumu değildir: hâlâ Delivered
+    # olan her iade "almayı unuttun" uyarısına girer; yalnızca portalda Returned olan çıkar.
+    flagged = {**_order("2026-11-13", "delivered", "Yeşil Otel"), "qv_done": True}
+    with_qty = {
         **_order("2026-11-13", "delivered", "Tartılı Otel"),
         "dr_form": {"equipment": [{"item": "QV9 RX", "quantity": "20", "return_quantity": "20"}]},
     }
     pending = _order("2026-11-13", "delivered", "Gerçekten Bekleyen")
+    returned = _order("2026-11-13", "returned", "Alınmış Otel")
 
-    assert scraper.build_missed_text([done_by_flag, done_by_qty, pending], TODAY) == (
-        "⚠️ Almayı unuttun: 1 iade hâlâ alınmadı (Gerçekten Bekleyen)."
+    assert scraper.build_missed_text([flagged, with_qty, pending, returned], TODAY) == (
+        "⚠️ Almayı unuttun: 3 iade hâlâ alınmadı (Yeşil Otel, Tartılı Otel, Gerçekten Bekleyen)."
     )
 

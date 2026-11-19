@@ -71,13 +71,8 @@ jobs:
           git add version.json index.html sw.js
           if git diff --cached --quiet; then echo "Değişiklik yok."; exit 0; fi
           git commit -m "chore: sürüm numarası güncellendi (build ${{ github.run_number }})"
-          pushed=0
-          for attempt in 1 2 3; do
-            git pull --rebase -X theirs origin "${GITHUB_REF_NAME}" || { git rebase --abort || true; }
-            if git push origin "HEAD:${GITHUB_REF_NAME}"; then pushed=1; break; fi
-            sleep 5
-          done
-          if [ "$pushed" != "1" ]; then exit 1; fi
+          # Araya data.json commit'i girerse rebase + artan beklemeyle 5 deneme (sessiz hata yok)
+          bash .github/scripts/push-retry.sh "${GITHUB_REF_NAME}"
 
       - name: Güncelleme bildirim e-postasını gönder
         env:

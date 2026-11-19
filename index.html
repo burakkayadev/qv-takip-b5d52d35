@@ -722,6 +722,9 @@ main {
 .check.failed { border-color: var(--err-border); background: var(--err-bg); color: var(--err-ink); }
 .check.waiting { border-style: dashed; }
 .check.queued { border-color: var(--amber); background: var(--warn-bg); color: var(--warn-ink); border-style: dashed; }
+/* Durum hedefe ulaşmış ama veri eski/çevrimdışı: yeşil "Doğrulandı" yerine amber "son bilinen" */
+.check.stale { border-color: var(--amber); background: var(--warn-bg); color: var(--warn-ink); }
+#updated.stale { color: var(--warn-ink); font-weight: 700; }
 
 .quick { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; margin-top: 8px; }
 @media (max-width: 440px) { .quick { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
@@ -2414,7 +2417,9 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
   var LS_CACHE = 'qv.cache.v1';               // Son başarılı veri (çevrimdışı için)
   var REFRESH_MS = 5 * 60 * 1000;             // Otomatik yenileme aralığı
   var MIN_REFRESH_GAP_MS = 20 * 1000;         // Sekme görünür olunca en az bu kadar arayla yenile
-  var STALE_MS = 6 * 60 * 60 * 1000;          // Veri bu süreden eskiyse uyar
+  var STALE_MS = 90 * 60 * 1000;              // 90 dk'dan eski veri: "⚠️ Veri Eski", rozetler "son bilinen" olur
+  var SYNC_KICK_GAP_MS = 15 * 60 * 1000;      // Veri eskiyse bu cihaz en fazla 15 dk'da bir senkron başlatır
+  var LS_SYNC_KICK = 'qv.synckick.v1';        // Bu cihazın son senkron başlatma zamanı (ms)
   var MARK_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 günden eski işaretleri sil
   var EMPTY = '—';
   var ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
@@ -2435,7 +2440,7 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
   var LS_GITHUB = 'qv.github.v1';             // GitHub erişim anahtarı (yalnızca bu cihazda)
   var LS_PENDING = 'qv.pending.v1';           // Quietvox'a gönderilmiş, sonucu beklenen işlemler
   var LS_QUEUE = 'qv.queue.v1';               // Çevrimdışıyken kuyruğa alınan işlemler (bağlantı gelince gönderilir)
-  var PENDING_FAIL_MS = 12 * 60 * 1000;       // Bu süre sonunda durum değişmediyse "olmadı" say
+  var PENDING_FAIL_MS = 15 * 60 * 1000;       // Bu süre sonunda veri hâlâ onaylamıyorsa "işlenemedi" say
   var ACTION_WORKFLOW = 'action.yml';
   var NOTIFY_WORKFLOW = 'notify.yml';           // Form basılınca e-posta bildirimi
   var LS_PRINTED = 'qv.printed.v1';             // { QV ID: basılma zamanı } — "Form Yazdırıldı ✓" rozeti
@@ -2469,6 +2474,7 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
   var state = {
     data: null,            // normalleştirilmiş veri
     offline: false,        // son yükleme ağdan yapılamadı mı
+    dataLive: false,       // veri bu oturumda ağdan önbelleksiz alındı mı (yeşil "Doğrulandı" için şart)
     loadError: false,      // hiç veri yok ve yüklenemedi
     tab: 'deliveries',
     filter: 'all',
@@ -2800,22 +2806,35 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
     }
   }
 
+  // Kaynakları sırayla dener; ağdan gelen ilk geçerli yanıt kazanır → { raw, fromCache }.
+  // Service Worker'ın çevrimdışı kopyası (X-QV-Offline: 1) yalnızca hiçbir kaynağa ulaşılamazsa
+  // kullanılır ve "canlı veri" sayılmaz (yeşil "Doğrulandı" rozeti gösterilmez).
   function fetchJsonWithFallbacks(urls) {
     var idx = 0;
-    function tryNext() {
-      if (idx >= urls.length) {
-        return Promise.reject(new Error('Tüm veri kaynakları başarısız oldu'));
-      }
-      var url = urls[idx++];
-      return fetch(url, { cache: 'no-cache' })
+    var offlineCopy = null;
+    function attempt(url) {
+      // Önbellek kırıcı + no-store: tarayıcı, Service Worker ve CDN ara kopyası kullanılmaz
+      var fresh = url + (url.indexOf('?') === -1 ? '?' : '&') + 't=' + Date.now();
+      return fetch(fresh, { cache: 'no-store' })
         .then(function (res) {
           if (!res.ok) throw new Error('Sunucu yanıt hatası (' + res.status + ')');
-          return res.json();
+          var fromCache = res.headers.get('X-QV-Offline') === '1';
+          return res.json().then(function (raw) { return { raw: raw, fromCache: fromCache }; });
         })
         .catch(function (err) {
           console.warn('Veri kaynağı hatası (' + url + '):', err);
-          return tryNext();
+          return null;
         });
+    }
+    function tryNext() {
+      if (idx >= urls.length) {
+        return offlineCopy ? Promise.resolve(offlineCopy) : Promise.reject(new Error('Tüm veri kaynakları başarısız oldu'));
+      }
+      return attempt(urls[idx++]).then(function (result) {
+        if (result && !result.fromCache) return result;
+        if (result && !offlineCopy) offlineCopy = result;
+        return tryNext();
+      });
     }
     return tryNext();
   }
@@ -2835,11 +2854,11 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
     ];
 
     return fetchJsonWithFallbacks(candidateUrls)
-      .then(function (raw) {
-        var data = normalizeData(raw);
-        lsWrite(LS_CACHE, { savedAt: Date.now(), raw: raw });
-        setState({ data: data, offline: false, loadError: false });
-        if (manual) showToast('Veriler güncellendi');
+      .then(function (result) {
+        var data = normalizeData(result.raw);
+        if (!result.fromCache) lsWrite(LS_CACHE, { savedAt: Date.now(), raw: result.raw });
+        setState({ data: data, offline: result.fromCache, loadError: false, dataLive: !result.fromCache });
+        if (manual) showToast(result.fromCache ? 'Bağlantı yok: kayıtlı veri gösteriliyor' : 'Veriler güncellendi');
       })
       .catch(function () {
         // Ağ yok ya da veri bozuk: son başarılı veriyi kullan
@@ -2852,13 +2871,14 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
             data = null;
           }
         }
-        setState({ data: data, offline: true, loadError: !data });
+        setState({ data: data, offline: true, loadError: !data, dataLive: false });
         if (manual) showToast(data ? 'Bağlantı yok: kayıtlı veri gösteriliyor' : 'Veri yüklenemedi');
       })
       .then(function () {
         loading = false;
         btn.setAttribute('aria-busy', 'false');
         render();
+        maybeKickSync();
         if (state.voiceAuto && state.data) {
           setState({ voiceAuto: false });
           speakDailySummary();
@@ -2884,7 +2904,7 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
     }
     // deliveries
     if (isDone(o, 'deliveries')) return true;
-    if (o.status === 'delivered' || o.status === 'returned' || o.qv_done === true) return true;
+    if (o.status === 'delivered' || o.status === 'returned') return true;
     if (m && (m.done || m.prepared)) return true;
     return false;
   }
@@ -2945,15 +2965,10 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
     return ordersOf(tab).filter(function (o) { return o.date >= state.today; });
   }
 
-  // Quietvox'ta yeşil / Returned işaretli ya da iade adedi girilmiş siparişler tamamlanmış sayılır
+  // İade YALNIZCA portal durumu "returned" ise alınmış sayılır. Renk, D&R'deki iade adedi ya da
+  // tarihin geçmiş olması iadeyi kanıtlamaz (canlı denetimde 50 sipariş bu yüzden yanlış görünüyordu).
   function isPickedUp(o) {
-    if (!o) return false;
-    if (o.status === 'returned' || o.qv_done === true) return true;
-    var items = (o.dr_form && o.dr_form.equipment) || [];
-    return items.some(function (e) {
-      var q = str(e.return_quantity);
-      return q && q !== '0' && q !== '0.0' && q !== '0.00' && q !== '-' && q !== '—';
-    });
+    return Boolean(o) && o.status === 'returned';
   }
 
   // Günü geçtiği hâlde Quietvox'ta hâlâ "Delivered" duran (tamamlanmamış) iadeler
@@ -3069,6 +3084,60 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
     return reached(order, tab === 'returns' ? 'returned' : 'delivered');
   }
 
+  // Verinin yaşı 90 dakikayı geçti mi?
+  function dataIsStale() {
+    var gen = state.data ? new Date(state.data.generated_at).getTime() : NaN;
+    return !isNaN(gen) && Date.now() - gen > STALE_MS;
+  }
+
+  // Yeşil "Sistemde Onaylandı (Doğrulandı)" için şart: veri bu oturumda ağdan önbelleksiz
+  // alınmış (çevrimdışı kopya değil) ve en fazla 90 dakikalık olmalı.
+  function dataIsFresh() {
+    return Boolean(state.data) && state.dataLive && !state.offline &&
+      !isNaN(new Date(state.data.generated_at).getTime()) && !dataIsStale();
+  }
+
+  // Verinin çekildiği saat: bugünse "14:39", değilse "18 Kas 14:39"
+  function dataStamp() {
+    var gen = state.data ? new Date(state.data.generated_at) : null;
+    if (!gen || isNaN(gen.getTime())) return EMPTY;
+    var time = new Intl.DateTimeFormat('tr-TR', { timeZone: TZ, hour: '2-digit', minute: '2-digit', hour12: false }).format(gen);
+    if (istanbulDate(gen) === state.today) return time;
+    return new Intl.DateTimeFormat('tr-TR', { timeZone: TZ, day: 'numeric', month: 'short' }).format(gen) + ' ' + time;
+  }
+
+  // Sekme ve yan menü sayaçları arama, otel, acente ve "Geciken" filtresinden BAĞIMSIZDIR
+  // (eskiden etkin filtre diğer sekmelerin sayacını 0 gösteriyordu). Kapsam "Tümü" ile aynıdır:
+  // verilecek/alınacakta bugünden itibaren bekleyenler, Önceden Alınanlar'da tüm tamamlananlar.
+  function navCountFor(tab) {
+    return upcomingOrders(tab).length;
+  }
+
+  // Quietvox'a gönderilmiş işlemin evresi: 'waiting' (onay bekliyor), 'verified' (portalda
+  // doğrulandı, uygulama verisi bekleniyor) ya da 'failed' (işlenemedi → tekrar gönder)
+  function pendingPhase(entry) {
+    if (!entry) return '';
+    if (entry.failed) return 'failed';
+    if (entry.verified) return 'verified';
+    return Date.now() - entry.ts > PENDING_FAIL_MS ? 'failed' : 'waiting';
+  }
+
+  // Veri 90 dakikadan eskiyse (GitHub zamanlayıcısı çalışmadıysa) senkronu bu cihazdan başlatır.
+  // Aynı cihaz en fazla 15 dakikada bir dener; GitHub anahtarı yoksa hiçbir şey yapmaz.
+  function maybeKickSync() {
+    if (!state.dataLive || !dataIsStale() || !navigator.onLine || !(state.token && repoSlug())) return;
+    var last = Number(lsRead(LS_SYNC_KICK)) || 0;
+    if (Date.now() - last < SYNC_KICK_GAP_MS) return;
+    lsWrite(LS_SYNC_KICK, Date.now());
+    githubRequest('/actions/workflows/' + SYNC_WORKFLOW + '/dispatches', { method: 'POST', body: JSON.stringify({ ref: 'main' }) })
+      .then(function (res) {
+        if (!res.ok) return;
+        showToast('Veri eski — Quietvox senkronu başlatıldı, birkaç dakika içinde yenilenecek');
+        [240000, 420000].forEach(function (ms) { window.setTimeout(function () { loadData(false); }, ms); });
+      })
+      .catch(function () { /* bağlantı yoksa bir sonraki açılışta yeniden denenir */ });
+  }
+
   // Varsayılan filtre: bugün kayıt varsa "Bugün", yoksa "Tümü"
   function defaultFilter(tab) {
     return ordersOn(tab, state.today).length > 0 ? 'today' : 'all';
@@ -3093,15 +3162,10 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
      ======================================================================== */
   function renderUpdated() {
     var node = $('#updated');
-    var gen = state.data ? new Date(state.data.generated_at) : null;
-    if (!gen || isNaN(gen.getTime())) {
-      node.textContent = 'Güncel: ' + EMPTY;
-      return;
-    }
-    var time = new Intl.DateTimeFormat('tr-TR', { timeZone: TZ, hour: '2-digit', minute: '2-digit', hour12: false }).format(gen);
-    var sameDay = istanbulDate(gen) === state.today;
-    var day = sameDay ? '' : new Intl.DateTimeFormat('tr-TR', { timeZone: TZ, day: 'numeric', month: 'short' }).format(gen) + ' ';
-    node.textContent = 'Güncel: ' + day + time;
+    var stale = dataIsStale();
+    node.classList.toggle('stale', stale);
+    // 90 dakikadan eski veri asla "Güncel" diye gösterilmez
+    node.textContent = stale ? '⚠️ Veri Eski (Son çekim: ' + dataStamp() + ')' : 'Güncel: ' + dataStamp();
   }
 
   function renderBanners() {
@@ -3128,10 +3192,9 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
       } else if (d.status !== 'ok' && d.status_message) {
         items.push(['warn', d.status_message]);
       }
-      var gen = new Date(d.generated_at);
-      if (!isNaN(gen.getTime()) && Date.now() - gen.getTime() > STALE_MS) {
-        var hours = Math.floor((Date.now() - gen.getTime()) / 3600000);
-        items.push(['warn', 'Veri eski olabilir (yaklaşık ' + hours + ' saat önce güncellendi).']);
+      if (dataIsStale()) {
+        items.push(['warn', '⚠️ Veri Eski (Son çekim: ' + dataStamp() + '). Durumlar "son bilinen" olarak gösteriliyor' +
+          (state.token ? '; senkron başlatıldı, birkaç dakika içinde yenilenir.' : '; "Yenile"ye basın.')]);
       }
       if (d.auth_backup === true && d.status !== 'login_failed') {
         items.push(['warn', 'Ana Quietvox şifresi çalışmadı, yedek şifreyle devam ediliyor. Yeni şifreyi girmek için dokunun.',
@@ -3212,7 +3275,7 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
         btn.tabIndex = selected ? 0 : -1;
       }
       var badge = $('#badge-' + tab);
-      if (badge) badge.textContent = filteredOrdersFor(tab).length;
+      if (badge) badge.textContent = navCountFor(tab);
     });
     $('#list').setAttribute('aria-labelledby', 'tab-' + state.tab);
 
@@ -3236,7 +3299,7 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
       : (state.onlyChanged ? 'Değişenler · ' + tabLabel : tabLabel + ' · ' + (dayLabels[state.filter] || ''));
     Object.keys(TAB_INFO).forEach(function (tab) {
       var navN = $('#nav-n-' + tab);
-      if (navN) navN.textContent = filteredOrdersFor(tab).length;
+      if (navN) navN.textContent = navCountFor(tab);
       var nav = $('#nav-' + tab);
       if (nav) nav.setAttribute('aria-current', state.tab === tab && state.filter !== 'overdue' ? 'true' : 'false');
     });
@@ -3702,14 +3765,17 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
     // Buton YALNIZCA Quietvox'taki gerçek duruma göre "tamam" görünür. Gönderilmiş ama
     // Quietvox'a düşmemiş işlem asla tamamlanmış gibi gösterilmez; tekrar gönderilebilir.
     var done = reached(order, action);
+    var verified = done && dataIsFresh();  // yeşil yalnızca taze (≤90 dk, ağdan alınmış) veride
     var queued = !done && Boolean(state.queue[key] && state.queue[key].action === action);
     var entry = state.pending[key] && state.pending[key].action === action ? state.pending[key] : null;
-    var waiting = !done && !queued && entry && !entry.failed && Date.now() - entry.ts <= PENDING_FAIL_MS;
-    var failed = !done && !queued && entry && (entry.failed || !waiting);
+    var phase = !done && !queued ? pendingPhase(entry) : '';
+    var waiting = phase === 'waiting' || phase === 'verified';
+    var failed = phase === 'failed';
     var localOnly = !done && !queued && !entry && markOf(key)[info.field] === true;
     var bagReady = !done && action === 'delivered' && isBagReady(order, key);
     var classes = 'check' +
       (queued ? ' queued' : '') +
+      (done && !verified ? ' stale' : '') +
       (failed || localOnly ? ' failed' : '') +
       (waiting ? ' waiting' : '') +
       (bagReady ? ' ready-emerald' : '');
@@ -3718,17 +3784,20 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
     btn.setAttribute('aria-pressed', done ? 'true' : 'false');
     var text = el('span', '');
     var sub = bagReady ? '✓ Çanta tam — Quietvox\'a göndermek için dokun' : 'Quietvox\'a yazar';
-    if (done) sub = 'Sistemde Onaylandı (Doğrulandı · ' + info.quietvox + ')';
+    if (verified) sub = 'Sistemde Onaylandı (Doğrulandı · ' + info.quietvox + ')';
+    else if (done) sub = 'Son bilinen: ' + info.quietvox + ' (veri ' + dataStamp() + ' — doğrulama için yenileniyor)';
     else if (queued) sub = 'İnternet bekleniyor (Kuyrukta — otomatik gönderilecek)';
-    else if (waiting) sub = 'Quietvox\'a işleniyor...';
-    else if (failed) sub = 'Sisteme Düşmedi — Tekrar Dene';
-    else if (localOnly) sub = 'Yalnızca bu telefonda — Quietvox\'a gönder';
+    else if (phase === 'verified') sub = '⏳ Quietvox\'ta doğrulandı — uygulama verisi güncelleniyor';
+    else if (waiting) sub = '⏳ Quietvox\'a Gönderildi (Onay Bekliyor)';
+    else if (failed) sub = '❌ Quietvox\'a İşlenemedi — Tekrar Gönder';
+    else if (localOnly) sub = 'Yalnızca bu telefonda işaretli — Quietvox\'a gönderilmedi';
     append(text, document.createTextNode(info.label), el('span', 'sub', sub));
     append(btn, el('span', 'box', done ? '✓' : (queued ? '📡' : (waiting ? '⏳' : (failed ? '↻' : (bagReady ? '✓' : ''))))), text);
     btn.querySelector('.box').setAttribute('aria-hidden', 'true');
     btn.addEventListener('click', function () {
-      if (done) { showToast('Sistemde Onaylandı (' + info.quietvox + ')'); return; }
-      if (waiting) { showToast('Quietvox\'a işleniyor... Birkaç dakika içinde tamamlanacak.'); return; }
+      if (verified) { showToast('Sistemde Onaylandı (' + info.quietvox + ')'); return; }
+      if (done) { showToast('Son bilinen durum: ' + info.quietvox + ' — veri eski, yenileniyor…'); loadData(true); return; }
+      if (waiting) { showToast('⏳ Quietvox\'a gönderildi; portal doğrulaması bekleniyor (birkaç dakika).'); return; }
       if (failed && state.token && repoSlug()) {
         sendAction(order, key, action);
         return;
@@ -3947,15 +4016,19 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
     var queued = state.queue[key];
     var pending = state.pending[key];
     var targetAction = cardKind === 'return' ? 'returned' : 'delivered';
-    var isSystemVerified = reached(order, targetAction);
-    if (isSystemVerified) {
-      append(main.querySelector('.chips'), el('span', 'chip sync-ok', 'Sistemde Onaylandı (Doğrulandı)'));
+    var reachedTarget = reached(order, targetAction);
+    var targetName = ACTIONS[targetAction].quietvox;
+    if (reachedTarget && dataIsFresh()) {
+      // Yalnızca bu oturumda ağdan önbelleksiz alınan, ≤90 dk'lık veride portal durumu hedefe ulaştıysa
+      append(main.querySelector('.chips'), el('span', 'chip sync-ok', 'Sistemde Onaylandı (Doğrulandı · ' + targetName + ')'));
+    } else if (reachedTarget) {
+      append(main.querySelector('.chips'), el('span', 'chip queued', 'Son bilinen: ' + targetName + ' (veri ' + dataStamp() + ')'));
     } else if (queued && !finished) {
       append(main.querySelector('.chips'), el('span', 'chip queued', 'İnternet bekleniyor (Kuyrukta)'));
     } else if (pending && !finished) {
-      var late = Boolean(pending.failed) || Date.now() - pending.ts > PENDING_FAIL_MS;
-      if (late) {
-        var retryChip = el('button', 'chip pending late', 'Sisteme Düşmedi — Tekrar Dene');
+      var phase = pendingPhase(pending);
+      if (phase === 'failed') {
+        var retryChip = el('button', 'chip pending late', '❌ Quietvox\'a İşlenemedi — Tekrar Gönder');
         retryChip.type = 'button';
         retryChip.title = 'Tek tıkla Quietvox sistemine tekrar gönder';
         retryChip.addEventListener('click', function (ev) {
@@ -3968,7 +4041,8 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
         });
         append(main.querySelector('.chips'), retryChip);
       } else {
-        append(main.querySelector('.chips'), el('span', 'chip pending', 'Quietvox\'a işleniyor...'));
+        append(main.querySelector('.chips'), el('span', 'chip pending', phase === 'verified'
+          ? '⏳ Quietvox\'ta doğrulandı — veri güncelleniyor' : '⏳ Quietvox\'a Gönderildi (Onay Bekliyor)'));
       }
     }
 
@@ -4215,7 +4289,7 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
 
     // Süresi dolan (Quietvox'a düşmeyen) işler de yeniden çizimi tetikler
     var latePending = Object.keys(state.pending).filter(function (k) {
-      return Date.now() - state.pending[k].ts > PENDING_FAIL_MS;
+      return pendingPhase(state.pending[k]) === 'failed';
     });
     var signature = JSON.stringify([state.data, state.tab, state.filter, state.date, state.hotel, state.agency,
       state.groupByHotel, prepMap, state.today, state.search, state.onlyChanged, state.selecting, state.selected,
@@ -4720,7 +4794,8 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
 
   function watchActionDispatch(knownIds, keys, info) {
     var count = keys.length;
-    var deadline = Date.now() + 8 * 60000;
+    // Portal doğrulaması (sayfa yeniden yükleme + 3 okuma) sipariş başına ~20 sn ekler; toplu işler uzun sürebilir
+    var deadline = Date.now() + 25 * 60000;
     var check = function () {
       if (Date.now() > deadline) return;
       githubRequest('/actions/workflows/' + ACTION_WORKFLOW + '/runs?event=workflow_dispatch&per_page=10')
@@ -4740,8 +4815,15 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
             return;
           }
           if (run.conclusion === 'success') {
+            // İşlem ancak portalda sayfa yenilenip durum yeniden okunduğunda başarılı biter (qv_action.py)
+            var okP = Object.assign({}, state.pending);
+            keys.forEach(function (k) {
+              if (okP[k]) okP[k] = Object.assign({}, okP[k], { verified: true });
+            });
+            savePending(okP);
             setState({ syncError: '', syncErrorAuth: false });
-            showToast('' + count + ' sipariş orijinal Quietvox sistemine \'' + info.label + '\' (' + info.quietvox + ') olarak işlendi! Veriler güncelleniyor…');
+            render(true);
+            showToast('' + count + ' sipariş Quietvox\'ta \'' + info.label + '\' (' + info.quietvox + ') yapıldı ve portalda doğrulandı! Uygulama verisi güncelleniyor…');
             window.setTimeout(function () { loadData(false); }, 15000);
             window.setTimeout(function () { loadData(false); }, 45000);
           } else {
@@ -4753,7 +4835,7 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
             });
             savePending(nextP);
             render(true);
-            showErrorAlert('Dikkat: ' + count + ' sipariş orijinal Quietvox sistemine işlenemedi (' + (run.conclusion || 'hata') + ')! Kart üzerindeki "Sisteme Düşmedi — Tekrar Dene" düğmesine dokunun.', false);
+            showErrorAlert('Dikkat: ' + count + ' sipariş Quietvox\'a işlenemedi (' + (run.conclusion || 'hata') + ')! Kart üzerindeki "❌ Quietvox\'a İşlenemedi — Tekrar Gönder" düğmesine dokunun.', false);
           }
         })
         .catch(function () { window.setTimeout(check, 15000); });
@@ -7502,7 +7584,8 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
       'https://raw.githubusercontent.com/burakkayadev/qv-takip-b5d52d35/main/version.json?t=' + Date.now()
     ];
     fetchJsonWithFallbacks(candidateUrls)
-      .then(function (data) {
+      .then(function (result) {
+        var data = result && result.raw;
         if (data && data.build && data.build > CURRENT_BUILD) {
           var banner = $('#update-banner');
           if (banner) {
