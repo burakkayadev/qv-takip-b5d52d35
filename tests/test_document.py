@@ -139,6 +139,9 @@ def test_should_write_skips_unchanged_fresh_file(settings):
     assert scraper.should_write({**fresh, "status": "partial"}, document, NOW) is True
     assert scraper.should_write({**fresh, "deliveries": []}, document, NOW) is True
     assert scraper.should_write({**fresh, "generated_at": "bozuk"}, document, NOW) is True
+    # Yalnızca hatırlatma işareti değişse bile yazılmalı; yoksa sonraki senkron aynı hatırlatmayı yineler
+    marked = {**document, "reminders_sent": {"date": "2026-11-25", "kinds": ["morning"]}}
+    assert scraper.should_write(fresh, marked, NOW) is True
 
 
 def test_write_if_changed_writes_utf8_and_then_leaves_file_alone(settings):

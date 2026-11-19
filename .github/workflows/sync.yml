@@ -145,7 +145,8 @@ jobs:
         run: |
           set -euo pipefail
           sleep 1200
-          newest=$(gh run list -R "$GITHUB_REPOSITORY" -w sync.yml -L 1 --json databaseId --jq '.[0].databaseId')
+          # Yalnızca main'deki çalıştırmalara bakılır: başka dalda başlatılan bir senkron zinciri koparmaz
+          newest=$(gh run list -R "$GITHUB_REPOSITORY" -w sync.yml -b main -L 1 --json databaseId --jq '.[0].databaseId')
           if [ "$newest" != "$GITHUB_RUN_ID" ]; then
             echo "Daha yeni bir senkron ($newest) zinciri devraldı; yeni çalıştırma başlatılmıyor."
             exit 0

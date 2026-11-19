@@ -1336,9 +1336,10 @@ def content_signature(document: dict[str, Any] | None) -> str:
     if not document:
         return ""
     # login_alert_at / auth_backup da sayılır: değişince yazılmazlarsa saatlik e-posta sınırı ve
-    # "yedek şifre kullanılıyor" uyarısı bayat kalır
+    # "yedek şifre kullanılıyor" uyarısı bayat kalır. reminders_sent de sayılır: yazılmazsa bir
+    # sonraki senkron aynı hatırlatmayı tekrar gönderirdi.
     keys = ("schema_version", "demo", "status", "status_message", "timezone", "window_days", "deliveries", "returns",
-            LOGIN_ALERT_FIELD, AUTH_BACKUP_FIELD)
+            LOGIN_ALERT_FIELD, AUTH_BACKUP_FIELD, REMINDERS_FIELD)
     return json.dumps({key: document.get(key) for key in keys}, sort_keys=True, ensure_ascii=False)
 
 

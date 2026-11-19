@@ -2440,7 +2440,9 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
   var LS_GITHUB = 'qv.github.v1';             // GitHub erişim anahtarı (yalnızca bu cihazda)
   var LS_PENDING = 'qv.pending.v1';           // Quietvox'a gönderilmiş, sonucu beklenen işlemler
   var LS_QUEUE = 'qv.queue.v1';               // Çevrimdışıyken kuyruğa alınan işlemler (bağlantı gelince gönderilir)
-  var PENDING_FAIL_MS = 15 * 60 * 1000;       // Bu süre sonunda veri hâlâ onaylamıyorsa "işlenemedi" say
+  // Bu süre sonunda veri hâlâ onaylamıyorsa "işlenemedi" say. İşlem izleyicisinin (watchActionDispatch)
+  // süresiyle aynıdır: toplu işlem sürerken yanlışlıkla "❌ İşlenemedi" gösterilmez.
+  var PENDING_FAIL_MS = 25 * 60 * 1000;
   var ACTION_WORKFLOW = 'action.yml';
   var NOTIFY_WORKFLOW = 'notify.yml';           // Form basılınca e-posta bildirimi
   var LS_PRINTED = 'qv.printed.v1';             // { QV ID: basılma zamanı } — "Form Yazdırıldı ✓" rozeti
