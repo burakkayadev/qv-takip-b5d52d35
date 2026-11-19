@@ -27,6 +27,8 @@ from typing import Any
 from urllib.parse import urlsplit
 from zoneinfo import ZoneInfo
 
+from playwright.async_api import TimeoutError as PlaywrightTimeoutError
+
 TZ = ZoneInfo("Europe/Istanbul")
 STALE_MINUTES = 90
 INACTIVE = frozenset({"cancelled", "lost", "duplicated"})
@@ -39,6 +41,7 @@ IPHONE = {
                    "(KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1"),
 }
 PRINT_MODES = (("waybill", "Küçük"), ("form", "Büyük"))
+PRINT_LOCK_MS = 1300  # index.html triggerWindowPrint çift yazdırma kilidi (1200 ms) + pay
 PIN_SHA_RE = re.compile(r"PIN_DEFAULT\s*=\s*\{\s*sha:\s*'([a-f0-9]{64})'")
 
 JS_COUNTERS = """() => Object.fromEntries(['deliveries', 'returns', 'archive', 'overdue'].map(
@@ -257,6 +260,9 @@ async def counter_problems(page: Any, expected: dict[str, int]) -> list[str]:
 
 async def print_pages(page: Any, mode: str) -> tuple[int, int, int]:
     """İlk kartın tekli yazdırması: (print çağrısı artışı, sayfa öğesi, PDF sayfa sayısı)."""
+    # Uygulama çift dokunuşta iki kez basmamak için 1,2 sn içindeki ikinci yazdırmayı yok sayar
+    # (triggerWindowPrint kilidi); ardışık iki yazdırma testi gerçek kullanıcı gibi bekler.
+    await page.wait_for_timeout(PRINT_LOCK_MS)
     await show(page, "deliveries", "all")
     card = page.locator("#list .card").first
     await card.locator("details.more").evaluate("(el) => { el.open = true; }")
@@ -264,7 +270,12 @@ async def print_pages(page: Any, mode: str) -> tuple[int, int, int]:
     await card.locator("button.qbtn:has-text('Yazdır')").click()
     await page.wait_for_selector("#dlg[open]", timeout=5000)
     await page.locator(f'#dlg [data-print-mode="{mode}"] .btn-print').click()
-    await page.wait_for_timeout(500)
+    # Uygulama (printWhenReady) yazı tipleri yüklenene kadar en çok 700 ms bekleyip yazdırır; sabit
+    # bekleme yerine print çağrısı beklenir. Zaman aşımında sayaç artmaz ve aşağıda HATA raporlanır.
+    try:
+        await page.wait_for_function("(n) => window.__hcPrintCount > n", arg=before, timeout=5000)
+    except PlaywrightTimeoutError:
+        pass  # sonuç aşağıdaki (print, sayfa, PDF) karşılaştırmasında kırmızı olarak raporlanır
     info = await page.evaluate(
         "() => ({n: window.__hcPrintCount, sheets: document.querySelectorAll('#print-sheets .sheet-wrap').length})")
     pdf = await page.pdf(format="A4", print_background=False, prefer_css_page_size=True)
