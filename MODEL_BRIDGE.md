@@ -1,7 +1,7 @@
 # MODEL_BRIDGE — Uygulamalar Arası Ortak Hafıza
 
 > **Son Aktif Uygulama:** Antigravity  
-> **Son Güncelleme:** 19 Kasım 2026 22:49 (UTC+3) — **Birleşik Onarım Tamamlandı: Claude Alt Ajan Kota Kilidi + `ajangrup` Model Frontmatter, Claude GitHub MCP (`HTTP 400` → `Connected`), 3 Conrad Mutabakatı Teyidi ve `afterprint` Yazdırma Kilidi Temizliği + 5 Kapı Yeşil.**
+> **Son Güncelleme:** 20 Kasım 2026 00:24 (UTC+3) — **Faz 2 Kontrollü Toplu İade Mutabakatı Tamamlandı: 11.11–18.11.2026 Arası 46/46 Sipariş Canlı Portalda `Returned` Yapılıp 3 Aşamalı Doğrulandı, `data.json` Güncellendi ve 5 Kapı Yeşil.**
 
 ### Kalıcı Stratejik Limit & Model Yönlendirme Kuralı (`.agent/rules/quota-strategy.md`)
 - Standart UI, etiket, CSS ve önizleme işleri **Antigravity (`Gemini 4 Hydrogen Medium/High`)** üzerinden yürütülür; **Claude CLI** kotası yalnızca kritik mimari ve karmaşık hata ayıklama için korunur.
@@ -9,7 +9,20 @@
 
 ---
 
-## 📌 SON DURUM ÖZETİ — Son Aktif Uygulama: Antigravity (Birleşik Onarım & 5 Kapı Doğrulaması)
+## 📌 SON DURUM ÖZETİ — Son Aktif Uygulama: Antigravity (Faz 2 Toplu İade Mutabakatı — 46/46 Doğrulandı)
+
+| Başlık | Detay |
+|---|---|
+| **Son Aktif Uygulama** | Antigravity |
+| **Tarih / Saat** | 20.11.2026 00:24 (İstanbul) · dal `main` |
+| **Tamamlanan İşler** | 1. **İşlem Öncesi Audit Yedeği (Repo Dışı):** `C:\Users\Burak Kaya\.ai-backups\qv-faz2-return-20261119-2348.json` dosyasına onaylanan 46 siparişin işlem öncesi canlı portal statüsü (`Delivered`, `kod=2`, seçenekler `['2','6','3']`) kaydedildi.<br>2. **Sıralı Kontrollü Toplu `Returned` İşlemi (6 Sıralı Paket, 46/46 Doğrulandı):**<br>   - Paket 1 (2 sipariş, 11.11–12.11): `action.yml` `#44612474153` (`success` · `2/2` doğrulandı)<br>   - Paket 2 (8 sipariş, 13.11): `action.yml` `#44612739482` (`success` · `8/8` doğrulandı)<br>   - Paket 3 (10 sipariş, 13.11): `action.yml` `#44613426921` (`success` · `10/10` doğrulandı)<br>   - Paket 4 (10 sipariş, 14.11): `action.yml` `#44614271520` (`success` · `10/10` doğrulandı)<br>   - Paket 5 (9 sipariş, 15.11): `action.yml` `#44615105559` (`success` · `9/9` doğrulandı)<br>   - Paket 6 (7 sipariş, 16.11–18.11): `action.yml` `#44616043578` (`success` · `7/7` doğrulandı)<br>   - **Sonuç:** `46` doğrulandı, `0` atlanan, `0` başarısız, devre kesici tetiklenmedi.<br>3. **Dokunulmayan Kayıtlar:** Kullanıcı talimatıyla Eylül 2026 tarihli 3 eski kayıt (`2000257226`, `2000245405`, `2000255967`) ve `Cancelled` durumdaki 2 kayıt (`2000221944`, `2000221943`) **hiç değiştirilmedi** (`data.json`'da hâlâ `delivered` / `cancelled`).<br>4. **Senkronizasyon & 5 Kapı Doğrulaması:** `sync.yml` `#44617196017` (`sync` işi `success`, `generated_at: 2026-11-19T21:19:06Z`) ile 46/46 sipariş `data.json`'da `returned` olarak güncellendi; ardından `Quietvox Sağlık Kontrolü (5 Kapı)` canlı çalıştırılarak doğrulandı. |
+| **Değişen Dosyalar (Repo İçi)** | `MODEL_BRIDGE.md` (ve `sync.yml` tarafından güncellenen `data.json`) |
+| **Kalan Eski Delivered (Dokunulmayan)** | Yalnızca Eylül 2026 tarihli 3 sipariş (kullanıcı kararıyla hariç tutuldu): `2000257226` (22.09), `2000245405` (23.09), `2000255967` (25.09). |
+| **Bir Sonraki Uygulamanın Yapacağı İş** | `MODEL_BRIDGE.md` ve `CLAUDE.md` kurallarına uyarak devam etmek; durum asla tahminle yazılmaz. |
+
+### Önceki kayıt — Antigravity (19.11.2026 22:49)
+
+### 📌 Birleşik Onarım & 5 Kapı Doğrulaması (Antigravity — `9c65d74` / Build #18)
 
 | Başlık | Detay |
 |---|---|
