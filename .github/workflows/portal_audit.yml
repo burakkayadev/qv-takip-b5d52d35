@@ -1,0 +1,69 @@
+name: Quietvox Portal Denetimi
+# SALT OKUNUR: portalda hiçbir şey değiştirmez. Takvim feed'lerindeki ham durum kodlarını ve
+# siparişlerin düzenleme formundaki seçili durumu okuyup ana daldaki data.json ile karşılaştırır.
+run-name: "Portal denetimi (salt okunur) · ${{ github.ref_name }}"
+
+on:
+  push:
+    branches: ['claude/**']
+    paths:
+      - 'portal_audit.py'
+      - '.github/workflows/portal_audit.yml'
+  workflow_dispatch:
+    inputs:
+      ids:
+        description: 'Ayrıntılı incelenecek QV ID listesi (virgülle)'
+        required: false
+        default: '2000221582,2000221583,2000221686'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: quietvox-audit
+  cancel-in-progress: false
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Depoyu al
+        uses: actions/checkout@v4
+
+      - name: Python 3.12 kur
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Bağımlılıkları kur
+        run: pip install -r requirements.txt
+
+      - name: Playwright Chromium kur
+        run: python -m playwright install --with-deps chromium
+
+      # Karşılaştırma her zaman yayındaki (ana daldaki) en güncel data.json ile yapılır
+      - name: Ana daldaki güncel data.json'ı al
+        run: |
+          git fetch --depth=1 origin main
+          git show FETCH_HEAD:data.json > main_data.json
+
+      - name: Portalı salt okunur denetle
+        env:
+          QV_USER: ${{ secrets.QV_USER }}
+          QV_PASS: ${{ secrets.QV_PASS }}
+          QV_PASS_BACKUP: ${{ secrets.QV_PASS_BACKUP }}
+          QV_HTTP_USER: ${{ secrets.QV_HTTP_USER }}
+          QV_HTTP_PASS: ${{ secrets.QV_HTTP_PASS }}
+          AUDIT_IDS: ${{ inputs.ids || '2000221582,2000221583,2000221686' }}
+        run: python portal_audit.py --data main_data.json --ids "$AUDIT_IDS" --past-days 62 --future-days 10 --out debug/portal_audit.json
+
+      - name: Raporu sakla
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: portal-audit
+          path: debug/portal_audit.json
+          retention-days: 3
+          if-no-files-found: ignore

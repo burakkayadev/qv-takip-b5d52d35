@@ -69,3 +69,41 @@ def test_js_form_problems_auto_clicks_no_sms_confirmation():
     assert "no,\\s*just\\s*save" in qv_action.JS_FORM_PROBLEMS
     assert "qvConfirmed" in qv_action.JS_FORM_PROBLEMS
 
+
+# --- 3 aşamalı portal doğrulaması: tıklama / HTTP 200 asla başarı sayılmaz -------------------
+RETURNED = qv_action.ACTIONS["returned"]
+
+
+def test_feed_codes_reads_raw_status_of_that_order_and_day_only():
+    from datetime import date
+
+    payload = [
+        {"id": 1000000001, "start": "2026-11-14", "status": 2, "color": "green"},  # yeşil ama Delivered
+        {"id": "1000000001", "start": "2026-11-15", "status": 6},  # başka gün
+        {"id": 1000000002, "start": "2026-11-14", "status": 6},  # başka sipariş
+    ]
+    assert qv_action.feed_codes(payload, "1000000001", date(2026, 11, 14)) == ["2"]
+    assert qv_action.feed_codes(payload, "1000000003", date(2026, 11, 14)) == []
+    with pytest.raises(ValueError):
+        qv_action.feed_codes({"hata": "oturum"}, "1000000001", date(2026, 11, 14))
+
+
+def test_verification_passes_only_when_dom_feed_and_form_all_show_target():
+    ok = qv_action.Verification("6", "Returned", ("6",), "6")
+    assert ok.ok(RETURNED)
+    failing = [
+        qv_action.Verification("2", "Delivered", ("6",), "6"),  # pencere hâlâ Delivered
+        qv_action.Verification("6", "Returned", ("2",), "6"),  # feed değişmemiş
+        qv_action.Verification("6", "Returned", ("6", "2"), "6"),  # parçalardan biri değişmemiş
+        qv_action.Verification("6", "Returned", (), "6"),  # feed'de sipariş yok
+        qv_action.Verification("6", "Returned", ("6",), "2"),  # form GET hâlâ Delivered
+        qv_action.Verification("6", "Confirmed", ("6",), "6"),  # görünen ad tutmuyor
+        qv_action.Verification("", "", (), "", "TimeoutError"),  # okuma hatası
+    ]
+    assert not any(item.ok(RETURNED) for item in failing)
+
+
+def test_verification_description_lists_all_three_reads():
+    text = qv_action.Verification("2", "Delivered", ("2",), "2").describe()
+    assert "pencere=2/Delivered" in text and "feed=2" in text and "form=2" in text
+

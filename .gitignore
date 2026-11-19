@@ -45,3 +45,4 @@ _backup_pre_redesign/
 *.log
 cookies*.json
 *.cookies
+_backup_pre_claude_fix/

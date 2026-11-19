@@ -57,7 +57,12 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release delete apk --yes --cleanup-tag 2>/dev/null || true
+          # Eski sürüm yalnızca varsa silinir (yoksa ilk yükleme; hata yutulmaz)
+          if gh release view apk > /dev/null 2>&1; then
+            gh release delete apk --yes --cleanup-tag
+          else
+            echo "Önceki 'apk' sürümü yok; ilk kez oluşturulacak."
+          fi
           sleep 3
           gh release create apk quietvox-takip.apk \
             --title "Quietvox Takip (Android)" \

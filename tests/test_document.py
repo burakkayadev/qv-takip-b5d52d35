@@ -130,14 +130,18 @@ def test_login_failure_document_keeps_orders_and_only_changes_status(settings):
 
 def test_should_write_skips_unchanged_fresh_file(settings):
     document = {**scraper.empty_document(settings, NOW), "deliveries": [make_order("QV-1", "2026-11-25")]}
-    fresh = {**document, "generated_at": scraper.utc_stamp(NOW - timedelta(minutes=90))}
-    stale = {**document, "generated_at": scraper.utc_stamp(NOW - timedelta(minutes=121))}
+    # İçerik aynıysa en geç 30 dakikada bir yeniden yazılır (uygulama 90 dk'da "Veri Eski" der)
+    fresh = {**document, "generated_at": scraper.utc_stamp(NOW - timedelta(minutes=20))}
+    stale = {**document, "generated_at": scraper.utc_stamp(NOW - timedelta(minutes=31))}
     assert scraper.should_write(fresh, document, NOW) is False
     assert scraper.should_write(stale, document, NOW) is True
     assert scraper.should_write(None, document, NOW) is True
     assert scraper.should_write({**fresh, "status": "partial"}, document, NOW) is True
     assert scraper.should_write({**fresh, "deliveries": []}, document, NOW) is True
     assert scraper.should_write({**fresh, "generated_at": "bozuk"}, document, NOW) is True
+    # Yalnızca hatırlatma işareti değişse bile yazılmalı; yoksa sonraki senkron aynı hatırlatmayı yineler
+    marked = {**document, "reminders_sent": {"date": "2026-11-25", "kinds": ["morning"]}}
+    assert scraper.should_write(fresh, marked, NOW) is True
 
 
 def test_write_if_changed_writes_utf8_and_then_leaves_file_alone(settings):
@@ -149,7 +153,7 @@ def test_write_if_changed_writes_utf8_and_then_leaves_file_alone(settings):
     assert text.count("\n") == 1
     saved = json.loads(text)
     assert saved["generated_at"] == "2026-11-25T09:00:00Z"
-    later = NOW + timedelta(minutes=30)
+    later = NOW + timedelta(minutes=20)  # tazelik penceresi (30 dk) içinde: dosyaya dokunulmaz
     assert scraper.write_if_changed(settings, scraper.load_previous(settings.output), document, later) is False
     assert settings.output.read_text(encoding="utf-8") == text
     assert list(settings.output.parent.glob("*.tmp")) == []
