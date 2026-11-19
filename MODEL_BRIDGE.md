@@ -1,7 +1,7 @@
 # MODEL_BRIDGE — Uygulamalar Arası Ortak Hafıza
 
-> **Son Aktif Uygulama:** Claude Masaüstü  
-> **Son Güncelleme:** 19 Kasım 2026 (UTC+3) — **Acil kök onarım: sahte "İade alındı · Doğrulandı" kaldırıldı (durum artık yalnızca portalın ham kodu), 3 sipariş portalda 3 aşamalı doğrulandı, kendini zincirleyen senkron, 5 sert kapılı sağlık denetimi.**
+> **Son Aktif Uygulama:** Antigravity  
+> **Son Güncelleme:** 19 Kasım 2026 22:49 (UTC+3) — **Birleşik Onarım Tamamlandı: Claude Alt Ajan Kota Kilidi + `ajangrup` Model Frontmatter, Claude GitHub MCP (`HTTP 400` → `Connected`), 3 Conrad Mutabakatı Teyidi ve `afterprint` Yazdırma Kilidi Temizliği + 5 Kapı Yeşil.**
 
 ### Kalıcı Stratejik Limit & Model Yönlendirme Kuralı (`.agent/rules/quota-strategy.md`)
 - Standart UI, etiket, CSS ve önizleme işleri **Antigravity (`Gemini 4 Hydrogen Medium/High`)** üzerinden yürütülür; **Claude CLI** kotası yalnızca kritik mimari ve karmaşık hata ayıklama için korunur.
@@ -9,7 +9,19 @@
 
 ---
 
-## 📌 SON DURUM ÖZETİ — Son Aktif Uygulama: Claude Masaüstü (Acil Kritik Arıza ve Kök Onarım)
+## 📌 SON DURUM ÖZETİ — Son Aktif Uygulama: Antigravity (Birleşik Onarım & 5 Kapı Doğrulaması)
+
+| Başlık | Detay |
+|---|---|
+| **Son Aktif Uygulama** | Antigravity |
+| **Tarih / Saat** | 19.11.2026 22:49 (İstanbul) · dal `main` |
+| **Tamamlanan İşler** | 1. **Harici Yedekleme:** Repo dışına `C:\Users\Burak Kaya\.ai-backups\pre-antigravity-fix-20261119-2242\` içine `CLAUDE.md`, `agents/{opus-coder,sonnet-ui-qa}.md` ve `synced-github.mcp.json` yedeklendi.<br>2. **Claude Alt Ajan Kota Kilidi & `ajangrup` Model Düzeltmesi:** `C:\Users\Burak Kaya\.claude\CLAUDE.md` içindeki 30 satırlık `ajangrup` bloğu korunarak sonuna mutlak alt ajan kota koruması kuralı eklendi. `opus-coder.md` → `model: opus`, `sonnet-ui-qa.md` → `model: sonnet` frontmatter alanları eklendi.<br>3. **Claude GitHub MCP (`HTTP 400`) Onarımı:** `.mcp.json` dosyasının `${GITHUB_PERSONAL_ACCESS_TOKEN}` beklediği saptandı; kullanıcı ortam değişkeni tanımlı değildi. `gh auth token` değeri ekrana/koda/`.mcp.json`a yazılmadan `User` düzeyinde `GITHUB_PERSONAL_ACCESS_TOKEN` ve `GITHUB_TOKEN` değişkenlerine atandı; `claude mcp list` doğrulamasında `plugin:github:github` **`√ Connected`** durumuna geçti.<br>4. **Claude Yarım Kalma Tespiti & 3 Conrad Siparişi (`2000221582`, `2000221583`, `2000221686`):** Depo `main` dalında temiz durumdaydı (`claude/kok-onarim` `e896955` ile merge edilmiş, üstüne Claude `23428f9` commit'ini atmıştı). Salt okunur portal denetimi ([run 44598058630](https://github.com/burakkayadev/qv-takip-b5d52d35/actions/runs/44598058630)) ve `data.json` üzerinde 3 siparişin de **Returned (`kod=6`)** olduğu ve son 14 günde **0 uyuşmazlık** bulunduğu teyit edildi.<br>5. **Kapı 5 (`print=0`) Kök Neden Onarımı (`index.html`, `tests/ui_gates.py`):** `44597288011` hatasının nedeni `index.html` içindeki `triggerWindowPrint()` 1200 ms çift-yazdırma kilidinin (`_printLockUntil`) `tests/ui_gates.py` içindeki ardışık `Küçük`→`Büyük` testini (~550 ms arayla) bastırmasıydı. Claude `23428f9`'da `tests/ui_gates.py`'a `PRINT_LOCK_MS = 1300` beklemesi eklemişti; buna ek olarak `index.html` içine `afterprint` olayıyla kilidi erken açan `clearPrintLock()` temizliği eklendi (gerçek `window.print()` çağrısı ve 1200 ms çift dokunuş kilidi korunarak).<br>6. **Doğrulama:** Yerel `tests/system_check.py --gates 4,5 --app-url http://localhost:8080/ --simulate-fresh` ve 88 birim testi geçti; ardından GitHub Actions canlı 5 kapı denetimi çalıştırılarak doğrulandı. |
+| **Değişen Dosyalar (Repo İçi)** | `index.html`, `MODEL_BRIDGE.md` (Push sonrası `version.yml` `sw.js`, `version.json` ve `CURRENT_BUILD`'i otomatik yükseltir) |
+| **Bir Sonraki Uygulamanın Yapacağı İş** | `MODEL_BRIDGE.md` ve `CLAUDE.md` kurallarına uyarak devam etmek; durum asla tahminle yazılmaz. |
+
+### Önceki kayıt — Claude Masaüstü (19.11.2026)
+
+### 📌 Acil Kritik Arıza ve Kök Onarım (Claude Masaüstü — `e896955` / `23428f9`)
 
 | Başlık | Detay |
 |---|---|

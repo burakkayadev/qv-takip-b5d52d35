@@ -4595,6 +4595,11 @@ body.pv-open .sheet-wrap { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); }
   // Çift tıklama / touch+click çift basım koruması (tek seferde yalnızca 1 yazdırma)
   var isPrinting = false;
   var _printLockUntil = 0;
+  function clearPrintLock() {
+    isPrinting = false;
+    _printLockUntil = 0;
+  }
+  window.addEventListener('afterprint', clearPrintLock);
   function triggerWindowPrint() {
     var now = Date.now();
     if (isPrinting || now < _printLockUntil) return false;
