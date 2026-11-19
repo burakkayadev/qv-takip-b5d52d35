@@ -13,7 +13,7 @@
 'use strict';
 
 // Kabukta değişiklik yapınca bu sürümü artırın: eski önbellekler silinir.
-const VERSION = 'b17';
+const VERSION = 'b18';
 const SHELL_CACHE = 'qv-shell-' + VERSION;
 const DATA_CACHE = 'qv-data-' + VERSION;
 const CDN_CACHE = 'qv-cdn-' + VERSION;
