@@ -94,10 +94,23 @@ jobs:
           done
           exit 1
 
+      # İşlem portalda 3 aşamalı doğrulamayı geçemezse qv_action.py debug/ altına ekran görüntüsü
+      # ve DOM özeti yazar; bunlar 3 gün saklanır (sorunun nedenini görmek için).
+      - name: Hata kanıtlarını sakla (ekran görüntüsü + DOM özeti)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: islem-hata-kaniti-${{ github.run_id }}
+          path: debug/action_*
+          retention-days: 3
+          if-no-files-found: ignore
+
       # Veriyi burada yazmak yerine senkron iş akışı tetiklenir: aynı anda birden fazla
-      # işlem bitse bile data.json'a tek bir yerden yazılır, çakışma olmaz.
+      # işlem bitse bile data.json'a tek bir yerden yazılır, çakışma olmaz. Senkron her zaman
+      # varsayılan dalda (main) çalışır; uygulama data.json'ı oradan okur.
       - name: Senkronu tetikle
         if: always()
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh workflow run sync.yml -R "${GITHUB_REPOSITORY}" --ref "${GITHUB_REF_NAME}"
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: gh workflow run sync.yml -R "${GITHUB_REPOSITORY}" --ref "${DEFAULT_BRANCH}"

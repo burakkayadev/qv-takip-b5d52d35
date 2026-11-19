@@ -10,8 +10,19 @@
 Form, sitenin kendi "Edit Order" penceresi üzerinden doldurulur; böylece sitenin tüm
 doğrulamaları aynen çalışır. Beklenmeyen bir onay penceresi çıkarsa işlem KAYDEDİLMEZ.
 
+BAŞARI ÖLÇÜTÜ (3 aşamalı doğrulama): tıklama, pencerenin kapanması ya da HTTP 200 asla başarı
+sayılmaz. Kayıttan sonra tarayıcı önbelleği kapalıyken takvim sayfası yeniden yüklenir ve durum
+portaldan üç bağımsız yoldan yeniden okunur: (1) yeniden açılan düzenleme penceresindeki seçili
+durum (DOM), (2) takvim feed'indeki ham durum kodu, (3) düzenleme formunun GET ile okunan seçili
+durumu. Üçü de hedef durumu göstermiyorsa işlem BAŞARISIZ sayılır, ekran görüntüsü + DOM özeti
+debug/ altına yazılır ve çıkış kodu 1 olur.
+
+Sipariş portalda zaten hedef durumdaysa hiçbir alan değiştirilmez, KAYDEDİLMEZ (iade adetleri
+ezilmez); yalnızca doğrulama yapılır.
+
 Ortam değişkenleri: QV_ACTION, QV_ORDER_ID, QV_ORDER_DATE (YYYY-AA-GG, siparişin o takvimdeki
-günü), DRY_RUN=1 (formu doldurur ama kaydetmez) ve scraper.py ile aynı giriş değişkenleri.
+günü), QV_ORDER_IDS (toplu), DRY_RUN=1 (formu doldurur ama kaydetmez) ve scraper.py ile aynı
+giriş değişkenleri.
 """
 from __future__ import annotations
 
@@ -21,10 +32,13 @@ import logging
 import os
 import re
 import sys
+import urllib.parse
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime, timezone
+from pathlib import Path
 from typing import Any
 
+import portal_audit
 import scraper
 
 log = logging.getLogger("qv_action")
@@ -39,17 +53,20 @@ CONSUMABLE_PERCENT = 3  # sarf kalemlerinde iade adedi: teslim adedinin en fazla
 CONSUMABLE_PATTERNS = (r"\bQV1\.38\b", r"battery\s+aa", r"\bQV1\.2S\b", r"earphone\s+3[.,]5\s*mm\s+new\s+style")
 SAVE_TIMEOUT_MS = 45000
 EVENT_WAIT_STEPS = 40  # x 500 ms
+VERIFY_ATTEMPTS = 3  # kayıttan sonra portaldan yeniden okuma denemesi
+VERIFY_PAUSE_MS = 2500
+DEBUG_DIR = Path("debug")
 
 
 @dataclass(frozen=True)
 class ActionSpec:
     """Bir işlemin Quietvox karşılığı."""
 
-    status_value: str  # Order[status] seçeneğinin değeri
-    status_name: str  # feed'deki durum adı (doğrulama için)
+    status_value: str  # Order[status] seçeneğinin değeri (feed'deki ham kodla aynı)
+    status_name: str  # feed'deki durum adı
     kind: str  # hangi takvimde aranır: "delivery" | "return"
     calendar_path: str
-    label: str  # bildirim metni
+    label: str  # formdaki seçeneğin görünen adı ve bildirim metni
 
 
 ACTIONS = {
@@ -57,6 +74,30 @@ ACTIONS = {
     "delivered": ActionSpec("2", "delivered", "delivery", "/calendar/deliveryCalendar.html", "Delivered"),
     "returned": ActionSpec("6", "returned", "return", "/calendar/returnCalendar.html", "Returned"),
 }
+
+
+@dataclass(frozen=True)
+class Verification:
+    """Kayıttan SONRA, önbelleksiz yeniden yüklemeyle portaldan yapılan üç bağımsız okuma."""
+
+    dom_value: str  # yeniden açılan düzenleme penceresinde seçili durum kodu
+    dom_label: str  # ... ve görünen adı
+    feed_codes: tuple[str, ...]  # takvim feed'indeki ham durum kod(lar)ı (o gün, o sipariş)
+    form_value: str  # düzenleme formunun GET ile okunan seçili durum kodu
+    error: str = ""
+
+    def ok(self, spec: ActionSpec) -> bool:
+        """Üç okuma da hedef durumu gösteriyorsa True; biri bile eksik/farklıysa False."""
+        return (not self.error
+                and self.dom_value == spec.status_value and self.dom_label == spec.label
+                and bool(self.feed_codes) and all(code == spec.status_value for code in self.feed_codes)
+                and self.form_value == spec.status_value)
+
+    def describe(self) -> str:
+        text = (f"pencere={self.dom_value or '-'}/{self.dom_label or '-'}, "
+                f"feed={','.join(self.feed_codes) or '-'}, form={self.form_value or '-'}")
+        return f"{text}, hata={self.error}" if self.error else text
+
 
 # Takvimde yalnızca hedef siparişi bırakır; böylece tıklanacak tek bir etkinlik kalır.
 JS_ISOLATE_EVENT = r"""
@@ -122,6 +163,25 @@ JS_FORM_PROBLEMS = r"""
   }
   const open = !!document.querySelector('#dialog_large.in');
   return {open, clickedConfirm, texts: texts.slice(0, 5).map((text) => text.slice(0, 300))};
+}
+"""
+
+# Hata kanıtı: müşteri bilgisi yerine yalnızca durum alanı, pencere başlığı ve hata metinleri
+JS_DOM_SUMMARY = r"""
+() => {
+  const status = document.querySelector('#Order_status');
+  const header = document.querySelector('#dialog_large .modal-header');
+  const errors = [...document.querySelectorAll('.errorSummary, .help-inline.error, .alert-error, .alert-danger')]
+    .map((node) => node.textContent.trim().replace(/\s+/g, ' ')).filter(Boolean).slice(0, 5);
+  return {
+    url: location.origin + location.pathname,
+    dialog_open: !!document.querySelector('#dialog_large.in'),
+    heading: header ? header.textContent.trim().replace(/\s+/g, ' ').slice(0, 120) : '',
+    status_value: status ? status.value : null,
+    status_options: status ? [...status.options].map((o) => o.value + '=' + o.textContent.trim()) : [],
+    open_modals: [...document.querySelectorAll('.modal.in')].map((m) => m.id || '(adsız)'),
+    errors,
+  };
 }
 """
 
@@ -196,10 +256,34 @@ def read_requests(env: dict[str, str]) -> tuple[ActionSpec, list[tuple[str, date
     return s_spec, [(s_id, s_day)]
 
 
+def feed_codes(payload: Any, order_id: str, day: date) -> list[str]:
+    """Feed'de siparişin o günkü HAM durum kod(lar)ı; hiçbir sezgisel dönüşüm uygulanmaz."""
+    if not isinstance(payload, list):
+        raise ValueError("feed biçimi tanınmadı")
+    codes: list[str] = []
+    for entry in payload:
+        if not isinstance(entry, dict) or str(entry.get("id")) != order_id:
+            continue
+        if scraper.valid_iso(scraper._feed_start(entry.get("start"))[:10]) == day.isoformat():
+            codes.append(str(entry.get("status")))
+    return codes
+
+
+async def disable_http_cache(page: Any) -> None:
+    """Tarayıcı önbelleğini kapatır: her yeniden yükleme sunucudan taze okunur (Chromium CDP)."""
+    try:
+        session = await page.context.new_cdp_session(page)
+        await session.send("Network.enable")
+        await session.send("Network.setCacheDisabled", {"cacheDisabled": True})
+    except Exception as exc:
+        log.warning("Tarayıcı önbelleği kapatılamadı (%s); adreslere önbellek kırıcı eklenmeye devam edilir.",
+                    type(exc).__name__)
+
+
 async def open_edit_dialog(page: Any, settings: scraper.Settings, spec: ActionSpec,
                            order_id: str, day: date) -> None:
-    """Takvimde siparişi bulur ve "Edit Order" penceresini açar; doğru sipariş olduğunu doğrular."""
-    await scraper.goto(page, settings.base_url + spec.calendar_path, settings)
+    """Takvimi önbelleksiz açar, siparişi bulur ve "Edit Order" penceresini açar; doğru sipariş mi doğrular."""
+    await scraper.goto(page, portal_audit.cache_busted(settings.base_url + spec.calendar_path), settings)
     await page.wait_for_selector("#extended_calendar .fc-header", timeout=settings.nav_timeout)
     result = await page.evaluate(JS_ISOLATE_EVENT, {
         "id": order_id, "year": day.year, "month": day.month - 1, "day": day.day,
@@ -216,6 +300,12 @@ async def open_edit_dialog(page: Any, settings: scraper.Settings, spec: ActionSp
     heading = await page.inner_text("#dialog_large")
     if not re.search(rf"Update Order\s+{order_id}\b", heading):
         raise RuntimeError("açılan pencere beklenen siparişe ait değil")
+
+
+async def close_dialog(page: Any) -> None:
+    """Düzenleme penceresini kaydetmeden kapatır (hiçbir alan değiştirilmemişken kullanılır)."""
+    await page.keyboard.press("Escape")
+    await page.wait_for_timeout(400)
 
 
 async def set_status(page: Any, spec: ActionSpec) -> bool:
@@ -250,7 +340,11 @@ async def fill_return_counts(page: Any) -> list[str]:
 
 
 async def save_and_check(page: Any, dialogs: list[str]) -> str:
-    """Kaydeder; pencere kapanırsa boş string, sorun varsa açıklamasını döner."""
+    """Kaydeder; pencere kapanırsa boş string, sorun varsa açıklamasını döner.
+
+    Pencerenin kapanması BAŞARI DEĞİLDİR; yalnızca "kaydetme denendi" demektir. Başarı
+    verify_on_portal ile kanıtlanır.
+    """
     # Pencerenin kendi alt çubuğundaki Save; içerideki "save-if-changed" onay düğmeleri hariç tutulur
     save = page.locator('#dialog_large > .modal-footer .btn-primary:not([id^="save-if-changed"])')
     if await save.count() != 1:
@@ -272,52 +366,163 @@ async def save_and_check(page: Any, dialogs: list[str]) -> str:
     return "kaydetme zaman aşımına uğradı"
 
 
-async def confirm_status(page: Any, settings: scraper.Settings, spec: ActionSpec,
-                         order_id: str, day: date) -> bool:
-    """Takvim feed'inden durumun gerçekten değiştiğini doğrular."""
+async def read_dialog_status(page: Any, settings: scraper.Settings, spec: ActionSpec,
+                             order_id: str, day: date) -> tuple[str, str]:
+    """Okuma 1 (DOM): takvim önbelleksiz yeniden yüklenir, pencere yeniden açılır, seçili durum okunur."""
+    await open_edit_dialog(page, settings, spec, order_id, day)
+    value = await page.eval_on_selector("#Order_status", "el => el.value")
+    label = await page.eval_on_selector(
+        "#Order_status", "el => el.selectedOptions[0] ? el.selectedOptions[0].textContent.trim() : ''")
+    await close_dialog(page)
+    return str(value), str(label)
+
+
+async def read_feed_codes(page: Any, settings: scraper.Settings, spec: ActionSpec,
+                          order_id: str, day: date) -> list[str]:
+    """Okuma 2 (API): takvim feed'indeki ham durum kodu (önbellek kırıcı ile)."""
     url = scraper.feed_url_for(settings.base_url + spec.calendar_path, spec.kind, day, 1)
-    for attempt in range(3):
-        response = await page.context.request.get(url, headers={"X-Requested-With": "XMLHttpRequest"})
-        items = scraper.parse_feed_items(json.loads(await response.text()), day, 1) or []
-        if any(item["id"] == order_id and item["status"] == spec.status_name for item in items):
-            return True
-        if attempt < 2:
-            await page.wait_for_timeout(1000)
-    return False
+    payload = json.loads(await scraper._get_text(page.context, portal_audit.cache_busted(url), settings))
+    return feed_codes(payload, order_id, day)
+
+
+async def read_form_value(page: Any, settings: scraper.Settings, order_id: str) -> str:
+    """Okuma 3 (API): düzenleme formunun GET ile okunan seçili durum kodu (kaydetmez)."""
+    query = urllib.parse.urlencode({"id": order_id})
+    url = portal_audit.cache_busted(f"{settings.base_url}{portal_audit.FORM_PATH}?{query}")
+    form = portal_audit.parse_form_status(await scraper._get_text(page.context, url, settings), order_id)
+    if form.get("error"):
+        raise RuntimeError(form["error"])
+    return str(form["value"])
+
+
+async def verify_on_portal(page: Any, settings: scraper.Settings, spec: ActionSpec,
+                           order_id: str, day: date) -> Verification:
+    """Kaydın portalda kalıcı olduğunu kanıtlar; en fazla VERIFY_ATTEMPTS kez yeniden okur."""
+    result = Verification("", "", (), "", "doğrulama yapılmadı")
+    for attempt in range(1, VERIFY_ATTEMPTS + 1):
+        try:
+            dom_value, dom_label = await read_dialog_status(page, settings, spec, order_id, day)
+            codes = tuple(await read_feed_codes(page, settings, spec, order_id, day))
+            result = Verification(dom_value, dom_label, codes, await read_form_value(page, settings, order_id))
+        except Exception as exc:
+            result = Verification("", "", (), "", f"{type(exc).__name__}: {exc}"[:200])
+        log.info("Doğrulama %d/%d — sipariş %s hedef %s: %s", attempt, VERIFY_ATTEMPTS, order_id,
+                 spec.label, result.describe())
+        if result.ok(spec):
+            return result
+        if attempt < VERIFY_ATTEMPTS:
+            await page.wait_for_timeout(VERIFY_PAUSE_MS)
+    return result
+
+
+async def verified_problem(page: Any, settings: scraper.Settings, spec: ActionSpec,
+                           order_id: str, day: date) -> str:
+    """Portal doğrulaması geçerse boş string, geçmezse ayrıntılı hata metni döner."""
+    result = await verify_on_portal(page, settings, spec, order_id, day)
+    if result.ok(spec):
+        log.info("Sipariş %s '%s' portalda DOĞRULANDI (%s).", order_id, spec.label, result.describe())
+        return ""
+    return f"portalda doğrulanamadı: '{spec.label}' görünmüyor ({result.describe()})"
 
 
 async def apply_action(page: Any, settings: scraper.Settings, spec: ActionSpec,
                        order_id: str, day: date, dry_run: bool) -> str:
-    """İşlemi uygular; başarılıysa boş string, değilse hata açıklaması döner."""
+    """İşlemi uygular ve portalda doğrular; başarılıysa boş string, değilse hata açıklaması döner."""
     dialogs: list[str] = []
 
     async def on_dialog(dialog: Any) -> None:
+        if dialog.type == "beforeunload":
+            await dialog.accept()  # doğrulama için sayfa yeniden yüklenirken (kayıt sonrası) güvenli
+            return
         dialogs.append(dialog.message)
         await dialog.dismiss()  # tanımadığımız hiçbir soruya "evet" denmez
 
     page.on("dialog", on_dialog)
     try:
         await open_edit_dialog(page, settings, spec, order_id, day)
-        changed = await set_status(page, spec)
+        current = await page.eval_on_selector("#Order_status", "el => el.value")
+        if current == spec.status_value:
+            log.info("Sipariş %s portalda zaten '%s'; hiçbir alan değiştirilmedi, KAYDEDİLMEDİ.",
+                     order_id, spec.label)
+            await close_dialog(page)
+            return await verified_problem(page, settings, spec, order_id, day)
+        await set_status(page, spec)
         if spec.status_name == "delivered":
             await page.check("#Order_is_self_delivery_1")
         await page.check("#Order_is_self_return_1")
         if spec.status_name == "returned":
             for line in await fill_return_counts(page):
                 log.info("İade adedi: %s", line)
-        if not changed:
-            log.info("Sipariş zaten '%s' durumunda; yalnızca diğer alanlar güncelleniyor.", spec.label)
         if dry_run:
-            log.info("DRY_RUN: form dolduruldu, KAYDEDİLMEDİ.")
+            log.info("DRY_RUN: form dolduruldu, KAYDEDİLMEDİ (doğrulama yapılmadı).")
             return ""
         problem = await save_and_check(page, dialogs)
         if problem:
             return problem
-        if not await confirm_status(page, settings, spec, order_id, day):
-            return "kaydedildi görünüyor ama takvimde durum değişmedi"
-        return ""
+        return await verified_problem(page, settings, spec, order_id, day)
     finally:
         page.remove_listener("dialog", on_dialog)
+
+
+async def save_failure_evidence(page: Any, order_id: str, spec: ActionSpec, problem: str) -> list[str]:
+    """Başarısız işlemin ekran görüntüsünü ve DOM özetini debug/ altına yazar (artifact olarak yüklenir)."""
+    DEBUG_DIR.mkdir(parents=True, exist_ok=True)
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    base = DEBUG_DIR / f"action_{order_id}_{spec.status_name}_{stamp}"
+    saved: list[str] = []
+    try:
+        await page.screenshot(path=f"{base}.png")
+        saved.append(f"{base}.png")
+    except Exception as exc:
+        log.warning("Ekran görüntüsü alınamadı (%s).", type(exc).__name__)
+    try:
+        summary = await page.evaluate(JS_DOM_SUMMARY)
+    except Exception as exc:
+        summary = {"error": f"DOM okunamadı ({type(exc).__name__})"}
+    evidence = {"order_id": order_id, "action": spec.status_name, "problem": problem, "at": stamp, "dom": summary}
+    Path(f"{base}.json").write_text(json.dumps(evidence, ensure_ascii=False, indent=2), encoding="utf-8")
+    saved.append(f"{base}.json")
+    return saved
+
+
+async def process_order(page: Any, settings: scraper.Settings, spec: ActionSpec,
+                        order_id: str, day: date, dry_run: bool) -> str:
+    """Tek siparişi en fazla 3 kez dener; son hata metnini (başarıda boş string) döner."""
+    problem = ""
+    for attempt in range(1, 4):
+        try:
+            problem = await apply_action(page, settings, spec, order_id, day, dry_run)
+        except Exception as exc:
+            problem = str(exc) or type(exc).__name__
+        if not problem:
+            return ""
+        if attempt < 3:
+            log.warning("Sipariş %s deneme %d başarısız (%s); yeniden deneniyor...", order_id, attempt, problem)
+            await page.wait_for_timeout(1500)
+    files = await save_failure_evidence(page, order_id, spec, problem)
+    log.error("Sipariş %s '%s' YAPILAMADI: %s | kanıt: %s", order_id, spec.label, problem, ", ".join(files))
+    return problem
+
+
+def notify_results(settings: scraper.Settings, spec: ActionSpec, succeeded: list[str],
+                   failures: list[tuple[str, str]], dry_run: bool) -> None:
+    """Yalnızca portalda doğrulanan siparişler için başarı, diğerleri için hata bildirimi gönderir."""
+    if not dry_run and succeeded:
+        if len(succeeded) == 1:
+            scraper.send_ntfy(settings, f"✅ Sipariş {succeeded[0]} Quietvox'ta {spec.label} — portalda doğrulandı.")
+        else:
+            scraper.send_ntfy(settings, f"✅ {len(succeeded)} sipariş Quietvox'ta {spec.label} — portalda "
+                                        f"doğrulandı: {', '.join(succeeded[:8])}")
+    if not failures or (os.environ.get("QV_NOTIFY_FAILURE") or "1").strip() == "0":
+        return
+    for oid, prob in failures[:5]:
+        scraper.send_ntfy(settings, f"❌ Sipariş {oid} Quietvox'a {spec.label} olarak İŞLENEMEDİ: {prob[:200]}",
+                          priority="high")
+    try:
+        import notify_mail
+        notify_mail.send_action_failure_alert(failures, spec.label, os.environ)
+    except Exception as exc:
+        log.warning("Hata uyarı e-postası gönderilemedi: %s", exc)
 
 
 async def run_many(settings: scraper.Settings, spec: ActionSpec,
@@ -336,47 +541,18 @@ async def run_many(settings: scraper.Settings, spec: ActionSpec,
                 scraper.send_ntfy(settings, scraper.LOGIN_FAILED_MESSAGE, priority="high")
                 return EXIT_LOGIN
             page, active, _ = session
+            await disable_http_cache(page)
             for order_id, day in orders:
-                problem = ""
-                # İlk deneme + başarısız olursa otomatik 2 yeniden deneme (toplam 3 deneme)
-                for attempt in range(1, 4):
-                    try:
-                        problem = await apply_action(page, active, spec, order_id, day, dry_run)
-                    except Exception as exc:
-                        problem = str(exc) or type(exc).__name__
-                    if not problem:
-                        break
-                    if attempt < 3:
-                        log.warning("Sipariş %s deneme %d başarısız (%s); yeniden deneniyor...",
-                                    order_id, attempt, problem)
-                        await page.wait_for_timeout(1500)
+                problem = await process_order(page, active, spec, order_id, day, dry_run)
                 if problem:
-                    log.error("Sipariş %s '%s' yapılamadı: %s", order_id, spec.label, problem)
                     failures.append((order_id, problem))
                 else:
-                    log.info("Sipariş %s '%s' yapıldı ve portalda doğrulandı.", order_id, spec.label)
                     succeeded.append(order_id)
         finally:
             await browser.close()
-
-    if not dry_run and succeeded:
-        if len(succeeded) == 1:
-            scraper.send_ntfy(settings, f"✅ Sipariş {succeeded[0]} Quietvox'ta {spec.label} yapıldı.")
-        else:
-            scraper.send_ntfy(settings, f"✅ {len(succeeded)} sipariş Quietvox'ta {spec.label} yapıldı: {', '.join(succeeded[:8])}")
-
-    if failures:
-        if (os.environ.get("QV_NOTIFY_FAILURE") or "1").strip() != "0":
-            for oid, prob in failures[:5]:
-                scraper.send_ntfy(settings, f"❌ Sipariş {oid} {spec.label} yapılamadı: {prob[:200]}",
-                                  priority="high")
-            try:
-                import notify_mail
-                notify_mail.send_action_failure_alert(failures, spec.label, os.environ)
-            except Exception as exc:
-                log.warning("Hata uyarı e-postası gönderilemedi: %s", exc)
-        return EXIT_FAILED
-    return EXIT_OK
+    notify_results(settings, spec, succeeded, failures, dry_run)
+    log.info("SONUÇ: %d doğrulandı, %d başarısız.", len(succeeded), len(failures))
+    return EXIT_FAILED if failures else EXIT_OK
 
 
 async def run(settings: scraper.Settings, spec: ActionSpec, order_id: str, day: date, dry_run: bool) -> int:
